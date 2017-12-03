@@ -23,7 +23,7 @@
     <modules>
         <module>master</module>
         <module>wrapper</module>
+        <module>main</module>
     </modules>
-
 
 </project>

@@ -3,7 +3,7 @@
  * You are not allowed to decompile the code.
  */
 
-package de.rufusmaiwald.mc1cloud.mysql;
+package de.rufusmaiwald.mcone.mc1cloud.mysql;
 
 import java.sql.*;
 
@@ -16,7 +16,7 @@ public class MySQL {
     private String password;
 
     private String tablePrefix;
-    
+
     private static Connection con;
 
     public MySQL(String host, int port, String database, String username, String password, String tablePrefix) {
@@ -55,17 +55,17 @@ public class MySQL {
         }
     }
 
-    public void execute(String qry) {
+    public void update(String qry) {
         if (isConnected()) {
             try {
                 PreparedStatement preparedstatement = con.prepareStatement(qry);
                 preparedstatement.executeUpdate();
-                System.out.println("[MySQL.execute] \""+qry+"\" executed @" + database + "!");
+                System.out.println("[MySQL.update] \""+qry+"\" executed @" + database + "!");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("[MySQL.execute] no MySQL connection to " + database + " available!");
+            System.out.println("[MySQL.update] no MySQL connection to " + database + " available!");
         }
     }
 
@@ -90,8 +90,8 @@ public class MySQL {
 
     public void createCloudTables() {
         //templates table
-        this.execute("CREATE TABLE IF NOT EXISTS `" + this.tablePrefix + "_templates` (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(100) NOT NULL UNIQUE KEY, `ram` int(8) NOT NULL, `min` int(5), `max` int(5), `emptyservers` int(3) NOT NULL, `startup` boolean NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-        this.execute("CREATE TABLE IF NOT EXISTS `" + this.tablePrefix + "_static_servers` (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(100) NOT NULL, `ram` int(8) NOT NULL, `wrapper` varchar(100) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        update("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "_templates` (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(100) NOT NULL UNIQUE KEY, `ram` int(8) NOT NULL, `min` int(5), `max` int(5), `emptyservers` int(3) NOT NULL, `startup` boolean NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        update("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "_static_servers` (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(100) NOT NULL, `ram` int(8) NOT NULL, `wrapper` varchar(100) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     }
 
     public String getTablePrefix() {

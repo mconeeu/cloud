@@ -5,7 +5,7 @@
 
 package de.rufusmaiwald.mcone.mc1cloud.wrapper;
 
-import de.rufusmaiwald.mc1cloud.mysql.MySQL;
+import de.rufusmaiwald.mcone.mc1cloud.mysql.MySQL;
 import de.rufusmaiwald.mcone.mc1cloud.wrapper.server.ServerManager;
 import de.rufusmaiwald.mcone.mc1cloud.wrapper.server.Server;
 

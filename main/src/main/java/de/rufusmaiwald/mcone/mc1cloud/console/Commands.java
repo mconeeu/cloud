@@ -3,7 +3,7 @@
  * You are not allowed to decompile the code.
  */
 
-package de.rufusmaiwald.mc1cloud.console;
+package de.rufusmaiwald.mcone.mc1cloud.console;
 
 public class Commands {
 

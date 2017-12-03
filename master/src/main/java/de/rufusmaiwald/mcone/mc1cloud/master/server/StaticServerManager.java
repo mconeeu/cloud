@@ -33,7 +33,7 @@ public class StaticServerManager {
 
     public static void addStaticServer(String name, int ram, String wrappername) {
         System.out.println("[StaticServerManager.class] Creating Static Server " + name + "...");
-        MasterServer.mysql_main.execute("INSERT INTO " + MasterServer.mysql_prefix + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + Integer.valueOf(ram).toString() + " , '" + wrappername + "');");
+        MasterServer.mysql_main.update("INSERT INTO " + MasterServer.mysql_prefix + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + Integer.valueOf(ram).toString() + " , '" + wrappername + "');");
 
         UUID uuid = UUID.randomUUID();
         staticServers.put(uuid, new Server(uuid, name, null, 0, ram, wrappername));
@@ -42,7 +42,7 @@ public class StaticServerManager {
     public static void deleteStaticServer(Server server) {
         if (staticServers.containsValue(server)) {
             System.out.println("[StaticServerManager.class] Removing Static Server " + server.getName() + "...");
-            MasterServer.mysql_main.execute("DELETE FROM " + MasterServer.mysql_prefix + "_static_servers WHERE name='" + server.getName() + "';");
+            MasterServer.mysql_main.update("DELETE FROM " + MasterServer.mysql_prefix + "_static_servers WHERE name='" + server.getName() + "';");
 
             server.delete();
             staticServers.remove(server.getUUID());
