@@ -6,6 +6,7 @@
 package de.rufusmaiwald.mcone.mc1cloud.wrapper;
 
 import de.rufusmaiwald.mcone.mc1cloud.mysql.MySQL;
+import de.rufusmaiwald.mcone.mc1cloud.wrapper.network.Client;
 import de.rufusmaiwald.mcone.mc1cloud.wrapper.server.ServerManager;
 import de.rufusmaiwald.mcone.mc1cloud.wrapper.server.Server;
 
@@ -31,7 +32,11 @@ public class WrapperServer {
         new ServerManager();
 
         System.out.println("[Enable progress] Trying to connect to master...");
-        /* ... */
+        try {
+            new Client("localhost", 4567);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 

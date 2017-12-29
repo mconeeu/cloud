@@ -5,6 +5,7 @@
 
 package de.rufusmaiwald.mcone.mc1cloud.master;
 
+import de.rufusmaiwald.mcone.mc1cloud.master.network.Server;
 import de.rufusmaiwald.mcone.mc1cloud.mysql.Config;
 import de.rufusmaiwald.mcone.mc1cloud.mysql.MySQL;
 import de.rufusmaiwald.mcone.mc1cloud.master.server.ServerManager;
@@ -59,6 +60,13 @@ public class MasterServer {
 
         System.out.println("[Enable progress] Starting ServerManager with TimeTask...");
         new ServerManager();
+
+        System.out.println("[Enable progress] Starting Netty Discard Server...");
+        try {
+            new Server(4567).run();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         System.out.println("\nEnable process finished! Cloud Master seems to be ready! Waiting for connections...");
     }
