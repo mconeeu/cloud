@@ -28,6 +28,7 @@
             <groupId>de.rufusmaiwald.mcone.cloud</groupId>
             <artifactId>main</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
