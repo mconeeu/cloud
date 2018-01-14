@@ -3,13 +3,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>MCONE-Cloud</artifactId>
-        <groupId>de.rufusmaiwald.mcone.cloud</groupId>
+        <artifactId>mc1cloud</artifactId>
+        <groupId>eu.mcone.cloud</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>wrapper</artifactId>
+    <name>mc1cloud-wrapper</name>
+    <packaging>jar</packaging>
+
     <build>
         <plugins>
             <plugin>
@@ -33,13 +36,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-maven-plugin</artifactId>
+                <version>1.16.6.1</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>delombok</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <dependencies>
         <dependency>
-            <groupId>de.rufusmaiwald.mcone.cloud</groupId>
-            <artifactId>main</artifactId>
+            <groupId>eu.mcone.cloud</groupId>
+            <artifactId>core</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
