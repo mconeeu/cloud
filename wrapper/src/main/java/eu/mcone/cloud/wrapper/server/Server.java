@@ -17,7 +17,9 @@ public class Server {
     @Getter
     private UUID uuid;
     @Getter
-    private String name, templateName, state;
+    private String name;
+    @Getter
+    private String templateName, state;
     @Getter
     private int ram, port;
 
