@@ -8,7 +8,7 @@ package eu.mcone.cloud.core.console;
 public class Commands {
 
     public static void reloadCMD() {
-
+        //Test
     }
 
     public static void stopCMD() {
