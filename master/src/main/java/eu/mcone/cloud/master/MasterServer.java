@@ -5,11 +5,12 @@
 
 package eu.mcone.cloud.master;
 
+import eu.mcone.cloud.core.network.ChannelPacketHandler;
+import eu.mcone.cloud.core.network.ServerBootstrap;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.cloud.master.network.Server;
 import eu.mcone.cloud.core.mysql.Config;
 import eu.mcone.cloud.core.mysql.MySQL;
 
@@ -22,6 +23,7 @@ public class MasterServer {
 
     public static String mysql_prefix = "cloudmaster";
     public static MySQL mysql_main;
+    public static ChannelPacketHandler cph;
 
     public static Config config;
 
@@ -62,11 +64,8 @@ public class MasterServer {
         new ServerManager();
 
         System.out.println("[Enable progress] Starting Netty Server...");
-        try {
-            new Server(4567).run();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ServerBootstrap sb = new ServerBootstrap(4567);
+        cph = sb.getCph();
 
         System.out.println("\nEnable process finished! Cloud Master seems to be ready! Waiting for connections...");
     }

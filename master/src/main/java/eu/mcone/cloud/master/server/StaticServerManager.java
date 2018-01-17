@@ -41,11 +41,11 @@ public class StaticServerManager {
 
     public static void deleteStaticServer(Server server) {
         if (staticServers.containsValue(server)) {
-            System.out.println("[StaticServerManager.class] Removing Static Server " + server.getName() + "...");
-            MasterServer.mysql_main.update("DELETE FROM " + MasterServer.mysql_prefix + "_static_servers WHERE name='" + server.getName() + "';");
+            System.out.println("[StaticServerManager.class] Removing Static Server " + server.getInfo().getName() + "...");
+            MasterServer.mysql_main.update("DELETE FROM " + MasterServer.mysql_prefix + "_static_servers WHERE name='" + server.getInfo().getName() + "';");
 
             server.delete();
-            staticServers.remove(server.getUuid());
+            staticServers.remove(server.getInfo().getUuid());
         }
     }
 

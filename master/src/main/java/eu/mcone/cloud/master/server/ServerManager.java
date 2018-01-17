@@ -57,7 +57,7 @@ public class ServerManager {
 
                                 //If the minimum server count is not reached after deleting server, delete server.
                                 if (template.getServers().size()-1 >= template.getMin()) {
-                                    template.deleteServer(serverEntry.getValue().getUuid());
+                                    template.deleteServer(serverEntry.getValue().getInfo().getUuid());
                                 }
                             }
                         }
@@ -74,10 +74,10 @@ public class ServerManager {
                         if (bestwrapper != null) {
                             server.setWrapper(bestwrapper);
                             serverWaitList.remove(server);
-                            System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for server" + server.getName() + "! Creating Server!");
+                            System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
                             bestwrapper.createServer(server);
                         } else {
-                            System.out.println("[ServerManager.class] No wrapper for server " + server.getName() + " available! Staying in WaitList...");
+                            System.out.println("[ServerManager.class] No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
                         }
                     } else {
                         Wrapper wrapper = WrapperManager.getWrapperbyString(wrapperName);
@@ -85,10 +85,10 @@ public class ServerManager {
                         if (wrapper != null) {
                             server.setWrapper(wrapper);
                             serverWaitList.remove(server);
-                            System.out.println("[ServerManager.class] Found explicit wrapper " + wrapper.getName() + " for server" + server.getName() + "! Creating Server!");
+                            System.out.println("[ServerManager.class] Found explicit wrapper " + wrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
                             wrapper.createServer(server);
                         } else {
-                            System.out.println("[ServerManager.class] Explicit wrapper " + wrapperName + " not found for server " + server.getName() + "! Staying in WaitList...");
+                            System.out.println("[ServerManager.class] Explicit wrapper " + wrapperName + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
                         }
                     }
                 }
@@ -120,9 +120,9 @@ public class ServerManager {
 
     static void addtoServerWaitList(Server server, String wrapperName) {
         if (serverWaitList.containsKey(server)) {
-            System.out.println("[ServerManager.addtoServerWaitList] " + server.getName() + " already in ServerWaitList!");
+            System.out.println("[ServerManager.addtoServerWaitList] " + server.getInfo().getName() + " already in ServerWaitList!");
         } else {
-            System.out.println("[ServerManager.addtoServerWaitList] Added " + server.getName() + " to ServerWaitList!");
+            System.out.println("[ServerManager.addtoServerWaitList] Added " + server.getInfo().getName() + " to ServerWaitList!");
             serverWaitList.put(server, wrapperName);
         }
     }

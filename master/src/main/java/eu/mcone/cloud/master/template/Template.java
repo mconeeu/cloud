@@ -68,7 +68,7 @@ public class Template {
         if (servers.containsKey(uuid)) {
             //Get UUID of server
             Server server = this.servers.get(uuid);
-            System.out.println("[Template.deleteServer] Deleting Server " + server.getName() + "!");
+            System.out.println("[Template.deleteServer] Deleting Server " + server.getInfo().getName() + "!");
 
             //Remove Server from HashMap and delete it from Wrapper
             this.servers.remove(uuid);
@@ -81,13 +81,13 @@ public class Template {
     public void deleteServer(Server server) {
         //If Server is part of this template
         if (servers.containsValue(server)) {
-            System.out.println("[Template.deleteServer] Deleting Server " + server.getName() + "!");
+            System.out.println("[Template.deleteServer] Deleting Server " + server.getInfo().getName() + "!");
 
             //Remove Server from HashMap and delete it from Wrapper
-            this.servers.remove(server.getUuid());
+            this.servers.remove(server.getInfo().getUuid());
             server.delete();
         } else {
-            System.out.println("[Template.deleteServer] Server " + server.getName() + " is not part of Template " + this.name + "!");
+            System.out.println("[Template.deleteServer] Server " + server.getInfo().getName() + " is not part of Template " + this.name + "!");
         }
     }
 

@@ -5,7 +5,10 @@
 
 package eu.mcone.cloud.wrapper;
 
-import eu.mcone.cloud.wrapper.network.Client;
+import eu.mcone.cloud.core.network.ChannelPacketHandler;
+import eu.mcone.cloud.core.network.ClientBootstrap;
+import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
+import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.cloud.wrapper.server.ServerManager;
 import eu.mcone.cloud.core.mysql.MySQL;
@@ -16,6 +19,7 @@ import java.util.UUID;
 public class WrapperServer {
 
     public static MySQL mysql_main;
+    public static ChannelPacketHandler cph;
 
     public static HashMap<UUID, Server> servers = new HashMap<>();
 
@@ -32,12 +36,8 @@ public class WrapperServer {
         new ServerManager();
 
         System.out.println("[Enable progress] Trying to connect to master...");
-        try {
-            new Client("localhost", 4567);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+        ClientBootstrap cb = new ClientBootstrap("localhost", 4567);
+        cph = cb.getCph();
     }
 
 }

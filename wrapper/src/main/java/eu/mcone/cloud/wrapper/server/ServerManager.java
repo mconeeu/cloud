@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.wrapper.server;
 
+import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.WrapperServer;
 
 import java.util.Timer;
@@ -19,7 +20,7 @@ public class ServerManager {
             public void run() {
             for (Server server : WrapperServer.servers.values()) {
                 int playercount = server.getPlayerCount();
-                String state = server.getState();
+                ServerState state = server.getInfo().getState();
 
                 //Send to master
                 /* ... */

@@ -5,6 +5,8 @@
 
 package eu.mcone.cloud.wrapper.server;
 
+import eu.mcone.cloud.core.server.ServerInfo;
+import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import lombok.Getter;
 
@@ -15,29 +17,22 @@ public class Server {
     @Getter
     private UUID uuid;
     @Getter
-    private String name;
-    @Getter
-    private String templateName, state;
-    @Getter
-    private int ram, port;
+    private ServerInfo info;
 
-    public Server(UUID uuid, String name, String templateName, int ram, int port) {
-        this.uuid = uuid;
-        this.name = name;
-        this.templateName = templateName;
-        this.ram = ram;
-        this.port = port;
+    public Server(ServerInfo info) {
+        this.info = info;
+        this.uuid = info.getUuid();
 
         WrapperServer.servers.put(this.uuid, this);
-        System.out.println("[Server.class] New Server " + this.name + " initialized! Creating Directories...");
+        System.out.println("[Server.class] New Server " + this.info.getName() + " initialized! Creating Directories...");
         /* ... */
 
-        if (templateName != null) {
-            System.out.println("[Server.class] Downloading template " + this.templateName + " for Server " + this.name + "...");
+        if (this.info.getTemplateName() != null) {
+            System.out.println("[Server.class] Downloading template " + this.info.getTemplateName() + " for Server " + this.info.getName() + "...");
             /* ... */
             this.start();
         } else {
-            System.out.println("[Server.class] No template set for Server " + this.name + "! Starting Server...");
+            System.out.println("[Server.class] No template set for Server " + this.info.getName() + "! Starting Server...");
             this.start();
         }
 
@@ -46,28 +41,27 @@ public class Server {
     }
 
     public void start() {
-        this.state = "running";
-
+        this.info.setState(ServerState.STARTING);
         /* ... */
+        this.info.setState(ServerState.RUNNING);
     }
 
     public void stop() {
-        this.state = "stopped";
-
         /* ... */
+        this.info.setState(ServerState.STOPPED);
     }
 
     public void forceStop() {
-        this.state = "stopped";
-
         /* ... */
+        this.info.setState(ServerState.STOPPED);
     }
 
     public void restart() {
-        this.state = "stopped";
-        this.state = "started";
-
+        this.info.setState(ServerState.STOPPED);
         /* ... */
+        this.info.setState(ServerState.STARTING);
+        /* ... */
+        this.info.setState(ServerState.RUNNING);
     }
 
     public void delete() {

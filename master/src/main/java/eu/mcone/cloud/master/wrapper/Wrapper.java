@@ -50,27 +50,27 @@ public class Wrapper {
         //Request server creation
         /* ... */
         server.setWrapper(this);
-        servers.put(server.getUuid(), server);
-        System.out.println("[Wrapper.class] Created server " + server.getName() + " at wrapper " + name + "!");
+        servers.put(server.getInfo().getUuid(), server);
+        System.out.println("[Wrapper.class] Created server " + server.getInfo().getName() + " at wrapper " + name + "!");
     }
 
     public void deleteServer(Server server) {
         //Request server deletion
         /* ... */
         server.setWrapper(null);
-        System.out.println("[Wrapper.class] Deleted server " + server.getName() + " from wrapper " + name + "!");
+        System.out.println("[Wrapper.class] Deleted server " + server.getInfo().getName() + " from wrapper " + name + "!");
     }
 
     public void startServer(Server server) {
         //Request server start
         /* ... */
-        System.out.println("[Wrapper.class] Started server " + server.getName() + " at wrapper " + name + "!");
+        System.out.println("[Wrapper.class] Started server " + server.getInfo().getName() + " at wrapper " + name + "!");
     }
 
     public void stopServer(Server server) {
         //Request server stop
         /* ... */
-        System.out.println("[Wrapper.class] Stopped server " + server.getName() + " from wrapper " + name + "!");
+        System.out.println("[Wrapper.class] Stopped server " + server.getInfo().getName() + " from wrapper " + name + "!");
     }
 
     
