@@ -1,4 +1,4 @@
-package eu.mcone.cloud.core.network;
+package eu.mcone.cloud.master.network;
 
 import eu.mcone.cloud.core.network.pipeline.Decoder;
 import eu.mcone.cloud.core.network.pipeline.Encoder;
@@ -6,15 +6,12 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.LengthFieldPrepender;
 import lombok.Getter;
 
 public class ServerBootstrap {
 
     @Getter
     private int port;
-    @Getter
-    private ChannelPacketHandler cph;
 
     public ServerBootstrap(int port) {
         this.port = port;
@@ -29,10 +26,9 @@ public class ServerBootstrap {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            cph = new ChannelPacketHandler();
                             ch.pipeline().addLast(new Decoder());
                             ch.pipeline().addLast(new Encoder());
-                            ch.pipeline().addLast(cph);
+                            ch.pipeline().addLast(new ChannelPacketHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

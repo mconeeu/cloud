@@ -28,12 +28,12 @@ public class Server {
     @Getter
     private int playercount;
 
-    public Server(UUID uuid, String name, Template template, int id, int ram, String wrapperName) {
+    public Server(UUID uuid, String name, Template template, int maxPlayers, int id, int ram, String wrapperName) {
         this.template = template;
         this.playercount = 0;
         this.wrapperName = wrapperName;
 
-        this.info = new ServerInfo(uuid, name, getTemplateName(), id, ram);
+        this.info = new ServerInfo(uuid, name, getTemplateName(), maxPlayers, id, ram);
 
         //Check if Wrapper is set
         if (this.wrapperName == null) {

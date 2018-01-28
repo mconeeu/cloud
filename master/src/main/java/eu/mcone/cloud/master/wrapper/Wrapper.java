@@ -19,6 +19,7 @@ public class Wrapper {
     @Getter
     private int port, ram, ramInUse;
 
+    @Getter
     private HashMap<UUID, Server> servers = new HashMap<>();
 
     public Wrapper(String name, String ip,int ram, int port) {

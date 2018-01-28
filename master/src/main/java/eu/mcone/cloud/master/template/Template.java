@@ -21,13 +21,14 @@ public class Template {
     @Getter
     private String name;
     @Getter
-    private int ram, min, max, emptyservers;
+    private int ram, maxPlayers, min, max, emptyservers;
     @Getter
     private boolean startup;
 
-    public Template(String name, int ram, int min, int max, int emptyservers, boolean startup) {
+    public Template(String name, int ram, int maxPlayers, int min, int max, int emptyservers, boolean startup) {
         this.name = name;
         this.ram = ram;
+        this.maxPlayers = maxPlayers;
         this.max = min;
         this.min = max;
         this.emptyservers = emptyservers;
@@ -52,7 +53,7 @@ public class Template {
                 UUID serverUUID = UUID.randomUUID();
 
                 //Create server object
-                Server server = new Server(serverUUID, servername, this, serverid, this.ram, null);
+                Server server = new Server(serverUUID, servername, this, maxPlayers, serverid, this.ram, null);
 
                 //Put Server Object in HashMap
                 this.servers.put(serverUUID, server);

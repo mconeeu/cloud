@@ -24,19 +24,19 @@ public class StaticServerManager {
 
                 //Create Server and store in HashMap
                 UUID uuid = UUID.randomUUID();
-                staticServers.put(uuid, new Server(uuid, rs.getString("name"), null, 0, rs.getInt("ram"), rs.getString("wrapper")));
+                staticServers.put(uuid, new Server(uuid, rs.getString("name"), null, rs.getInt("max"), 0, rs.getInt("ram"), rs.getString("wrapper")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public static void addStaticServer(String name, int ram, String wrappername) {
+    public static void addStaticServer(String name, int maxPlayers, int ram, String wrappername) {
         System.out.println("[StaticServerManager.class] Creating Static Server " + name + "...");
         MasterServer.mysql_main.update("INSERT INTO " + MasterServer.mysql_prefix + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + Integer.valueOf(ram).toString() + " , '" + wrappername + "');");
 
         UUID uuid = UUID.randomUUID();
-        staticServers.put(uuid, new Server(uuid, name, null, 0, ram, wrappername));
+        staticServers.put(uuid, new Server(uuid, name, null, maxPlayers, 0, ram, wrappername));
     }
 
     public static void deleteStaticServer(Server server) {
