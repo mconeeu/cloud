@@ -18,13 +18,13 @@ public class ServerManager {
         t.schedule(new TimerTask() {
             @Override
             public void run() {
-            for (Server server : WrapperServer.servers.values()) {
-                int playercount = server.getPlayerCount();
-                ServerState state = server.getInfo().getState();
+                for (Server server : WrapperServer.servers.values()) {
+                    int playercount = server.getPlayerCount();
+                    ServerState state = server.getInfo().getState();
 
-                //Send to master
-                /* ... */
-            }
+                    //Send to master
+                    /* ... */
+                }
             }
         }, 1000, 5000);
     }

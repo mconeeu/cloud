@@ -1,12 +1,14 @@
 package eu.mcone.cloud.core.network;
 
 import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacket;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import lombok.Getter;
 
 public enum Protocol {
-    SERVER_INFO(1, ServerInfoPacket.class);
+    SERVER_INFO(1, ServerInfoPacket.class),
+    SERVER_COMMAND_EXECUTE(2, ServerCommandExecutePacket.class);
 
     @Getter
     private int id;

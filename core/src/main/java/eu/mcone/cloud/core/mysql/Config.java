@@ -26,7 +26,7 @@ public class Config {
 
     public void createTable() {
         //Create Config table
-        this.mysql.update("CREATE TABLE IF NOT EXISTS `" + this.sqlTable + "` (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `key` VARCHAR(100) UNIQUE KEY, `value` VARCHAR(1000)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        this.mysql.update("CREATE TABLE IF NOT EXISTS `" + this.sqlTable + "` (`temapletId` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `key` VARCHAR(100) UNIQUE KEY, `value` VARCHAR(1000)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     }
 
     //Insert Config key and value

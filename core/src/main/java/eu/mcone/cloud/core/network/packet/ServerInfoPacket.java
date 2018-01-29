@@ -29,7 +29,7 @@ public class ServerInfoPacket extends Packet {
             out.writeUTF(serverInfo.getName());
             out.writeUTF(serverInfo.getState().toString());
             out.writeUTF(serverInfo.getTemplateName());
-            out.writeInt(serverInfo.getId());
+            out.writeInt(serverInfo.getTemplateID());
             out.writeInt(serverInfo.getRam());
             out.writeInt(serverInfo.getPort());
 
@@ -55,8 +55,9 @@ public class ServerInfoPacket extends Packet {
             int id = input.readInt();
             int ram = input.readInt();
             int port = input.readInt();
+            int maxplayers = input.readInt();
 
-            serverInfo = new ServerInfo(uuid, name, templateName, id, ram);
+            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, id, ram);
             serverInfo.setState(state);
             serverInfo.setPort(port);
         } catch (IOException e) {

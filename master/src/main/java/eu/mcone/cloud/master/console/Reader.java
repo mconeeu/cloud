@@ -5,12 +5,14 @@ import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
+import io.netty.buffer.ByteBuf;
 import javafx.scene.layout.Priority;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
+import java.util.UUID;
 
 /**
  * Created with IntelliJ IDE
@@ -32,9 +34,10 @@ public class Reader {
                         for (Template t : MasterServer.templates.values()) {
                             for (Server s : t.getServers().values()) {
                                 if (s.getInfo().getName().equalsIgnoreCase(line[1])) {
+                                    ServerCommandExecutePacket scep = new ServerCommandExecutePacket(s.getInfo().getUuid(), line[2]);
                                     System.out.println(MasterServer.connections.get(0).channel().remoteAddress().toString());
-                                    MasterServer.connections.get(0).channel().writeAndFlush(new ServerCommandExecutePacket(s.getInfo().getUuid(), line[2]));
-                                    System.out.println("sent new msg");
+                                    MasterServer.connections.get(0).channel().writeAndFlush(new ServerCommandExecutePacket(UUID.randomUUID(), line[2]));
+                                    System.out.println("Sent new command '" + line[2] + "' to server wrapper...");
                                     return;
                                 }
                             }
