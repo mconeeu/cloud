@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.wrapper.network;
 
 import eu.mcone.cloud.core.network.pipeline.Decoder;
@@ -13,9 +18,6 @@ public class ClientBootstrap {
 
     @Getter
     private int port;
-    @Getter
-    private ChannelPacketHandler cph;
-    private Channel ch;
 
     public ClientBootstrap(String host, int port) {
         this.port = port;
@@ -30,11 +32,9 @@ public class ClientBootstrap {
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            cph = new ChannelPacketHandler();
-
                             ch.pipeline().addLast(new Decoder());
                             ch.pipeline().addLast(new Encoder());
-                            ch.pipeline().addLast(cph);
+                            ch.pipeline().addLast(new ChannelPacketHandler());
                         }
                     });
 

@@ -4,6 +4,7 @@
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/master" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/plugin" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/wrapper" charset="UTF-8" />
   </component>
 </project>

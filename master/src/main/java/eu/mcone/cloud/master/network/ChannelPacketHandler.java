@@ -1,9 +1,16 @@
+/*
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.master.network;
 
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacket;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
+import eu.mcone.cloud.core.network.packet.WrapperRegisterPacket;
 import eu.mcone.cloud.master.MasterServer;
+import eu.mcone.cloud.master.wrapper.Wrapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,36 +22,28 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.jar.Pack200;
 
-/**
- * Created with IntelliJ IDE
- * Created on 28.01.2018
- * Copyright (c) 2018 Dominik L. All rights reserved
- * You are not allowed to decompile the code
- */
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        MasterServer.connections.add(ctx);
         System.out.println("new channel from " + ctx.channel().remoteAddress().toString());
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, Packet packet) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
         System.out.println("Channel read method in class ChannelPacketHandler MASTER");
         if (packet instanceof ServerInfoPacket) {
             ServerInfoPacket result = (ServerInfoPacket) packet;
             System.out.println("new ServerInfo received: " + result.getServerInfo().getName());
-        } else if (packet instanceof ServerCommandExecutePacket) {
-            ServerCommandExecutePacket result = (ServerCommandExecutePacket) packet;
-            System.out.println("new ServerCommandExecutePacket received: " + result.getCmd());
+        } else if (packet instanceof WrapperRegisterPacket) {
+            WrapperRegisterPacket result = (WrapperRegisterPacket) packet;
+            new Wrapper(ctx.channel(), result.getRam());
         }
     }
 
     @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Unregister ");
-        super.channelUnregistered(ctx);
+    public void channelUnregistered(ChannelHandlerContext ctx) {
+        System.out.println(ctx.channel().remoteAddress()+" unregistered");
     }
 
     @Override

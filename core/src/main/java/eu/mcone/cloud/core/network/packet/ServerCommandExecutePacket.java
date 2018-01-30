@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.core.network.packet;
 
 import eu.mcone.cloud.core.server.ServerInfo;
@@ -8,12 +13,6 @@ import lombok.Getter;
 import java.io.*;
 import java.util.UUID;
 
-/**
- * Created with IntelliJ IDE
- * Created on 28.01.2018
- * Copyright (c) 2018 Dominik L. All rights reserved
- * You are not allowed to decompile the code
- */
 public class ServerCommandExecutePacket extends Packet{
 
     @Getter

@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2017 Rufus Maiwald and the MC ONE Minecraftnetwork. All rights reserved.
- * You are not allowed to decompile the code.
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
  */
 
 package eu.mcone.cloud.core.mysql;
@@ -88,7 +88,7 @@ public class MySQL {
         return con != null;
     }
 
-    public void createCloudTables() {
+    public void createMasterTables() {
         //templates table
         update("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "_templates` (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(100) NOT NULL UNIQUE KEY, `max_players` int(5), `ram` int(8) NOT NULL, `min` int(5), `max` int(5), `emptyservers` int(3) NOT NULL, `startup` boolean NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         update("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "_static_servers` (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `name` varchar(100) NOT NULL, `max` int(5) NOT NULL, `ram` int(8) NOT NULL, `wrapper` varchar(100) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");

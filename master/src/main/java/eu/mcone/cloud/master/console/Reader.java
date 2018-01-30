@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.master.console;
 
 import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacket;
@@ -14,13 +19,6 @@ import java.io.InputStreamReader;
 import java.util.Scanner;
 import java.util.UUID;
 
-/**
- * Created with IntelliJ IDE
- * Created on 28.01.2018
- * Copyright (c) 2018 Dominik L. All rights reserved
- * You are not allowed to decompile the code
- */
-
 public class Reader {
 
     public Reader(){
@@ -34,9 +32,7 @@ public class Reader {
                         for (Template t : MasterServer.templates.values()) {
                             for (Server s : t.getServers().values()) {
                                 if (s.getInfo().getName().equalsIgnoreCase(line[1])) {
-                                    ServerCommandExecutePacket scep = new ServerCommandExecutePacket(s.getInfo().getUuid(), line[2]);
-                                    System.out.println(MasterServer.connections.get(0).channel().remoteAddress().toString());
-                                    MasterServer.connections.get(0).channel().writeAndFlush(new ServerCommandExecutePacket(UUID.randomUUID(), line[2]));
+                                    s.getWrapper().getChannel().writeAndFlush(new ServerCommandExecutePacket(s.getInfo().getUuid(), line[2]));
                                     System.out.println("Sent new command '" + line[2] + "' to server wrapper...");
                                     return;
                                 }

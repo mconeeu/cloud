@@ -1,22 +1,17 @@
 /*
- * Copyright (c) 2017 Rufus Maiwald and the MC ONE Minecraftnetwork. All rights reserved.
- * You are not allowed to decompile the code.
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
  */
 
 package eu.mcone.cloud.master;
 
-import eu.mcone.cloud.master.console.Reader;
-import eu.mcone.cloud.master.network.ChannelPacketHandler;
 import eu.mcone.cloud.master.network.ServerBootstrap;
-import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacket;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import eu.mcone.cloud.core.mysql.Config;
 import eu.mcone.cloud.core.mysql.MySQL;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,20 +24,17 @@ public class MasterServer {
 
     public static Config config;
 
-    public static List<ChannelHandlerContext> connections = new ArrayList<>();
     public static HashMap<String, Template> templates = new HashMap<>();
     public static HashMap<String, Wrapper> wrappers = new HashMap<>();
 
     public static void main(String args[]) {
-        Reader rd = new Reader();
-
         System.out.println("[Enable progress] Welcome to mc1cloud. Cloud is starting...");
         System.out.println("[Enable progress] Connecting to Database...");
         mysql_main = new MySQL("localhost", 3306, "cloud", "root", "", "cloudmaster");
         mysql_main.connect();
 
         System.out.println("[Enable progress] Creating necessary tables if not exists...");
-        mysql_main.createCloudTables();
+        mysql_main.createMasterTables();
 
         System.out.println("[Enable progress] Creating mysql config...");
         config = new Config(mysql_main, "mainconfig");

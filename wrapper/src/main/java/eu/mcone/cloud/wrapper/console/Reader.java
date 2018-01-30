@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.wrapper.console;
 
 import eu.mcone.cloud.wrapper.WrapperServer;
@@ -5,13 +10,6 @@ import eu.mcone.cloud.wrapper.WrapperServer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-/**
- * Created with IntelliJ IDE
- * Created on 28.01.2018
- * Copyright (c) 2018 Dominik L. All rights reserved
- * You are not allowed to decompile the code
- */
 
 public class Reader {
 
@@ -31,10 +29,10 @@ public class Reader {
 
                         }else if (line[1].equalsIgnoreCase("get")) {
                             if(line[2].equalsIgnoreCase("version")){
-                                System.out.println("Wrapper current version: " + WrapperServer.current_version);
+                                System.out.println("Wrapper current version: " + WrapperServer.getInstance().getCurrentVersion());
                             }else if (line[2].equalsIgnoreCase("local")) {
                                 if (line[3].equalsIgnoreCase("channeladdress")) {
-                                    String localChannelAddress = WrapperServer.connections.get(0).channel().localAddress().toString();
+                                    String localChannelAddress = WrapperServer.getInstance().getChannel().remoteAddress().toString();
                                     System.out.println("Wrapper localChannelAddress: " + localChannelAddress);
                                     return;
                                 }

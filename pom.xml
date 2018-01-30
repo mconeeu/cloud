@@ -41,6 +41,7 @@
         <module>master</module>
         <module>wrapper</module>
         <module>core</module>
+        <module>plugin</module>
     </modules>
 
     <dependencies>

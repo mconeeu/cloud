@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2017 Rufus Maiwald and the MC ONE Minecraftnetwork. All rights reserved.
- * You are not allowed to decompile the code.
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
  */
 
 package eu.mcone.cloud.master.server;
@@ -13,6 +13,7 @@ import eu.mcone.cloud.master.wrapper.WrapperManager;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.nio.channels.Channel;
 import java.util.UUID;
 
 public class Server {
@@ -25,12 +26,11 @@ public class Server {
     private Template template;
     @Getter @Setter
     private Wrapper wrapper = null;
-    @Getter
-    private int playercount;
+    @Getter @Setter
+    private Channel channel;
 
     public Server(UUID uuid, String name, Template template, int maxPlayers, int id, int ram, String wrapperName) {
         this.template = template;
-        this.playercount = 0;
         this.wrapperName = wrapperName;
 
         this.info = new ServerInfo(uuid, name, getTemplateName(), maxPlayers, id, ram);

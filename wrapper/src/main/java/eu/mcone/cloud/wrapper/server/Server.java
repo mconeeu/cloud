@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2017 Rufus Maiwald and the MC ONE Minecraftnetwork. All rights reserved.
- * You are not allowed to decompile the code.
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
  */
 
 package eu.mcone.cloud.wrapper.server;
@@ -11,6 +11,7 @@ import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.util.Var;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -20,10 +21,7 @@ import java.util.UUID;
 
 public class Server {
 
-    @Getter
-    private UUID uuid;
-
-    @Getter
+    @Getter @Setter
     private ServerInfo info;
 
     @Getter
@@ -34,9 +32,8 @@ public class Server {
 
     public Server(ServerInfo info) {
         this.info = info;
-        this.uuid = info.getUuid();
+        this.getInfo().setPort(calculatePort());
 
-        WrapperServer.servers.put(this.uuid, this);
         System.out.println("[Server.class] New Server " + this.info.getName() + " initialized! Creating Directories...");
         /* ... */
 
@@ -48,9 +45,6 @@ public class Server {
             System.out.println("[Server.class] No template set for Server " + this.info.getName() + "! Starting Server...");
 
         }
-
-        //Send port to master
-        /* ... */
     }
 
     public void start() {
@@ -90,7 +84,7 @@ public class Server {
                     "-Dio.netty.recycler.maxCapacity=0 ",
                     "-Dio.netty.recycler.maxCapacity.default=0",
                     "-Djline.terminal=jline.UnsupportedTerminal",
-                    "-Xmx1G",
+                    "-Xmx"+info.getRam()+"M",
                     server_directory + "\\spigot.jar");
 
             pb.redirectErrorStream(true);
@@ -156,7 +150,6 @@ public class Server {
             ps.store(outputstream, "MCONE_WRAPPER");
 
             System.out.println("[WRAPPER] Set all server properties");
-            return;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -165,7 +158,7 @@ public class Server {
     public String isAlive() {
         String msg = null;
 
-        if (p.isAlive() == true) {
+        if (p.isAlive()) {
             msg = "Process " + pb.inheritIO() + " is Alive";
             return msg;
         } else {
@@ -185,7 +178,7 @@ public class Server {
 
     }
 
-    public void stopserver() {
+    public void stop() {
         try {
             System.out.println("[WRAPPER] Send command 'Stop' to server " + this.info.getName());
             this.sendcommand("stop");
@@ -221,11 +214,15 @@ public class Server {
 
     public void delete() {
         this.forceStop();
-        WrapperServer.servers.remove(this.uuid);
+        WrapperServer.getInstance().getServers().remove(this);
     }
 
-    public int getPlayerCount() {
-        /* ... */
-        return 0;
+    private int calculatePort() {
+        int port = 4000;
+        while (WrapperServer.getInstance().getServers().iterator().hasNext()) port = WrapperServer.getInstance().getServers().iterator().next().getInfo().getPort();
+
+        port++;
+        return port;
     }
+
 }

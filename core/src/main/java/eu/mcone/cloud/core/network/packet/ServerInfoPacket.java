@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.core.network.packet;
 
 import eu.mcone.cloud.core.server.ServerInfo;
@@ -32,6 +37,7 @@ public class ServerInfoPacket extends Packet {
             out.writeInt(serverInfo.getTemplateID());
             out.writeInt(serverInfo.getRam());
             out.writeInt(serverInfo.getPort());
+            out.writeInt(serverInfo.getMaxPlayers());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -52,12 +58,12 @@ public class ServerInfoPacket extends Packet {
             String name = input.readUTF();
             ServerState state = ServerState.valueOf(input.readUTF());
             String templateName = input.readUTF();
-            int id = input.readInt();
+            int templateId = input.readInt();
             int ram = input.readInt();
             int port = input.readInt();
             int maxplayers = input.readInt();
 
-            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, id, ram);
+            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram);
             serverInfo.setState(state);
             serverInfo.setPort(port);
         } catch (IOException e) {
