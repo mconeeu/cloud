@@ -29,7 +29,7 @@ public class ServerManager {
 
                     for (Server server : template.getServers().values()) {
                         //Save actual playercount from every server in an hashmap
-                        playercount.put(server, server.getPlayercount());
+                        //playercount.put(server, server);
                     }
 
                     int emptycount = 0;
@@ -52,7 +52,9 @@ public class ServerManager {
                         int deleteServers = emptycount - template.getEmptyservers();
 
                         for (HashMap.Entry<UUID, Server> serverEntry : template.getServers().entrySet()) {
-                            if (serverEntry.getValue().getPlayercount()==0 && deleteServers>0) {
+
+                            /*
+                            if (serverEntry.getValue().get==0 && deleteServers>0) {
                                 deleteServers--;
 
                                 //If the minimum server count is not reached after deleting server, delete server.
@@ -60,6 +62,7 @@ public class ServerManager {
                                     template.deleteServer(serverEntry.getValue().getInfo().getUuid());
                                 }
                             }
+                            */
                         }
                     }
                 }

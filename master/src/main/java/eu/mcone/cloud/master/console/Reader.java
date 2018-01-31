@@ -28,7 +28,7 @@ public class Reader {
             while (true) {
                 try {
                     String[] line = reader.readLine().split(" ");
-                    if (line[0].equalsIgnoreCase("cmd")) {
+                    if (line[0].equalsIgnoreCase("\\cmd")) {
                         for (Template t : MasterServer.templates.values()) {
                             for (Server s : t.getServers().values()) {
                                 if (s.getInfo().getName().equalsIgnoreCase(line[1])) {

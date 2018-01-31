@@ -9,13 +9,17 @@ import eu.mcone.cloud.core.network.packet.*;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.server.Server;
+import eu.mcone.cloud.wrapper.util.Var;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+
+import java.util.UUID;
 
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+        Var.getConnections().add(ctx);
         WrapperServer.getInstance().setChannel(ctx.channel());
         ctx.writeAndFlush(new WrapperRegisterPacket(WrapperServer.getInstance().getRam()));
         System.out.println("new channel to " + ctx.channel().remoteAddress().toString());
@@ -24,7 +28,6 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Unregister");
-        super.channelUnregistered(ctx);
     }
 
     @Override
@@ -39,11 +42,10 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             for (Server s : WrapperServer.getInstance().getServers()) {
                 if (s.getInfo().getUuid().equals(info.getUuid())) {
                     s.setInfo(info);
-                    return;
                 }
             }
 
-            new Server(result.getServerInfo());
+            //new Server(result.getServerInfo());
         } else if (packet instanceof ServerChangeStatePacket) {
             ServerChangeStatePacket result = (ServerChangeStatePacket) packet;
 
@@ -60,10 +62,11 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
         } else if (packet instanceof ServerCommandExecutePacket) {
             ServerCommandExecutePacket result = (ServerCommandExecutePacket) packet;
             System.out.println("new ServerCommandExecutePacket received: " + result.getCmd());
+            WrapperServer.getInstance().getSr().sendcommand(UUID.randomUUID(), "Stop");
 
             for (Server s : WrapperServer.getInstance().getServers()) {
                 if (s.getInfo().getUuid().equals(result.getServerUuid())) {
-                    s.sendcommand(result.getCmd());
+
                 }
             }
         }

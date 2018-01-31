@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master;
 
+import eu.mcone.cloud.master.console.Reader;
 import eu.mcone.cloud.master.network.ServerBootstrap;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
@@ -28,6 +29,7 @@ public class MasterServer {
     public static HashMap<String, Wrapper> wrappers = new HashMap<>();
 
     public static void main(String args[]) {
+        Reader rd = new Reader();
         System.out.println("[Enable progress] Welcome to mc1cloud. Cloud is starting...");
         System.out.println("[Enable progress] Connecting to Database...");
         mysql_main = new MySQL("localhost", 3306, "cloud", "root", "", "cloudmaster");
