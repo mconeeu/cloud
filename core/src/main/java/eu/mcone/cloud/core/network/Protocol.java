@@ -11,9 +11,11 @@ import lombok.Getter;
 
 public enum Protocol {
     WRAPPER_REGISTER(0, WrapperRegisterPacket.class),
-    SERVER_INFO(1, ServerInfoPacket.class),
-    SERVER_COMMAND_EXECUTE(2, ServerCommandExecutePacket.class),
-    SERVER_CHANGE_STATE(3, ServerChangeStatePacket.class);
+    WRAPPER_SHUTDOWN(1, WrapperShutdownPacket.class),
+    SERVER_INFO(2, ServerInfoPacket.class),
+    SERVER_COMMAND_EXECUTE(3, ServerCommandExecutePacket.class),
+    SERVER_CHANGE_STATE(4, ServerChangeStatePacket.class),
+    SERVER_PLAYER_COUNT_UPDATE(5, ServerPlayerCountUpdatePacket.class);
 
     @Getter
     private int id;

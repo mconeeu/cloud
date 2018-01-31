@@ -6,12 +6,14 @@
 package eu.mcone.cloud.master;
 
 import eu.mcone.cloud.master.network.ServerBootstrap;
+import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import eu.mcone.cloud.core.mysql.Config;
 import eu.mcone.cloud.core.mysql.MySQL;
+import lombok.Getter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,15 +21,25 @@ import java.util.*;
 
 public class MasterServer {
 
+    @Getter
+    private static MasterServer instance;
     public static String mysql_prefix = "cloudmaster";
     public static MySQL mysql_main;
 
     public static Config config;
 
-    public static HashMap<String, Template> templates = new HashMap<>();
-    public static HashMap<String, Wrapper> wrappers = new HashMap<>();
+    @Getter
+    private List<Template> templates = new ArrayList<>();
+    @Getter
+    private List<Wrapper> wrappers = new ArrayList<>();
 
     public static void main(String args[]) {
+        new MasterServer();
+    }
+
+    private MasterServer() {
+        instance = this;
+
         System.out.println("[Enable progress] Welcome to mc1cloud. Cloud is starting...");
         System.out.println("[Enable progress] Connecting to Database...");
         mysql_main = new MySQL("localhost", 3306, "cloud", "root", "", "cloudmaster");
@@ -76,6 +88,17 @@ public class MasterServer {
         //Insert into database
         keys.forEach(config::insert);
         System.out.println("[Enable progress] Config Values inserted!");
+    }
+
+    public Server getServer(UUID uuid) {
+        for (Template t : templates) {
+            for (Server s : t.getServers()) {
+                if (s.getInfo().getUuid().equals(uuid)) {
+                    return s;
+                }
+            }
+        }
+        return null;
     }
 
 }

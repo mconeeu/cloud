@@ -7,6 +7,7 @@ package eu.mcone.cloud.plugin.bungee;
 
 import eu.mcone.cloud.plugin.CloudPlugin;
 import eu.mcone.cloud.plugin.network.ClientBootstrap;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
 public class BungeePlugin extends Plugin {
@@ -16,6 +17,8 @@ public class BungeePlugin extends Plugin {
     @Override
     public void onEnable() {
         instance = new CloudPlugin();
+
+        ProxyServer.getInstance().getPluginManager().registerListener(this, new PlayerListener(this.instance));
     }
 
     @Override

@@ -15,6 +15,8 @@ public class BukkitPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = new CloudPlugin();
+
+        getServer().getPluginManager().registerEvents(new PlayerListener(this.instance), this);
     }
 
     @Override

@@ -34,7 +34,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
         if (packet instanceof ServerInfoPacket) {
             ServerInfoPacket result = (ServerInfoPacket) packet;
             ServerInfo info = result.getServerInfo();
-            System.out.println("new ServerInfo received: " + result.getServerInfo().getName());
+            System.out.println("new ServerInfoPacket (UUID: "+result.getServerInfo().getName()+", NAME: "+result.getServerInfo().getName()+")");
 
             for (Server s : WrapperServer.getInstance().getServers()) {
                 if (s.getInfo().getUuid().equals(info.getUuid())) {
@@ -46,6 +46,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             new Server(result.getServerInfo());
         } else if (packet instanceof ServerChangeStatePacket) {
             ServerChangeStatePacket result = (ServerChangeStatePacket) packet;
+            System.out.println("new ServerChangeStatePacket (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
 
             for (Server s : WrapperServer.getInstance().getServers()) {
                 if (s.getInfo().getUuid().equals(result.getServerUuid())) {
@@ -54,18 +55,21 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                         case STOP: s.stop();
                         case FORCESTOP: s.forceStop();
                         case RESTART: s.restart();
+                        case DELETE: s.delete();
                     }
                 }
             }
         } else if (packet instanceof ServerCommandExecutePacket) {
             ServerCommandExecutePacket result = (ServerCommandExecutePacket) packet;
-            System.out.println("new ServerCommandExecutePacket received: " + result.getCmd());
+            System.out.println("new ServerCommandExecutePacket (UUID: "+result.getServerUuid()+", COMMAND: "+result.getCmd()+")");
 
-            for (Server s : WrapperServer.getInstance().getServers()) {
-                if (s.getInfo().getUuid().equals(result.getServerUuid())) {
-                    s.sendcommand(result.getCmd());
-                }
+            Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
+            if (s != null) {
+                s.sendcommand(result.getCmd());
             }
+        } else if (packet instanceof WrapperShutdownPacket) {
+            System.out.println("[ChannelPacketHandler] Received WrapperShutdownPacket from master. Shutting down...");
+            WrapperServer.getInstance().shutdown();
         }
     }
 

@@ -44,6 +44,14 @@
         <module>plugin</module>
     </modules>
 
+    <distributionManagement>
+        <repository>
+            <id>mcone-repo</id>
+            <name>MC ONE Repo</name>
+            <url>http://repo.mcone.eu/nexus/content/repositories/system/</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>

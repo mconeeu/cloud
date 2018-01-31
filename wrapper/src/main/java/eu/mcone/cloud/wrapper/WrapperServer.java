@@ -14,6 +14,8 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class WrapperServer {
 
@@ -38,9 +40,6 @@ public class WrapperServer {
         instance = this;
         this.ram = ram;
 
-        //Server s = new Server(new ServerInfo(UUID.randomUUID(),"Skypvp", "Test", 5, 10, 1));
-        //s.start();
-
         System.out.println("[Enable progress] Welcome to mc1cloud. Wrapper is starting...");
         System.out.println("[Enable progress] Connecting to Database...");
         mysql_main = new MySQL("localhost", 3306, "cloud", "root", "", "cloudwrapper");
@@ -52,8 +51,38 @@ public class WrapperServer {
         new ClientBootstrap("localhost", 4567);
     }
 
+    public void shutdown() {
+        System.out.println("[Shutdowm progress] Closing channel to Master...");
+        channel.close();
+
+        System.out.println("[Shutdowm progress] Stopping running servers...");
+        for (Server s : servers) {
+            s.sendcommand("stop");
+        }
+
+        try {
+            System.out.println("[Shutdowm progress] Waiting for servers to stop...");
+            TimeUnit.SECONDS.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("[Shutdowm progress] Stopping instance...");
+        System.out.println("[Shutdowm progress] Good bye!");
+        System.exit(0);
+    }
+
     public static WrapperServer getInstance() {
         return instance;
+    }
+
+    public Server getServer(UUID uuid) {
+        for (Server s : servers) {
+            if (s.getInfo().getUuid().equals(uuid)) {
+                return s;
+            }
+        }
+        return null;
     }
 
 }
