@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.wrapper;
 
+import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.cloud.core.mysql.MySQL;
@@ -25,6 +26,9 @@ public class WrapperServer {
     @Getter
     private String currentVersion = "1.0.0-SNAPSHOT";
 
+    @Getter
+    private Server server;
+
     @Getter @Setter
     private Channel channel;
     @Getter
@@ -39,9 +43,6 @@ public class WrapperServer {
     private WrapperServer(int ram) {
         instance = this;
         this.ram = ram;
-
-        //Server s = new Server(new ServerInfo(UUID.randomUUID(),"Skypvp", "Test", 5, 10, 1));
-        //s.start();
 
         System.out.println("[Enable progress] Welcome to mc1cloud. Wrapper is starting...");
         System.out.println("[Enable progress] Connecting to Database...");

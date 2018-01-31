@@ -93,7 +93,7 @@ public class ServerManager {
                     }
                 }
             }
-        }, 5, 5, TimeUnit.SECONDS));
+        }, 5, 5, TimeUnit.SECONDS)).start();
     }
 
     //Returns the best wrapper with less ram

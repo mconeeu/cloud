@@ -41,6 +41,7 @@ public class Server {
     public Server(ServerInfo info) {
         this.info = info;
         this.getInfo().setPort(calculatePort());
+        WrapperServer.getInstance().getServers().add(this);
 
         System.out.println("[Server.class] New Server " + this.info.getName() + " initialized! Creating Directories...");
         /* ... */
@@ -105,8 +106,6 @@ public class Server {
 
             this.SetConfigValues(server_directory);
 
-            this.server_process.put(server_uuid, p);
-
             p.waitFor();
 
         } catch (Exception e) {
@@ -115,7 +114,7 @@ public class Server {
     }
 
     private void SetConfigValues(File path) {
-        sendResult("Start spigot server", ServerResultPacket.Result.INFORMATION);
+        this.sendResult("Start spigot server", ServerResultPacket.Result.INFORMATION);
         UUID server_uuid = info.getUuid();
         int server_port = info.getPort();
         int server_templateid = info.getTemplateID();
@@ -163,24 +162,23 @@ public class Server {
         }
     }
 
-    public void sendcommand(UUID server_uuid, String command) {
+    public void sendcommand(String command) {
         this.sendResult("Send command Method in class Server", ServerResultPacket.Result.INFORMATION);
-        if(server_process.containsKey(server_uuid)){
-            try (BufferedWriter input = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()))) {
-                input.write(command);
-                System.out.println("[WRAPPER] Send command '" + command + "' to server " + this.info.getName());
-            } catch (IOException e) {
-                System.out.println("[WRAPPER] Error in method SendCommand");
-                e.printStackTrace();
-            }
-        }else{
-            System.out.println("");
+
+        /*
+        try (BufferedWriter input = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()))) {
+            input.write(command);
+            System.out.println("[WRAPPER] Send command '" + command + "' to server " + this.info.getName());
+        } catch (IOException e) {
+            System.out.println("[WRAPPER] Error in method SendCommand");
+            e.printStackTrace();
         }
+        */
     }
 
     private void sendResult(String message, ServerResultPacket.Result result){
         try{
-            Var.getConnections().get(0).channel().writeAndFlush(new ServerResultPacket("Server.class", message, result));
+            WrapperServer.getInstance().getChannel().writeAndFlush(new ServerResultPacket("Server.class", message, result));
             System.out.println("[WRAPPER] Send ServerResultPacket to master");
         }catch(Exception e){
             e.printStackTrace();

@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master;
 
+import eu.mcone.cloud.master.console.Reader;
 import eu.mcone.cloud.master.network.ServerBootstrap;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.server.ServerManager;
