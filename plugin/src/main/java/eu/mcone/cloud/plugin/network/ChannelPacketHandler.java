@@ -21,7 +21,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         instance.setChannel(ctx.channel());
-        ctx.writeAndFlush(new ServerRegisterPacket());
+        ctx.writeAndFlush(new ServerRegisterPacket(instance.getServerUuid(), instance.getServerPort()));
         System.out.println("new channel to " + ctx.channel().remoteAddress().toString());
     }
 

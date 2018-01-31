@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.wrapper;
 
-import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.cloud.core.mysql.MySQL;
@@ -16,6 +15,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class WrapperServer {
 
@@ -28,8 +28,6 @@ public class WrapperServer {
     @Getter @Setter
     private Channel channel;
     @Getter
-    private Server sr;
-    @Getter
     private int ram;
     @Getter
     private List<Server> servers = new ArrayList<>();
@@ -41,9 +39,6 @@ public class WrapperServer {
     private WrapperServer(int ram) {
         instance = this;
         this.ram = ram;
-
-        this.sr = new Server(new ServerInfo(UUID.fromString("5139fcd7-7c3f-4cd4-8d76-5f365c36d9e5"), "test", "Test", 10, 10, 1));
-        servers.add(sr);
 
         //Server s = new Server(new ServerInfo(UUID.randomUUID(),"Skypvp", "Test", 5, 10, 1));
         //s.start();
@@ -59,8 +54,38 @@ public class WrapperServer {
         new ClientBootstrap("localhost", 4567);
     }
 
+    public void shutdown() {
+        System.out.println("[Shutdowm progress] Closing channel to Master...");
+        channel.close();
+
+        System.out.println("[Shutdowm progress] Stopping running servers...");
+        for (Server s : servers) {
+            s.sendcommand("stop");
+        }
+
+        try {
+            System.out.println("[Shutdowm progress] Waiting for servers to stop...");
+            TimeUnit.SECONDS.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("[Shutdowm progress] Stopping instance...");
+        System.out.println("[Shutdowm progress] Good bye!");
+        System.exit(0);
+    }
+
     public static WrapperServer getInstance() {
         return instance;
+    }
+
+    public Server getServer(UUID uuid) {
+        for (Server s : servers) {
+            if (s.getInfo().getUuid().equals(uuid)) {
+                return s;
+            }
+        }
+        return null;
     }
 
 }

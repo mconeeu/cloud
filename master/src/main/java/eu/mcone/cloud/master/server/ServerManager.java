@@ -11,6 +11,8 @@ import eu.mcone.cloud.master.wrapper.WrapperManager;
 import eu.mcone.cloud.master.MasterServer;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ServerManager {
 
@@ -18,98 +20,92 @@ public class ServerManager {
 
     //creates or deletes empty servers for or from templates and tries to start servers from serverWaitList
     public ServerManager() {
-        final Timer t = new Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                for (HashMap.Entry<String, Template> templateEntry : MasterServer.templates.entrySet()) {
-                    Template template = templateEntry.getValue();
+        new Thread(() -> Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            for (Template t : MasterServer.getInstance().getTemplates()) {
+                HashMap<Server, Integer> playercount = new HashMap<>();
 
-                    HashMap<Server, Integer> playercount = new HashMap<>();
-
-                    for (Server server : template.getServers().values()) {
-                        //Save actual playercount from every server in an hashmap
-                        //playercount.put(server, server);
-                    }
-
-                    int emptycount = 0;
-
-                    for (Integer i : playercount.values()) {
-                        //Count the amount of servers with 0 players.
-                        if (i.equals(0)) {
-                            emptycount++;
-                        }
-                    }
-
-                    //If the amount of empty servers is smaller then the set amount, create more empty servers
-                    if (emptycount < template.getEmptyservers()) {
-                        //If the maximum server count is not reached after adding server, create server
-                        if (template.getServers().size()+1 <= template.getMax()) {
-                            template.createServer(1);
-                        }
-                    //Else if the amount of empty servers is bigger then the set amount, delete empty servers
-                    } else if (emptycount > template.getEmptyservers()) {
-                        int deleteServers = emptycount - template.getEmptyservers();
-
-                        for (HashMap.Entry<UUID, Server> serverEntry : template.getServers().entrySet()) {
-
-                            /*
-                            if (serverEntry.getValue().get==0 && deleteServers>0) {
-                                deleteServers--;
-
-                                //If the minimum server count is not reached after deleting server, delete server.
-                                if (template.getServers().size()-1 >= template.getMin()) {
-                                    template.deleteServer(serverEntry.getValue().getInfo().getUuid());
-                                }
-                            }
-                            */
-                        }
+                for (Server s : t.getServers()) {
+                    //Save actual playercount from every server in an hashmap
+                    if (s.getPlayerCount() >= 0) {
+                        playercount.put(s, s.getPlayerCount());
                     }
                 }
 
-                for (HashMap.Entry<Server, String> serverWrapperEntry : serverWaitList.entrySet()) {
-                    Server server = serverWrapperEntry.getKey();
-                    String wrapperName = serverWrapperEntry.getValue();
+                int emptycount = 0;
 
-                    if (wrapperName == null) {
-                        Wrapper bestwrapper = getBestWrapper();
+                for (Integer i : playercount.values()) {
+                    //Count the amount of servers with 0 players.
+                    if (i.equals(0)) {
+                        emptycount++;
+                    }
+                }
 
-                        if (bestwrapper != null) {
-                            server.setWrapper(bestwrapper);
-                            serverWaitList.remove(server);
-                            System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
-                            bestwrapper.createServer(server);
-                        } else {
-                            System.out.println("[ServerManager.class] No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
-                        }
-                    } else {
-                        Wrapper wrapper = WrapperManager.getWrapperbyString(wrapperName);
+                //If the amount of empty servers is smaller then the set amount, create more empty servers
+                if (emptycount < t.getEmptyservers()) {
+                    //If the maximum server count is not reached after adding server, create server
+                    if (t.getServers().size()+1 <= t.getMax()) {
+                        t.createServer(1);
+                    }
+                    //Else if the amount of empty servers is bigger then the set amount, delete empty servers
+                } else if (emptycount > t.getEmptyservers()) {
+                    int deleteServers = emptycount - t.getEmptyservers();
 
-                        if (wrapper != null) {
-                            server.setWrapper(wrapper);
-                            serverWaitList.remove(server);
-                            System.out.println("[ServerManager.class] Found explicit wrapper " + wrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
-                            wrapper.createServer(server);
-                        } else {
-                            System.out.println("[ServerManager.class] Explicit wrapper " + wrapperName + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
+                    for (Server s : t.getServers()) {
+                        if (s.getPlayerCount()==0 && deleteServers>0) {
+                            deleteServers--;
+
+                            //If the minimum server count is not reached after deleting server, delete server.
+                            if (t.getServers().size()-1 >= t.getMin()) {
+                                t.deleteServer(s);
+                            }
                         }
                     }
                 }
             }
-        }, 1000, 5000);
+
+            for (HashMap.Entry<Server, String> serverWrapperEntry : serverWaitList.entrySet()) {
+                Server server = serverWrapperEntry.getKey();
+                String wrapperName = serverWrapperEntry.getValue();
+
+                if (wrapperName == null) {
+                    Wrapper bestwrapper = getBestWrapper();
+
+                    if (bestwrapper != null) {
+                        server.setWrapper(bestwrapper);
+                        serverWaitList.remove(server);
+                        System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                        bestwrapper.createServer(server);
+                        server.start();
+                    } else {
+                        System.out.println("[ServerManager.class] No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
+                    }
+                } else {
+                    Wrapper wrapper = WrapperManager.getWrapperbyString(wrapperName);
+
+                    if (wrapper != null) {
+                        server.setWrapper(wrapper);
+                        serverWaitList.remove(server);
+                        System.out.println("[ServerManager.class] Found explicit wrapper " + wrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                        wrapper.createServer(server);
+                        server.start();
+                    } else {
+                        System.out.println("[ServerManager.class] Explicit wrapper " + wrapperName + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
+                    }
+                }
+            }
+        }, 5, 5, TimeUnit.SECONDS));
     }
 
     //Returns the best wrapper with less ram
     private static Wrapper getBestWrapper() {
         HashMap<Wrapper, Integer> wrappers = new HashMap<>();
 
-        for (HashMap.Entry<String, Wrapper> entry : MasterServer.wrappers.entrySet()) {
-            Wrapper wrapper = entry.getValue();
-            int difference = wrapper.getRam() - wrapper.getRamInUse();
+        for (Wrapper w : MasterServer.getInstance().getWrappers()) {
+            int difference = w.getRam() - w.getRamInUse();
 
             //Exclude wrappers which ram is nearly full
             if (difference > 100) {
-                wrappers.put(wrapper, wrapper.getRam() - wrapper.getRamInUse());
+                wrappers.put(w, w.getRam() - w.getRamInUse());
             }
         }
 

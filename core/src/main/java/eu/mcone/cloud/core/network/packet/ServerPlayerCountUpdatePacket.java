@@ -9,20 +9,16 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.UUID;
 
-public class ServerRegisterPacket extends Packet {
+public class ServerPlayerCountUpdatePacket extends Packet {
 
     @Getter
-    private UUID serverUuid;
-    @Getter
-    private int port;
+    private int playerCount;
 
-    public ServerRegisterPacket() {}
+    public ServerPlayerCountUpdatePacket() {}
 
-    public ServerRegisterPacket(UUID serverUuid, int port) {
-        this.serverUuid = serverUuid;
-        this.port = port;
+    public ServerPlayerCountUpdatePacket(int playerCount) {
+        this.playerCount = playerCount;
     }
 
     @Override
@@ -31,8 +27,7 @@ public class ServerRegisterPacket extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(serverUuid.toString());
-            out.writeInt(port);
+            out.writeInt(playerCount);
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -49,11 +44,9 @@ public class ServerRegisterPacket extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            serverUuid = UUID.fromString(input.readUTF());
-            port = input.readInt();
+            playerCount = input.readInt();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }

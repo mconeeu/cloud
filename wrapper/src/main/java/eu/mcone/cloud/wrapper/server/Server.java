@@ -51,15 +51,12 @@ public class Server {
 
         } else {
             System.out.println("[Server.class] No template set for Server " + this.info.getName() + "! Starting Server...");
-
         }
     }
 
     public void start() {
-        UUID server_uuid = info.getUuid();
         String server_name = info.getName();
         int port = info.getPort();
-        int server_id = info.getTemplateID();
         int ram = info.getRam();
 
         try {

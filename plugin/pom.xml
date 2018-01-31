@@ -42,14 +42,6 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>mcone-repo</id>
-            <name>MC ONE Repo</name>
-            <url>http://repo.mcone.eu/nexus/content/repositories/system/</url>
-        </repository>
-    </distributionManagement>
-
     <repositories>
         <repository>
             <id>spigot-repo</id>
@@ -91,12 +83,6 @@
             <artifactId>bungeecord-api</artifactId>
             <version>1.12-SNAPSHOT</version>
             <type>javadoc</type>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>2.7.4</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

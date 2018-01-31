@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.core.network.packet;
 
-import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
@@ -20,7 +19,7 @@ public class ServerChangeStatePacket extends Packet {
     private State state;
 
     public enum State {
-        START, STOP, FORCESTOP, RESTART
+        START, STOP, FORCESTOP, RESTART, DELETE
     }
 
     public ServerChangeStatePacket() {}

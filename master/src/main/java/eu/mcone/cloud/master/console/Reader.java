@@ -28,9 +28,9 @@ public class Reader {
             while (true) {
                 try {
                     String[] line = reader.readLine().split(" ");
-                    if (line[0].equalsIgnoreCase("\\cmd")) {
-                        for (Template t : MasterServer.templates.values()) {
-                            for (Server s : t.getServers().values()) {
+                    if (line[0].equalsIgnoreCase("cmd")) {
+                        for (Template t : MasterServer.getInstance().getTemplates()) {
+                            for (Server s : t.getServers()) {
                                 if (s.getInfo().getName().equalsIgnoreCase(line[1])) {
                                     s.getWrapper().getChannel().writeAndFlush(new ServerCommandExecutePacket(s.getInfo().getUuid(), line[2]));
                                     System.out.println("Sent new command '" + line[2] + "' to server wrapper...");

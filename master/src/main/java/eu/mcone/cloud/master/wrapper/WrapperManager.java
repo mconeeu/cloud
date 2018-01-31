@@ -8,13 +8,18 @@ package eu.mcone.cloud.master.wrapper;
 import eu.mcone.cloud.master.MasterServer;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class WrapperManager {
 
     public static Wrapper getWrapperbyString(String wrapperName) {
-        HashMap<String, Wrapper> wrappers = MasterServer.wrappers;
+        for (Wrapper w : MasterServer.getInstance().getWrappers()) {
+            if (w.getName().equalsIgnoreCase(wrapperName)) {
+                return w;
+            }
+        }
 
-        return wrappers.getOrDefault(wrapperName, null);
+        return null;
     }
 
 }

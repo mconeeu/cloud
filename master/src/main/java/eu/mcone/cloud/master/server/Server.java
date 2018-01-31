@@ -10,10 +10,10 @@ import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import eu.mcone.cloud.master.wrapper.WrapperManager;
+import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.nio.channels.Channel;
 import java.util.UUID;
 
 public class Server {
@@ -26,6 +26,8 @@ public class Server {
     private Template template;
     @Getter @Setter
     private Wrapper wrapper = null;
+    @Getter @Setter
+    private int playerCount = -1;
     @Getter @Setter
     private Channel channel;
 
