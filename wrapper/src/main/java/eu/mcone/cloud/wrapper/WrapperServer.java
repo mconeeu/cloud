@@ -5,7 +5,8 @@
 
 package eu.mcone.cloud.wrapper;
 
-import eu.mcone.cloud.core.server.ServerInfo;
+import eu.mcone.cloud.core.system.OS;
+import eu.mcone.cloud.wrapper.directorymanager.DirectoryCreator;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.cloud.core.mysql.MySQL;
@@ -41,6 +42,12 @@ public class WrapperServer {
     }
 
     private WrapperServer(int ram) {
+        //OS os = new OS();
+
+        DirectoryCreator dc = new DirectoryCreator();
+
+        //Reader rd = new Reader();
+
         instance = this;
         this.ram = ram;
 

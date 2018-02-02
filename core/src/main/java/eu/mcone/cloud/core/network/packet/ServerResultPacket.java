@@ -20,9 +20,12 @@ public class ServerResultPacket extends Packet {
     private String resultClass;
 
     public enum Result {
+        ERROR,
+        COOMMAND_ERROR,
+        SERVER_ERROR,
         COMMAND,
         INFORMATION,
-        ERROR,
+        SUCCESSFUL,
     }
 
     public ServerResultPacket() {}

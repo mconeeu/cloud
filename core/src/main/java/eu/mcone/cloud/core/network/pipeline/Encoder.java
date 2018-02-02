@@ -14,7 +14,6 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class Encoder extends MessageToByteEncoder<Packet> {
     @Override
     protected void encode(ChannelHandlerContext ctx, Packet packet, ByteBuf out) {
-        System.out.println("Encoding packet...");
         int packetID = Protocol.getIDByClass(packet.getClass());
 
         if (packetID > -1) {

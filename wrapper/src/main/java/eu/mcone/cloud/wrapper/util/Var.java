@@ -5,17 +5,22 @@
 
 package eu.mcone.cloud.wrapper.util;
 
-import io.netty.channel.ChannelHandlerContext;
-import lombok.Getter;
+import eu.mcone.cloud.wrapper.directorymanager.DirectoryCreator;
 
-import java.nio.channels.Channel;
-import java.util.ArrayList;
+import java.io.File;
 
 public class Var {
 
-    @Getter
-    private static ArrayList<ChannelHandlerContext> connections = new ArrayList<>();
+    public static String getSystemPath(){
+        try{
+            File path = new File(DirectoryCreator.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()
+                    .replaceFirst("/", "")
+                    .replace("wrapper.jar", ""));
 
-    public static final String home_directory = System.getProperty("user.home");
-
+            return path.toString();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

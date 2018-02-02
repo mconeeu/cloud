@@ -53,10 +53,10 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             if (s != null) {
                 switch (result.getState()) {
                     case START: s.start();
-                    case STOP: s.stop();
-                    case FORCESTOP: s.forceStop();
-                    case RESTART: s.restart();
-                    case DELETE: s.delete();
+                    //case STOP: s.stop();
+                    //case FORCESTOP: s.forceStop();
+                    //case RESTART: s.restart();
+                    //case DELETE: s.delete();
                 }
             } else {
                 System.out.println("s == null");

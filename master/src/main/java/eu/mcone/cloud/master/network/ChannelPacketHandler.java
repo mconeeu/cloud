@@ -46,7 +46,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
         } else if(packet instanceof ServerResultPacket) {
             ServerResultPacket result = (ServerResultPacket) packet;
-            System.out.println("[" + result.getResultClass() + "] " + result.getMessage() + " ResultType: " + result.getResult());
+            System.out.println("[" + result.getResultClass() + "] >> " + result.getMessage() + " // " + result.getResult());
         }
     }
 
