@@ -5,7 +5,7 @@
 
 package eu.mcone.cloud.plugin.bungee;
 
-import eu.mcone.cloud.core.network.packet.ServerPlayerCountUpdatePacket;
+import eu.mcone.cloud.core.network.packet.ServerPlayerCountUpdatePacketPlugin;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
@@ -23,12 +23,12 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void on(PostLoginEvent e) {
-        instance.getChannel().writeAndFlush(new ServerPlayerCountUpdatePacket(ProxyServer.getInstance().getOnlineCount()));
+        instance.getChannel().writeAndFlush(new ServerPlayerCountUpdatePacketPlugin(ProxyServer.getInstance().getOnlineCount()));
     }
 
     @EventHandler
     public void on(PlayerDisconnectEvent e) {
-        instance.getChannel().writeAndFlush(new ServerPlayerCountUpdatePacket(ProxyServer.getInstance().getOnlineCount()));
+        instance.getChannel().writeAndFlush(new ServerPlayerCountUpdatePacketPlugin(ProxyServer.getInstance().getOnlineCount()));
     }
 
 }

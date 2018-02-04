@@ -5,8 +5,12 @@
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.core.server.ServerVersion;
+import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import eu.mcone.cloud.master.wrapper.WrapperManager;
@@ -31,15 +35,14 @@ public class Server {
     @Getter @Setter
     private Channel channel;
 
-    public Server(UUID uuid, String name, Template template, int maxPlayers, int id, int ram, String wrapperName) {
+    public Server(ServerInfo info, Template template, String wrapperName) {
+        this.info = info;
         this.template = template;
         this.wrapperName = wrapperName;
 
-        this.info = new ServerInfo(uuid, name, getTemplateName(), maxPlayers, id, ram);
-
         //Check if Wrapper is set
         if (this.wrapperName == null) {
-            ServerManager.addtoServerWaitList(this, null);
+            MasterServer.getInstance().getServerManager().addtoServerWaitList(this, null);
         } else {
             Wrapper wrapper = WrapperManager.getWrapperbyString(this.wrapperName);
 
@@ -49,7 +52,7 @@ public class Server {
                 wrapper.createServer(this);
             } else {
                 //Add to ServerWaitingList
-                ServerManager.addtoServerWaitList(this, this.wrapperName);
+                MasterServer.getInstance().getServerManager().addtoServerWaitList(this, this.wrapperName);
             }
         }
     }
@@ -58,8 +61,16 @@ public class Server {
         //Check if Wrapper is set
         if (wrapper == null) {
             System.out.println("[Server.start] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            ServerManager.addtoServerWaitList(this, wrapperName);
+            MasterServer.getInstance().getServerManager().addtoServerWaitList(this, wrapperName);
         } else {
+            if (!info.getVersion().equals(ServerVersion.BUNGEE)) {
+                for (Server s : MasterServer.getInstance().getServers()) {
+                    if (s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                        s.send(new ServerInfoPacket(info));
+                    }
+                }
+            }
+
             //Start server on Wrapper
             System.out.println("[Server.start] Starting server " + this.info.getName() + "!");
             this.wrapper.startServer(this);
@@ -70,7 +81,7 @@ public class Server {
         //Check if Wrapper is set
         if (wrapper == null) {
             System.out.println("[Server.stop] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            ServerManager.addtoServerWaitList(this, wrapperName);
+            MasterServer.getInstance().getServerManager().addtoServerWaitList(this, wrapperName);
         } else {
             //Stop server on Wrapper
             System.out.println("[Server.stop] Stopping server " + this.info.getName() + "!");
@@ -82,7 +93,7 @@ public class Server {
         //Check if Wrapper is set
         if (wrapper == null) {
             System.out.println("[Server.delete] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            ServerManager.addtoServerWaitList(this, wrapperName);
+            MasterServer.getInstance().getServerManager().addtoServerWaitList(this, wrapperName);
         } else {
             //Delete Server on Wrapper
             this.wrapper.deleteServer(this);
@@ -90,17 +101,10 @@ public class Server {
         }
     }
 
-    public String getTemplateName() {
-        if (template != null) return template.getName();
-        return null;
-    }
-
-    public void setState(ServerState state) {
-        this.info.setState(state);
-    }
-
-    public void setPort(int port) {
-        this.info.setPort(port);
+    public void send(Packet packet) {
+        if (channel != null) {
+            channel.writeAndFlush(packet);
+        }
     }
 
 }

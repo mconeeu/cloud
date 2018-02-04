@@ -5,26 +5,35 @@
 
 package eu.mcone.cloud.core.network.packet;
 
-import eu.mcone.cloud.core.server.ServerInfo;
-import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.UUID;
 
-public class ServerCommandExecutePacket extends Packet{
+public class ServerResultPacketWrapper extends Packet {
 
     @Getter
-    private UUID serverUuid;
+    private String message;
     @Getter
-    private String cmd;
+    private Result result;
+    @Getter
+    private String resultClass;
 
-    public ServerCommandExecutePacket() {}
+    public enum Result {
+        ERROR,
+        COOMMAND_ERROR,
+        SERVER_ERROR,
+        COMMAND,
+        INFORMATION,
+        SUCCESSFUL,
+    }
 
-    public ServerCommandExecutePacket(UUID serverUuid, String cmd) {
-        this.serverUuid = serverUuid;
-        this.cmd = cmd;
+    public ServerResultPacketWrapper() {}
+
+    public ServerResultPacketWrapper(String result_class, String message, Result result) {
+        this.resultClass = result_class;
+        this.message = message;
+        this.result = result;
     }
 
     @Override
@@ -33,8 +42,9 @@ public class ServerCommandExecutePacket extends Packet{
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(serverUuid.toString());
-            out.writeUTF(cmd);
+            out.writeUTF(resultClass.toString());
+            out.writeUTF(message.toString());
+            out.writeUTF(result.toString());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -51,8 +61,10 @@ public class ServerCommandExecutePacket extends Packet{
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            serverUuid = UUID.fromString(input.readUTF());
-            cmd = input.readUTF();
+
+            resultClass = input.readUTF();
+            message = input.readUTF();
+            result = result.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }

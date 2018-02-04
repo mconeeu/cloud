@@ -5,20 +5,26 @@
 
 package eu.mcone.cloud.core.network.packet;
 
+import eu.mcone.cloud.core.server.ServerInfo;
+import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
+import java.util.UUID;
 
-public class ServerPlayerCountUpdatePacket extends Packet {
+public class ServerCommandExecutePacketWrapper extends Packet{
 
     @Getter
-    private int playerCount;
+    private UUID serverUuid;
+    @Getter
+    private String cmd;
 
-    public ServerPlayerCountUpdatePacket() {}
+    public ServerCommandExecutePacketWrapper() {}
 
-    public ServerPlayerCountUpdatePacket(int playerCount) {
-        this.playerCount = playerCount;
+    public ServerCommandExecutePacketWrapper(UUID serverUuid, String cmd) {
+        this.serverUuid = serverUuid;
+        this.cmd = cmd;
     }
 
     @Override
@@ -27,7 +33,8 @@ public class ServerPlayerCountUpdatePacket extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeInt(playerCount);
+            out.writeUTF(serverUuid.toString());
+            out.writeUTF(cmd);
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -44,9 +51,11 @@ public class ServerPlayerCountUpdatePacket extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            playerCount = input.readInt();
+            serverUuid = UUID.fromString(input.readUTF());
+            cmd = input.readUTF();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }

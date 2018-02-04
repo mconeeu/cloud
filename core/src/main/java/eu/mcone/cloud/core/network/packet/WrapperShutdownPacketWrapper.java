@@ -7,9 +7,9 @@ package eu.mcone.cloud.core.network.packet;
 
 import io.netty.buffer.ByteBuf;
 
-public class WrapperShutdownPacket extends Packet {
+public class WrapperShutdownPacketWrapper extends Packet {
 
-    public WrapperShutdownPacket() {}
+    public WrapperShutdownPacketWrapper() {}
 
     @Override
     public void write(ByteBuf byteBuf) {}

@@ -5,6 +5,8 @@
 
 package eu.mcone.cloud.master.template;
 
+import eu.mcone.cloud.core.server.ServerInfo;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import lombok.Getter;
@@ -22,14 +24,17 @@ public class Template {
     private int ram, maxPlayers, min, max, emptyservers;
     @Getter
     private boolean startup;
+    @Getter
+    private ServerVersion version;
 
-    public Template(String name, int ram, int maxPlayers, int min, int max, int emptyservers, boolean startup) {
+    public Template(String name, int ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, boolean startup) {
         this.name = name;
         this.ram = ram;
         this.maxPlayers = maxPlayers;
         this.max = min;
         this.min = max;
         this.emptyservers = emptyservers;
+        this.version = version;
         this.startup = startup;
 
         MasterServer.getInstance().getTemplates().add(this);
@@ -51,7 +56,19 @@ public class Template {
                 UUID serverUUID = UUID.randomUUID();
 
                 //Create server object
-                Server server = new Server(serverUUID, servername, this, maxPlayers, serverid, this.ram, null);
+                Server server = new Server(
+                        new ServerInfo(
+                                serverUUID,
+                                servername,
+                                name,
+                                serverid,
+                                maxPlayers,
+                                ram,
+                                version
+                        ),
+                        this,
+                        null
+                );
 
                 //Put Server Object in HashMap
                 this.servers.add(server);

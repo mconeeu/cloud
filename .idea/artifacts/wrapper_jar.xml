@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="wrapper:jar">
+  <artifact type="jar" build-on-make="true" name="wrapper:jar">
     <output-path>$PROJECT_DIR$/../../../MCONE CLOUD</output-path>
     <root id="archive" name="wrapper.jar">
       <element id="module-output" name="wrapper" />
@@ -10,6 +10,9 @@
       <element id="library" level="project" name="Maven: mysql:mysql-connector-java:5.1.45" />
       <element id="library" level="project" name="Maven: io.netty:netty-all:4.1.19.Final" />
       <element id="library" level="project" name="Maven: org.projectlombok:lombok:1.16.6" />
+      <element id="library" level="project" name="Maven: com.zaxxer:HikariCP:2.7.4" />
+      <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.25" />
+      <element id="library" level="project" name="Maven: org.slf4j:slf4j-simple:1.7.9" />
     </root>
   </artifact>
 </component>

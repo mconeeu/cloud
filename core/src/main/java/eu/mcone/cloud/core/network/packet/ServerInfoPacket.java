@@ -7,6 +7,7 @@ package eu.mcone.cloud.core.network.packet;
 
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.core.server.ServerVersion;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
@@ -38,6 +39,7 @@ public class ServerInfoPacket extends Packet {
             out.writeInt(serverInfo.getRam());
             out.writeInt(serverInfo.getPort());
             out.writeInt(serverInfo.getMaxPlayers());
+            out.writeUTF(serverInfo.getVersion().toString());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -62,8 +64,9 @@ public class ServerInfoPacket extends Packet {
             int ram = input.readInt();
             int port = input.readInt();
             int maxplayers = input.readInt();
+            ServerVersion version = ServerVersion.valueOf(input.readUTF());
 
-            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram);
+            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram, version);
             serverInfo.setState(state);
             serverInfo.setPort(port);
         } catch (IOException e) {

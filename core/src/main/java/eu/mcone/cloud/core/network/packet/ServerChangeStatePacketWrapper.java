@@ -9,31 +9,24 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
+import java.util.UUID;
 
-public class ServerResultPacket extends Packet {
+public class ServerChangeStatePacketWrapper extends Packet {
 
     @Getter
-    private String message;
+    private UUID serverUuid;
     @Getter
-    private Result result;
-    @Getter
-    private String resultClass;
+    private State state;
 
-    public enum Result {
-        ERROR,
-        COOMMAND_ERROR,
-        SERVER_ERROR,
-        COMMAND,
-        INFORMATION,
-        SUCCESSFUL,
+    public enum State {
+        START, STOP, FORCESTOP, RESTART, DELETE
     }
 
-    public ServerResultPacket() {}
+    public ServerChangeStatePacketWrapper() {}
 
-    public ServerResultPacket(String result_class, String message, Result result) {
-        this.resultClass = result_class;
-        this.message = message;
-        this.result = result;
+    public ServerChangeStatePacketWrapper(UUID serverUuid, State state) {
+        this.serverUuid = serverUuid;
+        this.state = state;
     }
 
     @Override
@@ -42,9 +35,8 @@ public class ServerResultPacket extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(resultClass.toString());
-            out.writeUTF(message.toString());
-            out.writeUTF(result.toString());
+            out.writeUTF(serverUuid.toString());
+            out.writeUTF(state.toString());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -61,10 +53,8 @@ public class ServerResultPacket extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-
-            resultClass = input.readUTF();
-            message = input.readUTF();
-            result = result.valueOf(input.readUTF());
+            serverUuid = UUID.fromString(input.readUTF());
+            state = State.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }

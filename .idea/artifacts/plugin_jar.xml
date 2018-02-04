@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="plugin:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/plugin_jar</output-path>
+    <root id="archive" name="plugin.jar">
+      <element id="module-output" name="plugin" />
+      <element id="module-output" name="core" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.16.6/lombok-1.16.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/zaxxer/HikariCP/2.7.4/HikariCP-2.7.4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/slf4j/slf4j-simple/1.7.9/slf4j-simple-1.7.9.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

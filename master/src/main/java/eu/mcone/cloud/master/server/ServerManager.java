@@ -12,15 +12,19 @@ import eu.mcone.cloud.master.MasterServer;
 
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class ServerManager {
 
+    private ScheduledExecutorService es;
     private static HashMap<Server, String> serverWaitList = new HashMap<>();
 
     //creates or deletes empty servers for or from templates and tries to start servers from serverWaitList
     public ServerManager() {
-        new Thread(() -> Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+        es = Executors.newSingleThreadScheduledExecutor();
+        es.scheduleAtFixedRate(() -> {
             for (Template t : MasterServer.getInstance().getTemplates()) {
                 HashMap<Server, Integer> playercount = new HashMap<>();
 
@@ -93,11 +97,11 @@ public class ServerManager {
                     }
                 }
             }
-        }, 5, 5, TimeUnit.SECONDS)).start();
+        }, 5, 5, TimeUnit.SECONDS);
     }
 
     //Returns the best wrapper with less ram
-    private static Wrapper getBestWrapper() {
+    private Wrapper getBestWrapper() {
         HashMap<Wrapper, Integer> wrappers = new HashMap<>();
 
         for (Wrapper w : MasterServer.getInstance().getWrappers()) {
@@ -117,13 +121,17 @@ public class ServerManager {
         }
     }
 
-    static void addtoServerWaitList(Server server, String wrapperName) {
+    void addtoServerWaitList(Server server, String wrapperName) {
         if (serverWaitList.containsKey(server)) {
             System.out.println("[ServerManager.addtoServerWaitList] " + server.getInfo().getName() + " already in ServerWaitList!");
         } else {
             System.out.println("[ServerManager.addtoServerWaitList] Added " + server.getInfo().getName() + " to ServerWaitList!");
             serverWaitList.put(server, wrapperName);
         }
+    }
+
+    public void shutdown() {
+        es.shutdown();
     }
 
 }

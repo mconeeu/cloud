@@ -44,14 +44,15 @@ public class Config {
 
     //Store Config values locally
     public void store() {
-        ResultSet rs = this.mysql.select("SELECT * FROM " + this.sqlTable + ";");
-        try {
-            while (rs.next()) {
-                this.keys.put(rs.getString("key"), rs.getString("value"));
+        this.mysql.select("SELECT * FROM " + this.sqlTable + ";", rs -> {
+            try {
+                while (rs.next()) {
+                    this.keys.put(rs.getString("key"), rs.getString("value"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     //Get stored Config value
@@ -80,50 +81,53 @@ public class Config {
 
     //Get live Config value from database
     public String getLiveConfigValue(String key) {
-        ResultSet rs = this.mysql.select("SELECT value FROM `" + this.sqlTable + "` WHERE `key` = '" + key + "';");
-        try{
-            if (rs.next()) {
-                String message;
-                message = rs.getString("value").replace("&", "§");
-                return message;
+        return (String) this.mysql.select("SELECT value FROM `" + this.sqlTable + "` WHERE `key` = '" + key + "';", rs -> {
+            try{
+                if (rs.next()) {
+                    String message;
+                    message = rs.getString("value").replace("&", "§");
+                    return message;
+                }
+            }catch(SQLException e) {
+                e.printStackTrace();
             }
-        }catch(SQLException e) {
-            e.printStackTrace();
-        }
 
-        return null;
+            return null;
+        });
     }
 
     //Get live Config value from database as int
     public int getLiveIntConfigValue(String key) {
-        ResultSet rs = this.mysql.select("SELECT * FROM `" + this.sqlTable + "` WHERE `key` = '" + key + "';");
-        try{
-            if (rs.next()) {
-                int zahl = 0;
-                zahl = rs.getInt("value");
-                return zahl;
+        return (int) this.mysql.select("SELECT * FROM `" + this.sqlTable + "` WHERE `key` = '" + key + "';", rs -> {
+            try{
+                if (rs.next()) {
+                    int zahl = 0;
+                    zahl = rs.getInt("value");
+                    return zahl;
+                }
+            }catch(SQLException e) {
+                e.printStackTrace();
             }
-        }catch(SQLException e) {
-            e.printStackTrace();
-        }
 
-        return 0;
+            return 0;
+        });
     }
 
     //Get live Config value from database as boolean
-    public Boolean getLiveBooleanConfigValue(String key) {
-        ResultSet rs = this.mysql.select("SELECT * FROM `" + this.sqlTable +"` WHERE `key` = '" + key + "';");
-        try{
-            if (rs.next()) {
-                Boolean message;
-                message = rs.getBoolean("value");
-                return message;
+    public boolean getLiveBooleanConfigValue(String key) {
+        return (boolean) this.mysql.select("SELECT * FROM `" + this.sqlTable +"` WHERE `key` = '" + key + "';", rs -> {
+            try{
+                if (rs.next()) {
+                    Boolean message;
+                    message = rs.getBoolean("value");
+                    return message;
+                }
+            }catch(SQLException e) {
+                e.printStackTrace();
             }
-        }catch(SQLException e) {
-            e.printStackTrace();
-        }
 
-        return null;
+            return null;
+        });
     }
 
     public String getConfig() {

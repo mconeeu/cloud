@@ -5,14 +5,8 @@
 
 package eu.mcone.cloud.core.console;
 
-public class Commands {
+public interface CommandExecutor {
 
-    public static void reloadCMD() {
-
-    }
-
-    public static void stopCMD() {
-
-    }
+    void onCommand(String cmd, String[] args);
 
 }

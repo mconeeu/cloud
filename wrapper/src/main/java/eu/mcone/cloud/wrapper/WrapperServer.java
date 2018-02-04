@@ -5,8 +5,10 @@
 
 package eu.mcone.cloud.wrapper;
 
-import eu.mcone.cloud.core.system.OS;
-import eu.mcone.cloud.wrapper.directorymanager.DirectoryCreator;
+import eu.mcone.cloud.core.file.FileManager;
+import eu.mcone.cloud.core.console.ConsoleReader;
+import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.wrapper.console.CommandExecutor;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.cloud.core.mysql.MySQL;
@@ -14,6 +16,7 @@ import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,14 +25,14 @@ import java.util.concurrent.TimeUnit;
 public class WrapperServer {
 
     private static WrapperServer instance;
-    public static MySQL mysql_main;
+    private final MySQL mysql;
 
     @Getter
-    private String currentVersion = "1.0.0-SNAPSHOT";
-
+    private ConsoleReader consoleReader;
     @Getter
-    private Server server;
-
+    private FileManager fileManager;
+    @Getter
+    private String hostname;
     @Getter @Setter
     private Channel channel;
     @Getter
@@ -38,23 +41,27 @@ public class WrapperServer {
     private List<Server> servers = new ArrayList<>();
 
     public static void main(String args[]) {
-        new WrapperServer(2048);
+        new WrapperServer(args[0], Integer.valueOf(args[1]));
     }
 
-    private WrapperServer(int ram) {
-        //OS os = new OS();
-
-        DirectoryCreator dc = new DirectoryCreator();
-
-        //Reader rd = new Reader();
-
+    private WrapperServer(String hostname, int ram) {
         instance = this;
+
+        this.hostname = hostname;
         this.ram = ram;
+
+        fileManager = new FileManager();
+        fileManager.createHomeDir("wrapper");
+        fileManager.createHomeDir("wrapper"+File.separator+"templates");
+        fileManager.createHomeDir("wrapper"+File.separator+"servers");
+        fileManager.createHomeDir("wrapper"+File.separator+"config");
+
+        consoleReader = new ConsoleReader();
+        consoleReader.registerCommand(new CommandExecutor());
 
         System.out.println("[Enable progress] Welcome to mc1cloud. Wrapper is starting...");
         System.out.println("[Enable progress] Connecting to Database...");
-        mysql_main = new MySQL("localhost", 3306, "cloud", "root", "", "cloudwrapper");
-        mysql_main.connect();
+        mysql = new MySQL("localhost", 3306, "cloud", "root", "", "cloudwrapper");
 
         System.out.println("[Enable progress] Creating necessary tables if not exists...");
 
@@ -94,6 +101,10 @@ public class WrapperServer {
             }
         }
         return null;
+    }
+
+    public void send(Packet packet) {
+        channel.writeAndFlush(packet);
     }
 
 }

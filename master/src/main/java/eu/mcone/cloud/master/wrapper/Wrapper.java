@@ -5,9 +5,9 @@
 
 package eu.mcone.cloud.master.wrapper;
 
-import eu.mcone.cloud.core.network.packet.ServerChangeStatePacket;
+import eu.mcone.cloud.core.network.packet.ServerChangeStatePacketWrapper;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
-import eu.mcone.cloud.core.network.packet.WrapperShutdownPacket;
+import eu.mcone.cloud.core.network.packet.WrapperShutdownPacketWrapper;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import lombok.Getter;
@@ -39,13 +39,18 @@ public class Wrapper {
     }
 
     public void shutdown() {
-        channel.writeAndFlush(new WrapperShutdownPacket());
+        channel.writeAndFlush(new WrapperShutdownPacketWrapper());
+        delete();
+    }
 
+    public void delete() {
         for (Server s : servers) {
+            s.setWrapper(null);
             s.delete();
         }
+
         MasterServer.getInstance().getWrappers().remove(this);
-        System.out.println("[Wrapper.class] Stopped Wrapper " + name + "!");
+        System.out.println("[Wrapper.class] Destroyed Wrapper " + name + "!");
     }
 
     public void createServer(Server s) {
@@ -65,19 +70,19 @@ public class Wrapper {
 
     public void deleteServer(Server server) {
         this.ramInUse -= server.getInfo().getRam();
-        channel.writeAndFlush(new ServerChangeStatePacket(server.getInfo().getUuid(), ServerChangeStatePacket.State.DELETE));
+        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.DELETE));
 
         server.setWrapper(null);
         System.out.println("[Wrapper.class] Deleted server " + server.getInfo().getName() + " from wrapper " + name + "!");
     }
 
     public void startServer(Server server) {
-        channel.writeAndFlush(new ServerChangeStatePacket(server.getInfo().getUuid(), ServerChangeStatePacket.State.START));
+        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.START));
         System.out.println("[Wrapper.class] Started server " + server.getInfo().getName() + " at wrapper " + name + "!");
     }
 
     public void stopServer(Server server) {
-        channel.writeAndFlush(new ServerChangeStatePacket(server.getInfo().getUuid(), ServerChangeStatePacket.State.STOP));
+        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.STOP));
         System.out.println("[Wrapper.class] Stopped server " + server.getInfo().getName() + " from wrapper " + name + "!");
     }
     

@@ -1,10 +1,10 @@
 package eu.mcone.cloud.plugin;
 
+import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.plugin.network.ClientBootstrap;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,29 +18,34 @@ public class CloudPlugin {
     @Getter @Setter
     private Channel channel;
     @Getter
-    private String serverName;
+    private String name, hostname;
     @Getter
     private UUID serverUuid;
     @Getter
-    private int serverPort;
+    private int port;
 
     public CloudPlugin() {
         Properties ps = new Properties();
         try {
             ps.load(new InputStreamReader(Files.newInputStream(Paths.get("server.properties"))));
 
-            serverName = ps.getProperty("server-name");
+            name = ps.getProperty("server-name");
             serverUuid = UUID.fromString(ps.getProperty("server-uuid"));
+            hostname = ps.getProperty("server-ip");
+            port = Integer.valueOf(ps.getProperty("server-port"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        serverPort = Bukkit.getServer().getPort();
 
         new ClientBootstrap("localhost", 4567, this);
     }
 
     public void unload() {
+        channel.close();
+    }
 
+    public void send(Packet packet) {
+        channel.writeAndFlush(packet);
     }
 
 }

@@ -9,20 +9,17 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.UUID;
+import java.nio.channels.Channel;
 
-public class ServerRegisterPacket extends Packet {
+public class WrapperRegisterPacketWrapper extends Packet {
 
     @Getter
-    private UUID serverUuid;
-    @Getter
-    private int port;
+    private int ram;
 
-    public ServerRegisterPacket() {}
+    public WrapperRegisterPacketWrapper() {}
 
-    public ServerRegisterPacket(UUID serverUuid, int port) {
-        this.serverUuid = serverUuid;
-        this.port = port;
+    public WrapperRegisterPacketWrapper(int ram) {
+        this.ram = ram;
     }
 
     @Override
@@ -31,8 +28,7 @@ public class ServerRegisterPacket extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(serverUuid.toString());
-            out.writeInt(port);
+            out.writeInt(ram);
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -49,8 +45,7 @@ public class ServerRegisterPacket extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            serverUuid = UUID.fromString(input.readUTF());
-            port = input.readInt();
+            ram = input.readInt();
         } catch (IOException e) {
             e.printStackTrace();
         }

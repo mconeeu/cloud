@@ -6,20 +6,13 @@
 package eu.mcone.cloud.master.network;
 
 import eu.mcone.cloud.core.network.packet.*;
+import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import lombok.Getter;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.jar.Pack200;
 
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
@@ -30,29 +23,73 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
-        if (packet instanceof WrapperRegisterPacket) {
-            WrapperRegisterPacket result = (WrapperRegisterPacket) packet;
-            System.out.println("new WrapperRegisterPacket (RAM: "+result.getRam()+")");
+        if (packet instanceof WrapperRegisterPacketWrapper) {
+            WrapperRegisterPacketWrapper result = (WrapperRegisterPacketWrapper) packet;
+            System.out.println("new WrapperRegisterPacketWrapper (RAM: "+result.getRam()+")");
             new Wrapper(ctx.channel(), result.getRam());
-        } else if (packet instanceof ServerRegisterPacket) {
-            ServerRegisterPacket result = (ServerRegisterPacket) packet;
-            System.out.println("new ServerRegisterPacket (UUID: "+result.getServerUuid()+", PORT: "+result.getPort()+")");
+        } else if (packet instanceof ServerRegisterPacketPlugin) {
+            ServerRegisterPacketPlugin result = (ServerRegisterPacketPlugin) packet;
+            System.out.println("new ServerRegisterPacketPlugin (UUID: "+result.getServerUuid()+", PORT: "+result.getPort()+")");
             Server s = MasterServer.getInstance().getServer(result.getServerUuid());
 
             if (s != null) {
                 s.setChannel(ctx.channel());
-                s.setPort(result.getPort());
+                s.getInfo().setState(ServerState.STARTING);
+                s.getInfo().setHostname(result.getHostname());
+                s.getInfo().setPort(result.getPort());
+
+                if (s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                    for (Server server : MasterServer.getInstance().getServers()) {
+                        if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.STOPPED)) {
+                            s.send(new ServerListPacketAddPlugin(server.getInfo()));
+                        }
+                    }
+                }
             }
 
-        } else if(packet instanceof ServerResultPacket) {
-            ServerResultPacket result = (ServerResultPacket) packet;
-            System.out.println("[" + result.getResultClass() + "] >> " + result.getMessage() + " // " + result.getResult());
+        } else if (packet instanceof ServerUpdateStatePacketPlugin) {
+            ServerUpdateStatePacketPlugin result = (ServerUpdateStatePacketPlugin) packet;
+            System.out.println("new ServerUpdateStatePacketPlugin (UUID: "+result.getUuid()+", STATE: "+result.getState().toString()+")");
+            ServerState state = result.getState();
+            Server s = MasterServer.getInstance().getServer(result.getUuid());
+
+            if (s != null) {
+                s.getInfo().setState(state);
+
+                switch (state) {
+                    case RUNNING: {
+                        for (Server server : MasterServer.getInstance().getServers()) {
+                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.STOPPED)) {
+                                server.send(new ServerListPacketAddPlugin(s.getInfo()));
+                            }
+                        }
+                        break;
+                    }
+                    case STOPPED: {
+                        for (Server server : MasterServer.getInstance().getServers()) {
+                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.STOPPED)) {
+                                server.send(new ServerListPacketRemovePlugin(s.getInfo()));
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        } else if (packet instanceof ServerResultPacketWrapper) {
+            ServerResultPacketWrapper result = (ServerResultPacketWrapper) packet;
+            System.out.println("[" + result.getResultClass() + "] " + result.getMessage() + " ResultType: " + result.getResult());
         }
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) {
         System.out.println(ctx.channel().remoteAddress()+" unregistered");
+        for (Wrapper w : MasterServer.getInstance().getWrappers()) {
+            if (w.getChannel().equals(ctx.channel())) {
+                w.delete();
+                return;
+            }
+        }
     }
 
     @Override

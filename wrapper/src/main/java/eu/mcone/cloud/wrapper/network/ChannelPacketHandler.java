@@ -17,7 +17,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         WrapperServer.getInstance().setChannel(ctx.channel());
-        ctx.writeAndFlush(new WrapperRegisterPacket(WrapperServer.getInstance().getRam()));
+        ctx.writeAndFlush(new WrapperRegisterPacketWrapper(WrapperServer.getInstance().getRam()));
         System.out.println("new channel to " + ctx.channel().remoteAddress().toString());
     }
 
@@ -29,8 +29,6 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, Packet packet) {
-        System.out.println("New packet: " + packet.toString());
-
         if (packet instanceof ServerInfoPacket) {
             ServerInfoPacket result = (ServerInfoPacket) packet;
             ServerInfo info = result.getServerInfo();
@@ -44,26 +42,26 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             }
 
             new Server(result.getServerInfo());
-        } else if (packet instanceof ServerChangeStatePacket) {
-            ServerChangeStatePacket result = (ServerChangeStatePacket) packet;
-            System.out.println("new ServerChangeStatePacket (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
+        } else if (packet instanceof ServerChangeStatePacketWrapper) {
+            ServerChangeStatePacketWrapper result = (ServerChangeStatePacketWrapper) packet;
+            System.out.println("new ServerChangeStatePacketWrapper (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
 
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
 
             if (s != null) {
                 switch (result.getState()) {
-                    case START: s.start();
-                    //case STOP: s.stop();
-                    //case FORCESTOP: s.forceStop();
-                    //case RESTART: s.restart();
-                    //case DELETE: s.delete();
+                    case START: s.start(); break;
+                    case STOP: s.stop(); break;
+                    case FORCESTOP: s.forceStop(); break;
+                    case RESTART: s.restart(); break;
+                    case DELETE: s.delete(); break;
                 }
             } else {
                 System.out.println("s == null");
             }
-        } else if (packet instanceof ServerCommandExecutePacket) {
-            ServerCommandExecutePacket result = (ServerCommandExecutePacket) packet;
-            System.out.println("new ServerCommandExecutePacket (UUID: "+result.getServerUuid()+", COMMAND: "+result.getCmd()+")");
+        } else if (packet instanceof ServerCommandExecutePacketWrapper) {
+            ServerCommandExecutePacketWrapper result = (ServerCommandExecutePacketWrapper) packet;
+            System.out.println("new ServerCommandExecutePacketWrapper (UUID: "+result.getServerUuid()+", COMMAND: "+result.getCmd()+")");
 
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
             if (s != null) {
@@ -71,8 +69,8 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             } else {
                 System.out.println("s == null");
             }
-        } else if (packet instanceof WrapperShutdownPacket) {
-            System.out.println("[ChannelPacketHandler] Received WrapperShutdownPacket from master. Shutting down...");
+        } else if (packet instanceof WrapperShutdownPacketWrapper) {
+            System.out.println("[ChannelPacketHandler] Received WrapperShutdownPacketWrapper from master. Shutting down...");
             WrapperServer.getInstance().shutdown();
         }
     }

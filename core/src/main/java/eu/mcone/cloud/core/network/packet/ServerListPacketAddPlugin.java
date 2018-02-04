@@ -1,30 +1,35 @@
+/*
+ * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.core.network.packet;
 
+import eu.mcone.cloud.core.server.ServerInfo;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import lombok.Getter;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-/**
- * Created with IntelliJ IDE
- * Created on 29.01.2018
- * Copyright (c) 2018 Dominik L. All rights reserved
- * You are not allowed to decompile the code
- */
-public class ServerStartPacket extends Packet{
+public class ServerListPacketAddPlugin extends Packet {
 
     @Getter
-    private UUID serverUuid;
-
+    private String name;
     @Getter
-    private String cmd;
+    private String hostname;
+    @Getter
+    private int port;
 
-    public ServerStartPacket() {}
+    public ServerListPacketAddPlugin() {}
 
-    public ServerStartPacket(UUID serverUuid, String cmd) {
-        this.serverUuid = serverUuid;
-        this.cmd = cmd;
+    public ServerListPacketAddPlugin(ServerInfo info) {
+        this.name = info.getName();
+        this.hostname = info.getHostname();
+        this.port = info.getPort();
     }
 
     @Override
@@ -33,8 +38,9 @@ public class ServerStartPacket extends Packet{
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(serverUuid.toString());
-            out.writeUTF(cmd);
+            out.writeUTF(name);
+            out.writeUTF(hostname);
+            out.writeInt(port);
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -51,8 +57,9 @@ public class ServerStartPacket extends Packet{
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            serverUuid = UUID.fromString(input.readUTF());
-            cmd = input.readUTF();
+            name = input.readUTF();
+            hostname = input.readUTF();
+            port = input.readInt();
         } catch (IOException e) {
             e.printStackTrace();
         }

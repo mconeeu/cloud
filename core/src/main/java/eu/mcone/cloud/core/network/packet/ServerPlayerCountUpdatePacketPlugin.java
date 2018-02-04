@@ -9,24 +9,16 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.UUID;
 
-public class ServerChangeStatePacket extends Packet {
+public class ServerPlayerCountUpdatePacketPlugin extends Packet {
 
     @Getter
-    private UUID serverUuid;
-    @Getter
-    private State state;
+    private int playerCount;
 
-    public enum State {
-        START, STOP, FORCESTOP, RESTART, DELETE
-    }
+    public ServerPlayerCountUpdatePacketPlugin() {}
 
-    public ServerChangeStatePacket() {}
-
-    public ServerChangeStatePacket(UUID serverUuid, State state) {
-        this.serverUuid = serverUuid;
-        this.state = state;
+    public ServerPlayerCountUpdatePacketPlugin(int playerCount) {
+        this.playerCount = playerCount;
     }
 
     @Override
@@ -35,8 +27,7 @@ public class ServerChangeStatePacket extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(serverUuid.toString());
-            out.writeUTF(state.toString());
+            out.writeInt(playerCount);
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -53,11 +44,9 @@ public class ServerChangeStatePacket extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            serverUuid = UUID.fromString(input.readUTF());
-            state = State.valueOf(input.readUTF());
+            playerCount = input.readInt();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }

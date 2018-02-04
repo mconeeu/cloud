@@ -5,51 +5,87 @@
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.mysql.MySQL;
+import eu.mcone.cloud.core.server.ServerInfo;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class StaticServerManager {
 
-    private static HashMap<UUID, Server> staticServers = new HashMap<>();
+    private List<Server> staticServers = new ArrayList<>();
+    private MySQL mysql;
 
-    public StaticServerManager() {
-        ResultSet rs = MasterServer.mysql_main.select("SELECT * FROM " + MasterServer.mysql_prefix + "_static_servers;");
-        try {
-            while (rs.next()) {
-                System.out.println("[StaticServerManager.class] Creating Static Server " + rs.getString("name") + "...");
+    public StaticServerManager(MySQL mysql) {
+        this.mysql = mysql;
 
-                //Create Server and store in HashMap
-                UUID uuid = UUID.randomUUID();
-                staticServers.put(uuid, new Server(uuid, rs.getString("name"), null, rs.getInt("max"), 0, rs.getInt("ram"), rs.getString("wrapper")));
+        mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_static_servers;", rs -> {
+            try {
+                while (rs.next()) {
+                    System.out.println("[StaticServerManager.class] Creating Static Server " + rs.getString("name") + "...");
+
+                    //Create Server and store in HashMap
+                    UUID uuid = UUID.randomUUID();
+                    staticServers.add(
+                            new Server(
+                                    new ServerInfo(
+                                            uuid,
+                                            rs.getString("name"),
+                                            null,
+                                            rs.getInt("max"),
+                                            0,
+                                            rs.getInt("ram"),
+                                            ServerVersion.valueOf(rs.getString("version"))
+                                    ),
+                                    null,
+                                    rs.getString("wrapper")
+                            )
+                    );
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
-    public static void addStaticServer(String name, int maxPlayers, int ram, String wrappername) {
+    public void addStaticServer(String name, int maxPlayers, int ram, ServerVersion version, String wrappername) {
         System.out.println("[StaticServerManager.class] Creating Static Server " + name + "...");
-        MasterServer.mysql_main.update("INSERT INTO " + MasterServer.mysql_prefix + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + Integer.valueOf(ram).toString() + " , '" + wrappername + "');");
+        mysql.update("INSERT INTO " + mysql.getTablePrefix() + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + Integer.valueOf(ram).toString() + " , '" + wrappername + "');");
 
         UUID uuid = UUID.randomUUID();
-        staticServers.put(uuid, new Server(uuid, name, null, maxPlayers, 0, ram, wrappername));
+        staticServers.add(
+                new Server(
+                        new ServerInfo(
+                                uuid,
+                                name,
+                                null,
+                                maxPlayers,
+                                0,
+                                ram,
+                                version
+                        ),
+                        null,
+                        wrappername
+                )
+        );
     }
 
-    public static void deleteStaticServer(Server server) {
-        if (staticServers.containsValue(server)) {
+    public void deleteStaticServer(Server server) {
+        if (staticServers.contains(server)) {
             System.out.println("[StaticServerManager.class] Removing Static Server " + server.getInfo().getName() + "...");
-            MasterServer.mysql_main.update("DELETE FROM " + MasterServer.mysql_prefix + "_static_servers WHERE name='" + server.getInfo().getName() + "';");
+            mysql.update("DELETE FROM " + mysql.getTablePrefix() + "_static_servers WHERE name='" + server.getInfo().getName() + "';");
 
             server.delete();
-            staticServers.remove(server.getInfo().getUuid());
+            staticServers.remove(server);
         }
     }
 
-    public HashMap<UUID, Server> getStaticServers() {
+    public List<Server> getStaticServers() {
         return staticServers;
     }
 }

@@ -5,21 +5,25 @@
 
 package eu.mcone.cloud.core.network.packet;
 
+import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
-import java.nio.channels.Channel;
+import java.util.UUID;
 
-public class WrapperRegisterPacket extends Packet {
+public class ServerUpdateStatePacketPlugin extends Packet {
 
     @Getter
-    private int ram;
+    private UUID uuid;
+    @Getter
+    private ServerState state;
 
-    public WrapperRegisterPacket() {}
+    public ServerUpdateStatePacketPlugin() {}
 
-    public WrapperRegisterPacket(int ram) {
-        this.ram = ram;
+    public ServerUpdateStatePacketPlugin(UUID uuid, ServerState state) {
+        this.uuid = uuid;
+        this.state = state;
     }
 
     @Override
@@ -28,7 +32,8 @@ public class WrapperRegisterPacket extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeInt(ram);
+            out.writeUTF(uuid.toString());
+            out.writeUTF(state.toString());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -45,7 +50,8 @@ public class WrapperRegisterPacket extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            ram = input.readInt();
+            uuid = UUID.fromString(input.readUTF());
+            state = ServerState.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -9,13 +9,14 @@ import eu.mcone.cloud.core.network.packet.*;
 import lombok.Getter;
 
 public enum Protocol {
-    WRAPPER_REGISTER(0, WrapperRegisterPacket.class),
-    WRAPPER_SHUTDOWN(1, WrapperShutdownPacket.class),
+    WRAPPER_REGISTER(0, WrapperRegisterPacketWrapper.class),
+    WRAPPER_SHUTDOWN(1, WrapperShutdownPacketWrapper.class),
     SERVER_INFO(2, ServerInfoPacket.class),
-    SERVER_COMMAND_EXECUTE(3, ServerCommandExecutePacket.class),
-    SERVER_CHANGE_STATE(4, ServerChangeStatePacket.class),
-    SERVER_PLAYER_COUNT_UPDATE(5, ServerPlayerCountUpdatePacket.class),
-    SERVER_RESULT(6, ServerResultPacket.class);
+    SERVER_COMMAND_EXECUTE(3, ServerCommandExecutePacketWrapper.class),
+    SERVER_CHANGE_STATE(4, ServerChangeStatePacketWrapper.class),
+    SERVER_PLAYER_COUNT_UPDATE(5, ServerPlayerCountUpdatePacketPlugin.class),
+    SERVER_RESULT(6, ServerResultPacketWrapper.class),
+    PLUGIN_SERVER_LIST(7, ServerListPacketAddPlugin.class);
 
     @Getter
     private int id;
