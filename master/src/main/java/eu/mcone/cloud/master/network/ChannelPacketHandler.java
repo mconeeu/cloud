@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
  *  You are not allowed to decompile the code.
  */
 
@@ -40,7 +40,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
                 if (s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
                     for (Server server : MasterServer.getInstance().getServers()) {
-                        if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.STOPPED)) {
+                        if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.OFFLINE)) {
                             s.send(new ServerListPacketAddPlugin(server.getInfo()));
                         }
                     }
@@ -57,17 +57,17 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                 s.getInfo().setState(state);
 
                 switch (state) {
-                    case RUNNING: {
+                    case WAITING: {
                         for (Server server : MasterServer.getInstance().getServers()) {
-                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.STOPPED)) {
+                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.OFFLINE)) {
                                 server.send(new ServerListPacketAddPlugin(s.getInfo()));
                             }
                         }
                         break;
                     }
-                    case STOPPED: {
+                    case OFFLINE: {
                         for (Server server : MasterServer.getInstance().getServers()) {
-                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.STOPPED)) {
+                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getInfo().getState().equals(ServerState.OFFLINE)) {
                                 server.send(new ServerListPacketRemovePlugin(s.getInfo()));
                             }
                         }

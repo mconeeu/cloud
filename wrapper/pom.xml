@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+  ~  You are not allowed to decompile the code.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>mc1cloud</artifactId>
+        <artifactId>mcone-cloud</artifactId>
         <groupId>eu.mcone.cloud</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>

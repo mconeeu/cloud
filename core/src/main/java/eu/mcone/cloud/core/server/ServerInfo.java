@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
  *  You are not allowed to decompile the code.
  */
 
@@ -32,6 +32,6 @@ public class ServerInfo {
         this.templateID = templateID;
         this.version = version;
 
-        this.state = ServerState.STOPPED;
+        this.state = ServerState.OFFLINE;
     }
 }

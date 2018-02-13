@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
  *  You are not allowed to decompile the code.
  */
 
@@ -230,7 +230,7 @@ public class Server {
                 if (process.isAlive()) {
                     System.out.println("[Server.class] Stopping the server " + this.info.getName() + "...");
                     this.sendcommand("stop");
-                    this.info.setState(ServerState.STOPPED);
+                    this.info.setState(ServerState.OFFLINE);
                     this.sendResult("[Server." + this.info.getName() + "] the server was stopped...", ServerResultPacketWrapper.Result.SUCCESSFUL);
                 } else {
                     System.out.println("[Server.class] The server '" + this.info.getName() + "' could not be stopped because the process is dead...");
@@ -252,7 +252,7 @@ public class Server {
                 if (process.isAlive()) {
                     System.out.println("[Server.class] ForceStop server " + this.info.getName() + "...");
                     process.destroy();
-                    info.setState(ServerState.STOPPED);
+                    info.setState(ServerState.OFFLINE);
                     sendResult("[Server." + this.info.getName() + "] The server was ForceStopped...", ServerResultPacketWrapper.Result.SUCCESSFUL);
                 } else {
                     System.out.println("[Server.class] The server '" + this.info.getName() + "' could not be ForeStopped because the process is dead...");
@@ -270,11 +270,11 @@ public class Server {
     }
 
     public void restart() {
-        this.info.setState(ServerState.STOPPED);
+        this.info.setState(ServerState.OFFLINE);
         stop();
         this.info.setState(ServerState.STARTING);
         start();
-        this.info.setState(ServerState.RUNNING);
+        this.info.setState(ServerState.WAITING);
     }
 
     public void delete() {

@@ -17,6 +17,8 @@
       <module name="main" target="1.7" />
       <module name="master" target="1.8" />
       <module name="mc1cloud" target="1.8" />
+      <module name="mcone-cloud" target="1.8" />
+      <module name="MCONE-Cloud" target="1.8" />
       <module name="plugin" target="1.8" />
       <module name="wrapper" target="1.8" />
     </bytecodeTargetLevel>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
  *  You are not allowed to decompile the code.
  */
 
@@ -23,12 +23,12 @@ public class BukkitPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(new PlayerListener(this.instance), this);
-        Bukkit.getScheduler().runTask(this, () -> instance.send(new ServerUpdateStatePacketPlugin(instance.getServerUuid(), ServerState.RUNNING)));
+        Bukkit.getScheduler().runTask(this, () -> instance.send(new ServerUpdateStatePacketPlugin(instance.getServerUuid(), ServerState.WAITING)));
     }
 
     @Override
     public void onDisable() {
-        instance.send(new ServerUpdateStatePacketPlugin(instance.getServerUuid(), ServerState.STOPPED));
+        instance.send(new ServerUpdateStatePacketPlugin(instance.getServerUuid(), ServerState.OFFLINE));
         instance.unload();
     }
 
