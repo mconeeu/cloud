@@ -9,17 +9,19 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
-import java.nio.channels.Channel;
 
-public class WrapperRegisterPacketWrapper extends Packet {
+public class ServerProgressStatePacketMaster extends Packet {
 
     @Getter
-    private long ram;
+    private Progress progress;
 
-    public WrapperRegisterPacketWrapper() {}
+    public enum Progress{
+        NOTPROGRESSING,
+        INPROGRESSING
+    }
 
-    public WrapperRegisterPacketWrapper(long ram) {
-        this.ram = ram;
+    public ServerProgressStatePacketMaster(Progress progress) {
+        this.progress = progress;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class WrapperRegisterPacketWrapper extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeLong(ram);
+            out.writeUTF(progress.toString());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -45,10 +47,9 @@ public class WrapperRegisterPacketWrapper extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            ram = input.readLong();
+            progress = progress.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }

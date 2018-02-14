@@ -6,6 +6,7 @@
 package eu.mcone.cloud.wrapper.server;
 
 import eu.mcone.cloud.core.file.UnZip;
+import eu.mcone.cloud.core.network.packet.ServerProgressStatePacketMaster;
 import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
@@ -49,6 +50,7 @@ public class Server {
     }
 
     public void start() {
+        this.sendProgressState(ServerProgressStatePacketMaster.Progress.INPROGRESSING);
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
         final File serverDir = new File(homeDir+s+"wrapper"+s+"servers"+s+info.getName());
@@ -91,8 +93,8 @@ public class Server {
                         )
                         .directory(serverDir)
                         .redirectErrorStream(true)
-                        .redirectInput(ProcessBuilder.Redirect.PIPE)
-                        .redirectOutput(ProcessBuilder.Redirect.PIPE);
+                        .redirectInput(ProcessBuilder.Redirect.INHERIT)
+                        .redirectOutput(ProcessBuilder.Redirect.INHERIT);
 
                 this.process = this.processBuilder.start();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
@@ -101,7 +103,9 @@ public class Server {
                 //Register all Output for Spigot console
                 new ConsoleInputReader(this);
 
-                this.process.waitFor();
+                this.sendProgressState(ServerProgressStatePacketMaster.Progress.NOTPROGRESSING);
+
+                this.process.wait();
             } catch (IOException | InterruptedException e) {
                 System.err.println("[Server.class] Could not start server "+info.getName()+":");
                 if (e instanceof FileNotFoundException) {
@@ -220,6 +224,16 @@ public class Server {
             System.out.println("[Server.class] The result '" + message + "\\" + result.toString() + "' was sent to the master...");
         } catch (Exception e) {
             System.out.println("[Server.class] The result could not be sent to the master...");
+            e.printStackTrace();
+        }
+    }
+
+    private void sendProgressState(ServerProgressStatePacketMaster.Progress progress){
+        try{
+            WrapperServer.getInstance().send(new ServerProgressStatePacketMaster(progress));
+            System.out.println("[Server.class] Send new progress state '" + progress.toString()  +"' to server Master...");
+        }catch (Exception e){
+            System.out.println("[Server.clas] Could not be sent new progress state to server Master");
             e.printStackTrace();
         }
     }

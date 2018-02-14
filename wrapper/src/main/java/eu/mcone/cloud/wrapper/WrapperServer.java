@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -36,19 +37,21 @@ public class WrapperServer {
     @Getter @Setter
     private Channel channel;
     @Getter
-    private int ram;
+    private long ram;
     @Getter
     private List<Server> servers = new ArrayList<>();
 
     public static void main(String args[]) {
-        new WrapperServer(args[0], Integer.valueOf(args[1]));
+        new WrapperServer(args[0]);
     }
 
-    private WrapperServer(String hostname, int ram) {
+    private WrapperServer(String hostname) {
         instance = this;
 
         this.hostname = hostname;
-        this.ram = ram;
+        this.ram = Runtime.getRuntime().maxMemory() / 1000000;
+
+        System.out.println(ram);
 
         fileManager = new FileManager();
         fileManager.createHomeDir("wrapper");

@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class ServerManager {
 
     private ScheduledExecutorService es;
-    private static HashMap<Server, String> serverWaitList = new HashMap<>();
+    private static HashMap<Server, String> serverWaitList = new LinkedHashMap<>();
 
     //creates or deletes empty servers for or from templates and tries to start servers from serverWaitList
     public ServerManager() {
@@ -68,6 +68,7 @@ public class ServerManager {
             }
 
             for (HashMap.Entry<Server, String> serverWrapperEntry : serverWaitList.entrySet()) {
+                System.out.println("going through server "+serverWrapperEntry.getKey().getInfo().getName()+" in ServerWaitlist for loop");
                 Server server = serverWrapperEntry.getKey();
                 String wrapperName = serverWrapperEntry.getValue();
 
@@ -77,24 +78,30 @@ public class ServerManager {
                     if (bestwrapper != null) {
                         server.setWrapper(bestwrapper);
                         serverWaitList.remove(server);
+                        //serverWaitList.remove(server.getInfo().getName());
                         System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
                         bestwrapper.createServer(server);
                         server.start();
+                        continue;
                     } else {
                         System.out.println("[ServerManager.class] No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
+                        continue;
                     }
                 } else {
+                    System.out.println("Debug-2");
                     Wrapper wrapper = WrapperManager.getWrapperbyString(wrapperName);
 
                     if (wrapper != null) {
                         server.setWrapper(wrapper);
-                        serverWaitList.remove(server);
+                        //serverWaitList.remove(server);
+                        serverWaitList.remove(server.getInfo().getName());
                         System.out.println("[ServerManager.class] Found explicit wrapper " + wrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
                         wrapper.createServer(server);
                         server.start();
                     } else {
                         System.out.println("[ServerManager.class] Explicit wrapper " + wrapperName + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
                     }
+                    continue;
                 }
             }
         }, 5, 5, TimeUnit.SECONDS);
@@ -102,10 +109,10 @@ public class ServerManager {
 
     //Returns the best wrapper with less ram
     private Wrapper getBestWrapper() {
-        HashMap<Wrapper, Integer> wrappers = new HashMap<>();
+        HashMap<Wrapper, Long> wrappers = new HashMap<>();
 
         for (Wrapper w : MasterServer.getInstance().getWrappers()) {
-            int difference = w.getRam() - w.getRamInUse();
+            long difference = w.getRam() - w.getRamInUse();
 
             //Exclude wrappers which ram is nearly full
             if (difference > 100) {

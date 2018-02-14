@@ -1,18 +1,15 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="master:jar">
+  <artifact type="jar" build-on-make="true" name="master:jar">
     <output-path>$PROJECT_DIR$/../../../MCONE CLOUD/Master</output-path>
     <root id="archive" name="master.jar">
       <element id="module-output" name="master" />
       <element id="module-output" name="core" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/io/netty/netty-all/4.1.19.Final/netty-all-4.1.19.Final.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/mysql/mysql-connector-java/5.1.45/mysql-connector-java-5.1.45.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.16.6/lombok-1.16.6.jar" path-in-jar="/" />
-      <element id="library" level="project" name="Maven: mysql:mysql-connector-java:5.1.45" />
-      <element id="library" level="project" name="Maven: io.netty:netty-all:4.1.19.Final" />
-      <element id="library" level="project" name="Maven: org.projectlombok:lombok:1.16.6" />
-      <element id="library" level="project" name="Maven: com.zaxxer:HikariCP:2.7.4" />
-      <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.25" />
-      <element id="library" level="project" name="Maven: org.slf4j:slf4j-simple:1.7.9" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/slf4j/slf4j-simple/1.7.9/slf4j-simple-1.7.9.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/io/netty/netty-all/4.1.19.Final/netty-all-4.1.19.Final.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/zaxxer/HikariCP/2.7.4/HikariCP-2.7.4.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

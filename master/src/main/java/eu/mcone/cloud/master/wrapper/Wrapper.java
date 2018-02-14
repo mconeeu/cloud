@@ -22,14 +22,14 @@ public class Wrapper {
     @Getter
     private String name;
     @Getter
-    private int ram, ramInUse;
+    private long ram, ramInUse;
     @Getter
     private Channel channel;
 
     @Getter
     private List<Server> servers = new ArrayList<>();
 
-    public Wrapper(Channel channel, int ram) {
+    public Wrapper(Channel channel, long ram) {
         this.channel = channel;
         this.ram = ram;
         this.name = "Wrapper-"+MasterServer.getInstance().getWrappers().size()+1;
@@ -61,6 +61,7 @@ public class Wrapper {
             channel.writeAndFlush(new ServerInfoPacket(s.getInfo()));
 
             s.setWrapper(this);
+            System.out.println("Debug-1");
             servers.add(s);
             System.out.println("[Wrapper.class] Created server " + s.getInfo().getName() + " at wrapper " + name + "!");
         } else {

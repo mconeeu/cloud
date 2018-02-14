@@ -13,7 +13,7 @@ class ConsoleInputReader {
 
     ConsoleInputReader(Server server) {
         new Thread(() -> {
-            BufferedReader br = new BufferedReader(new InputStreamReader(server.getProcess().getErrorStream()));
+            BufferedReader br = new BufferedReader(new InputStreamReader(server.getProcess().getInputStream()));
 
             String line;
             try {

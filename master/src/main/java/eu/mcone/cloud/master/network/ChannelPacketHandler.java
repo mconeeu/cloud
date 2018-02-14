@@ -78,6 +78,9 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
         } else if (packet instanceof ServerResultPacketWrapper) {
             ServerResultPacketWrapper result = (ServerResultPacketWrapper) packet;
             System.out.println("[" + result.getResultClass() + "] " + result.getMessage() + " ResultType: " + result.getResult());
+        } else if(packet instanceof ServerProgressStatePacketMaster){
+            ServerProgressStatePacketMaster result = (ServerProgressStatePacketMaster) packet;
+            System.out.println("[Wrapper.Server.class] Received new ProgressState Packet '" + result.getProgress().toString() + "'");
         }
     }
 
