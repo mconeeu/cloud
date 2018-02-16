@@ -11,7 +11,6 @@ import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.console.CommandExecutor;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
-import eu.mcone.cloud.wrapper.server.Bungee;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.cloud.core.mysql.MySQL;
 import io.netty.channel.Channel;
