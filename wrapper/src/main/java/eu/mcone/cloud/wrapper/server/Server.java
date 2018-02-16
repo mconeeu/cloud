@@ -9,11 +9,16 @@ import eu.mcone.cloud.core.network.packet.ServerProgressStatePacketMaster;
 import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import lombok.Getter;
 import lombok.Setter;
+import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -31,7 +36,7 @@ public class Server {
 
     public Server(ServerInfo info) {
         this.info = info;
-        this.getInfo().setPort(calculatePort());
+        this.getInfo().setPort(info.getVersion().equals(ServerVersion.BUNGEE) ? calculateProxyPort() : calculatePort());
         WrapperServer.getInstance().getServers().add(this);
     }
 
@@ -59,35 +64,57 @@ public class Server {
                 //new UnZip(templateZip.getPath(), serverDir.getPath());
                 //templateZip.delete();
 
-                setServerProperties();
                 //createConsoleLogDirectory();
 
                 processBuilder = new ProcessBuilder()
                         .inheritIO()
-                        .command("java",
-                                "-Dfile.encoding=UTF-8",
-                                "-jar",
-                                "-XX:+UseG1GC",
-                                "-XX:MaxGCPauseMillis=50",
-                                "-XX:-UseAdaptiveSizePolicy",
-                                "-Dcom.mojang.eula.agree=true",
-                                "-Dio.netty.recycler.maxCapacity=0 ",
-                                "-Dio.netty.recycler.maxCapacity.default=0",
-                                "-Djline.terminal=jline.UnsupportedTerminal",
-                                "-Xmx"+info.getRam()+"M",
-                                serverDir+s+"server.jar"
-                        )
                         .directory(serverDir)
                         .redirectErrorStream(true)
                         .redirectInput(ProcessBuilder.Redirect.PIPE)
                         .redirectOutput(ProcessBuilder.Redirect.PIPE);
 
+                if (info.getVersion().equals(ServerVersion.BUNGEE)) {
+                    setBungeeConfig();
+
+                    processBuilder.command("java",
+                            "-Dfile.encoding=UTF-8",
+                            "-jar",
+                            "-XX:+UseG1GC",
+                            "-XX:MaxGCPauseMillis=50",
+                            "-XX:-UseAdaptiveSizePolicy",
+                            "-Dio.netty.recycler.maxCapacity=0 ",
+                            "-Dio.netty.recycler.maxCapacity.default=0",
+                            "-Djline.terminal=jline.UnsupportedTerminal",
+                            "-Xmx" + info.getRam() + "M",
+                            serverDir + s + "bungee.jar"
+                    );
+
+                    //Register all Output for Spigot console
+                    new ConsoleInputReaderBungee(this, true);
+                } else if (info.getVersion().equals(ServerVersion.SPIGOT) || info.getVersion().equals(ServerVersion.BUKKIT)) {
+                    setSpigotConfig();
+
+                    processBuilder.command("java",
+                            "-Dfile.encoding=UTF-8",
+                            "-jar",
+                            "-XX:+UseG1GC",
+                            "-XX:MaxGCPauseMillis=50",
+                            "-XX:-UseAdaptiveSizePolicy",
+                            "-Dcom.mojang.eula.agree=true",
+                            "-Dio.netty.recycler.maxCapacity=0 ",
+                            "-Dio.netty.recycler.maxCapacity.default=0",
+                            "-Djline.terminal=jline.UnsupportedTerminal",
+                            "-Xmx"+info.getRam()+"M",
+                            serverDir+s+"server.jar"
+                    );
+
+                    //Register all Output for Spigot console
+                    new ConsoleInputReaderServer(this, true);
+                }
+
                 this.process = this.processBuilder.start();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                 writer.flush();
-
-                //Register all Output for Spigot console
-                new ConsoleInputReaderServer(this, true);
 
                 this.process.waitFor();
                 this.process.destroy();
@@ -104,21 +131,25 @@ public class Server {
         System.out.println("[Server.class] Server start of "+info.getName()+" initialised, method returned");
     }
 
-    private void setServerProperties() throws IOException {
+    private void setSpigotConfig() throws IOException {
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
         final String serverName = info.getName();
         final File propertyFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"server.properties");
+        final File spigotFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"spigot.yml");
+        final File bukkitFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"bukkit.yml");
 
         if (!propertyFile.exists()) {
             propertyFile.createNewFile();
         }
 
+        /*
+         * server.properties
+         */
         System.out.println("[Server.class] Set all server properties for server " + serverName + "...");
         Properties ps = new Properties();
-
-        InputStreamReader inputstreamreader = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
-        ps.load(inputstreamreader);
+        InputStreamReader isrProperties = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
+        ps.load(isrProperties);
 
         //Server Data
         ps.setProperty("online-mode", "false");
@@ -135,8 +166,56 @@ public class Server {
         OutputStream outputstream = Files.newOutputStream(Paths.get(propertyFile.getPath()));
         ps.store(outputstream, "MCONE_WRAPPER");
 
+
+        /*
+         * spigot.yml
+         */
+        System.out.println("[Server.class] Set all spigot.yml settings for server " + serverName + "...");
+        InputStreamReader isrSpigot = new InputStreamReader(Files.newInputStream(Paths.get(spigotFile.getPath())), StandardCharsets.UTF_8);
+        Configuration spigotConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrSpigot);
+
+        Configuration sectionSettings = spigotConf.getSection("settings");
+        sectionSettings.set("bungeecord", true);
+
+        Configuration sectionMessages = spigotConf.getSection("messages");
+        sectionMessages.set("whitelist", "§7§oDu stehst auf diesem Server nicht in der Whitelist!");
+        sectionMessages.set("unknown-command", "§8[§7§l!§8] §4Dieser Befehl existiert nicht!");
+        sectionMessages.set("server-full", "§7§oDer Server ist voll");
+        sectionMessages.set("outdated-client", "§7§oBitte verwende die Minecraft Version {0}");
+        sectionMessages.set("outdated-server", "§7§oBitte verwende die Minecraft Version {0}");
+        sectionMessages.set("restart", "§7§oDer Server startet neu...");
+
+
+        /*
+         * bukkit.yml
+         */
+        System.out.println("[Server.class] Set all spigot.yml settings for server " + serverName + "...");
+        InputStreamReader isrBukkit = new InputStreamReader(Files.newInputStream(Paths.get(bukkitFile.getPath())), StandardCharsets.UTF_8);
+        Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrBukkit);
+
+        Configuration sectionBukkitSettings = bukkitConf.getSection("settings");
+        sectionBukkitSettings.set("shutdown-message", "§7§oDer Server startet neu...");
+
         System.out.println("[Server.class] Done all server.properties have been set...");
         this.sendResult("[Server." + serverName + "] Done all server.properties have been set...", ServerResultPacketWrapper.Result.SUCCESSFUL);
+    }
+
+    private void setBungeeConfig() throws IOException {
+        final String s = File.separator;
+        final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
+        final String serverName = info.getName();
+        final File configFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"config.yml");
+
+        System.out.println("[Server.class] Set all spigot.yml settings for server " + serverName + "...");
+        InputStreamReader isrSpigot = new InputStreamReader(Files.newInputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
+        Configuration bungeeConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrSpigot);
+
+        bungeeConf.set("ip_forward", true);
+        bungeeConf.set("online_mode", true);
+
+        Configuration sectionSettings = bungeeConf.getSection("listeners");
+        sectionSettings.set("host", "0.0.0.0:"+info.getPort());
+        sectionSettings.set("max_players", info.getMaxPlayers());
     }
 
     private void createConsoleLogDirectory(){
@@ -229,7 +308,7 @@ public class Server {
             if (process != null) {
                 if (process.isAlive()) {
                     System.out.println("[Server.class] Stopping the server " + this.info.getName() + "...");
-                    this.sendcommand("stop");
+                    this.sendcommand(info.getVersion().equals(ServerVersion.BUKKIT) ? "stop" : "end");
                     this.info.setState(ServerState.OFFLINE);
                     this.sendResult("[Server." + this.info.getName() + "] the server was stopped...", ServerResultPacketWrapper.Result.SUCCESSFUL);
                 } else {
@@ -313,6 +392,19 @@ public class Server {
 
         for (Server server : WrapperServer.getInstance().getServers()) {
             port = server.getInfo().getPort();
+        }
+
+        port++;
+        return port;
+    }
+
+    private int calculateProxyPort() {
+        int port = 25564;
+
+        for (Server server : WrapperServer.getInstance().getServers()) {
+            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                port = server.getInfo().getPort();
+            }
         }
 
         port++;

@@ -37,49 +37,25 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             ServerInfo info = result.getServerInfo();
             System.out.println("new ServerInfoPacket (UUID: "+result.getServerInfo().getUuid()+", NAME: "+result.getServerInfo().getName()+")");
 
-            if(result.getServerInfo().getVersion().equals(ServerVersion.BUNGEE)){
-                for (Bungee b : WrapperServer.getInstance().getBungees()) {
-                    if (b.getInfo().getUuid().equals(info.getUuid())) {
-                        b.setInfo(info);
-                        return;
-                    }
+            for (Server s : WrapperServer.getInstance().getServers()) {
+                if (s.getInfo().getUuid().equals(info.getUuid())) {
+                    s.setInfo(info);
+                    return;
                 }
-
-                new Bungee(result.getServerInfo());
-            }else if(result.getServerInfo().getVersion().equals(ServerVersion.BUKKIT)){
-                for (Server s : WrapperServer.getInstance().getServers()) {
-                    if (s.getInfo().getUuid().equals(info.getUuid())) {
-                        s.setInfo(info);
-                        return;
-                    }
-                }
-
-                new Server(result.getServerInfo());
             }
+
+            new Server(result.getServerInfo());
         } else if (packet instanceof ServerChangeStatePacketWrapper) {
             ServerChangeStatePacketWrapper result = (ServerChangeStatePacketWrapper) packet;
             System.out.println("new ServerChangeStatePacketWrapper (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
 
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
-            Bungee b = WrapperServer.getInstance().getBungee(result.getServerUuid());
 
-            if(b != null){
-                switch (result.getState()){
-                    case START: b.start(); break;
-                    case STOP: b.stop(); break;
-                    case FORCESTOP: b.forceStop(); break;
-                    case DELETE: b.delete(); break;
-                }
-            }else if (s != null) {
-                switch (result.getState()) {
-                    case START: s.start(); break;
-                    case STOP: s.stop(); break;
-                    case FORCESTOP: s.forceStop(); break;
-                    case RESTART: s.restart(); break;
-                    case DELETE: s.delete(); break;
-                }
-            } else{
-
+            switch (result.getState()) {
+                case START: s.start(); break;
+                case STOP: s.stop(); break;
+                case FORCESTOP: s.forceStop(); break;
+                case DELETE: s.delete(); break;
             }
         } else if (packet instanceof ServerCommandExecutePacketWrapper) {
             ServerCommandExecutePacketWrapper result = (ServerCommandExecutePacketWrapper) packet;

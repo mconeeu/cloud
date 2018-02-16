@@ -8,6 +8,7 @@ package eu.mcone.cloud.wrapper;
 import eu.mcone.cloud.core.file.FileManager;
 import eu.mcone.cloud.core.console.ConsoleReader;
 import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.console.CommandExecutor;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
 import eu.mcone.cloud.wrapper.server.Bungee;
@@ -41,8 +42,6 @@ public class WrapperServer {
     private long ram;
     @Getter
     private List<Server> servers = new ArrayList<>();
-    @Getter
-    private List<Bungee> bungees = new ArrayList<>();
 
     public static void main(String args[]) {
         new WrapperServer(args[0]);
@@ -110,10 +109,19 @@ public class WrapperServer {
         return null;
     }
 
-    public Bungee getBungee(UUID uuid){
-        for(Bungee b : bungees){
-            if(b.getInfo().getUuid().equals(uuid)){
-                return b;
+    public Server getSpigotServer(UUID uuid) {
+        for (Server s : servers) {
+            if (s.getInfo().getVersion().equals(ServerVersion.SPIGOT) && s.getInfo().getUuid().equals(uuid)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    public Server getBungeeServer(UUID uuid) {
+        for (Server s : servers) {
+            if (s.getInfo().getVersion().equals(ServerVersion.BUNGEE) && s.getInfo().getUuid().equals(uuid)) {
+                return s;
             }
         }
         return null;

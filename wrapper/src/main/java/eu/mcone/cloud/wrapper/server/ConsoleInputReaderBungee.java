@@ -15,9 +15,9 @@ import java.io.InputStreamReader;
 class ConsoleInputReaderBungee {
 
     @Getter
-    private Bungee bungee;
+    private Server bungee;
 
-    ConsoleInputReaderBungee(Bungee bungee, Boolean use_filter) {
+    ConsoleInputReaderBungee(Server bungee, Boolean use_filter) {
         new Thread(() -> {
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(bungee.getProcess().getInputStream()));
