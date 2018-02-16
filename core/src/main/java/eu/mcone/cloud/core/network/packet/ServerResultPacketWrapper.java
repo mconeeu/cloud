@@ -42,8 +42,8 @@ public class ServerResultPacketWrapper extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(resultClass.toString());
-            out.writeUTF(message.toString());
+            out.writeUTF(resultClass);
+            out.writeUTF(message);
             out.writeUTF(result.toString());
 
             byte[] result = stream.toByteArray();
@@ -64,7 +64,7 @@ public class ServerResultPacketWrapper extends Packet {
 
             resultClass = input.readUTF();
             message = input.readUTF();
-            result = result.valueOf(input.readUTF());
+            result = Result.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }

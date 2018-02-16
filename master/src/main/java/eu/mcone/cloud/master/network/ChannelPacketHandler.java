@@ -75,12 +75,21 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                     }
                 }
             }
-        } else if (packet instanceof ServerResultPacketWrapper) {
-            ServerResultPacketWrapper result = (ServerResultPacketWrapper) packet;
-            System.out.println("[" + result.getResultClass() + "] " + result.getMessage() + " ResultType: " + result.getResult());
         } else if(packet instanceof ServerProgressStatePacketMaster){
             ServerProgressStatePacketMaster result = (ServerProgressStatePacketMaster) packet;
-            System.out.println("[Wrapper.Server.class] Received new ProgressState Packet '" + result.getProgress().toString() + "'");
+            System.out.println("[" + result.getEvent_class() + "] Received new ProgressState Packet '" + result.getProgress() + "'");
+                for(Wrapper wrapper : MasterServer.getInstance().getWrappers()){
+                    if(wrapper.getChannel().equals(ctx.channel())){
+                        if(result.getProgress().equals(ServerProgressStatePacketMaster.Progress.INPROGRESSING)){
+                            wrapper.setProgressing(true);
+                        }else if(result.getProgress().equals(ServerProgressStatePacketMaster.Progress.NOTPROGRESSING)){
+                            wrapper.setProgressing(false);
+                        }
+                    }
+                }
+        }else if (packet instanceof ServerResultPacketWrapper) {
+            ServerResultPacketWrapper result = (ServerResultPacketWrapper) packet;
+            System.out.println("[" + result.getResultClass() + "] " + result.getMessage() + " ResultType: " + result.getResult());
         }
     }
 

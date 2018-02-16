@@ -13,6 +13,7 @@ import eu.mcone.cloud.master.server.Server;
 import lombok.Getter;
 
 import io.netty.channel.Channel;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +22,15 @@ public class Wrapper {
 
     @Getter
     private String name;
+
     @Getter
     private long ram, ramInUse;
+
     @Getter
     private Channel channel;
+
+    @Getter @Setter
+    private boolean progressing = false;
 
     @Getter
     private List<Server> servers = new ArrayList<>();
@@ -61,7 +67,6 @@ public class Wrapper {
             channel.writeAndFlush(new ServerInfoPacket(s.getInfo()));
 
             s.setWrapper(this);
-            System.out.println("Debug-1");
             servers.add(s);
             System.out.println("[Wrapper.class] Created server " + s.getInfo().getName() + " at wrapper " + name + "!");
         } else {

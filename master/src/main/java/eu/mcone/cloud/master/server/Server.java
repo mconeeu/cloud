@@ -42,7 +42,7 @@ public class Server {
 
         //Check if Wrapper is set
         if (this.wrapperName == null) {
-            MasterServer.getInstance().getServerManager().addtoServerWaitList(this, null);
+            MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
         } else {
             Wrapper wrapper = WrapperManager.getWrapperbyString(this.wrapperName);
 
@@ -52,7 +52,7 @@ public class Server {
                 wrapper.createServer(this);
             } else {
                 //Add to ServerWaitingList
-                MasterServer.getInstance().getServerManager().addtoServerWaitList(this, this.wrapperName);
+                MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
             }
         }
     }
@@ -61,7 +61,7 @@ public class Server {
         //Check if Wrapper is set
         if (wrapper == null) {
             System.out.println("[Server.start] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            MasterServer.getInstance().getServerManager().addtoServerWaitList(this, wrapperName);
+            MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
         } else {
             if (!info.getVersion().equals(ServerVersion.BUNGEE)) {
                 for (Server s : MasterServer.getInstance().getServers()) {
@@ -81,7 +81,7 @@ public class Server {
         //Check if Wrapper is set
         if (wrapper == null) {
             System.out.println("[Server.stop] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            MasterServer.getInstance().getServerManager().addtoServerWaitList(this, wrapperName);
+            MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
         } else {
             //Stop server on Wrapper
             System.out.println("[Server.stop] Stopping server " + this.info.getName() + "!");
@@ -93,7 +93,7 @@ public class Server {
         //Check if Wrapper is set
         if (wrapper == null) {
             System.out.println("[Server.delete] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            MasterServer.getInstance().getServerManager().addtoServerWaitList(this, wrapperName);
+            MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
         } else {
             //Delete Server on Wrapper
             this.wrapper.deleteServer(this);

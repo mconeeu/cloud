@@ -7,8 +7,11 @@ package eu.mcone.cloud.wrapper.network;
 
 import eu.mcone.cloud.core.network.packet.*;
 import eu.mcone.cloud.core.server.ServerInfo;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.WrapperServer;
+import eu.mcone.cloud.wrapper.server.Bungee;
 import eu.mcone.cloud.wrapper.server.Server;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -28,27 +31,46 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, Packet packet) {
+    protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
         if (packet instanceof ServerInfoPacket) {
             ServerInfoPacket result = (ServerInfoPacket) packet;
             ServerInfo info = result.getServerInfo();
             System.out.println("new ServerInfoPacket (UUID: "+result.getServerInfo().getUuid()+", NAME: "+result.getServerInfo().getName()+")");
 
-            for (Server s : WrapperServer.getInstance().getServers()) {
-                if (s.getInfo().getUuid().equals(info.getUuid())) {
-                    s.setInfo(info);
-                    return;
+            if(result.getServerInfo().getVersion().equals(ServerVersion.BUNGEE)){
+                for (Bungee b : WrapperServer.getInstance().getBungees()) {
+                    if (b.getInfo().getUuid().equals(info.getUuid())) {
+                        b.setInfo(info);
+                        return;
+                    }
                 }
-            }
 
-            new Server(result.getServerInfo());
+                new Bungee(result.getServerInfo());
+            }else if(result.getServerInfo().getVersion().equals(ServerVersion.BUKKIT)){
+                for (Server s : WrapperServer.getInstance().getServers()) {
+                    if (s.getInfo().getUuid().equals(info.getUuid())) {
+                        s.setInfo(info);
+                        return;
+                    }
+                }
+
+                new Server(result.getServerInfo());
+            }
         } else if (packet instanceof ServerChangeStatePacketWrapper) {
             ServerChangeStatePacketWrapper result = (ServerChangeStatePacketWrapper) packet;
             System.out.println("new ServerChangeStatePacketWrapper (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
 
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
+            Bungee b = WrapperServer.getInstance().getBungee(result.getServerUuid());
 
-            if (s != null) {
+            if(b != null){
+                switch (result.getState()){
+                    case START: b.start(); break;
+                    case STOP: b.stop(); break;
+                    case FORCESTOP: b.forceStop(); break;
+                    case DELETE: b.delete(); break;
+                }
+            }else if (s != null) {
                 switch (result.getState()) {
                     case START: s.start(); break;
                     case STOP: s.stop(); break;
@@ -56,8 +78,8 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                     case RESTART: s.restart(); break;
                     case DELETE: s.delete(); break;
                 }
-            } else {
-                System.out.println("s == null");
+            } else{
+
             }
         } else if (packet instanceof ServerCommandExecutePacketWrapper) {
             ServerCommandExecutePacketWrapper result = (ServerCommandExecutePacketWrapper) packet;

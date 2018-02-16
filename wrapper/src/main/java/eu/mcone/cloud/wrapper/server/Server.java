@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.wrapper.server;
 
-import eu.mcone.cloud.core.file.UnZip;
 import eu.mcone.cloud.core.network.packet.ServerProgressStatePacketMaster;
 import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
 import eu.mcone.cloud.core.server.ServerInfo;
@@ -15,8 +14,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -36,17 +33,6 @@ public class Server {
         this.info = info;
         this.getInfo().setPort(calculatePort());
         WrapperServer.getInstance().getServers().add(this);
-
-        System.out.println("[Server.class] New Server " + this.info.getName() + " initialized! Creating Directories...");
-        /* ... */
-
-        if (this.info.getTemplateName() != null) {
-            System.out.println("[Server.class] Downloading template " + this.info.getTemplateName() + " for Server " + this.info.getName() + "...");
-            /* ... */
-
-        } else {
-            System.out.println("[Server.class] No template set for Server " + this.info.getName() + "! Starting Server...");
-        }
     }
 
     public void start() {
@@ -64,14 +50,14 @@ public class Server {
         new Thread(() -> {
             try {
                 System.out.println("[Server.class] Downloading Template...");
-                URL website = new URL("http://templates.mcone.eu/"+info.getTemplateName()+".zip");
-                FileOutputStream fos = new FileOutputStream(templateZip);
-                fos.getChannel().transferFrom(Channels.newChannel(website.openStream()), 0, Long.MAX_VALUE);
+                //URL website = new URL("http://templates.mcone.eu/"+info.getTemplateName()+".zip");
+                //FileOutputStream fos = new FileOutputStream(templateZip);
+                //fos.getChannel().transferFrom(Channels.newChannel(website.openStream()), 0, Long.MAX_VALUE);
 
                 System.out.println("[Server.class] Unzipping Template...");
-                System.out.println("new UnZip("+templateZip.getPath()+", "+serverDir.getPath()+");");
-                new UnZip(templateZip.getPath(), serverDir.getPath());
-                templateZip.delete();
+                //System.out.println("new UnZip("+templateZip.getPath()+", "+serverDir.getPath()+");");
+                //new UnZip(templateZip.getPath(), serverDir.getPath());
+                //templateZip.delete();
 
                 setServerProperties();
                 //createConsoleLogDirectory();
@@ -93,19 +79,18 @@ public class Server {
                         )
                         .directory(serverDir)
                         .redirectErrorStream(true)
-                        .redirectInput(ProcessBuilder.Redirect.INHERIT)
-                        .redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                        .redirectInput(ProcessBuilder.Redirect.PIPE)
+                        .redirectOutput(ProcessBuilder.Redirect.PIPE);
 
                 this.process = this.processBuilder.start();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                 writer.flush();
 
                 //Register all Output for Spigot console
-                new ConsoleInputReader(this);
+                new ConsoleInputReaderServer(this, true);
 
-                this.sendProgressState(ServerProgressStatePacketMaster.Progress.NOTPROGRESSING);
-
-                this.process.wait();
+                this.process.waitFor();
+                this.process.destroy();
             } catch (IOException | InterruptedException e) {
                 System.err.println("[Server.class] Could not start server "+info.getName()+":");
                 if (e instanceof FileNotFoundException) {
@@ -116,6 +101,7 @@ public class Server {
                 e.printStackTrace();
             }
         }).start();
+        System.out.println("[Server.class] Server start of "+info.getName()+" initialised, method returned");
     }
 
     private void setServerProperties() throws IOException {
@@ -218,7 +204,7 @@ public class Server {
         }
     }
 
-    private void sendResult(String message, ServerResultPacketWrapper.Result result) {
+    public void sendResult(String message, ServerResultPacketWrapper.Result result) {
         try {
             WrapperServer.getInstance().send(new ServerResultPacketWrapper("Server.class", message, result));
             System.out.println("[Server.class] The result '" + message + "\\" + result.toString() + "' was sent to the master...");
@@ -228,9 +214,9 @@ public class Server {
         }
     }
 
-    private void sendProgressState(ServerProgressStatePacketMaster.Progress progress){
+    public void sendProgressState(ServerProgressStatePacketMaster.Progress progress){
         try{
-            WrapperServer.getInstance().send(new ServerProgressStatePacketMaster(progress));
+            WrapperServer.getInstance().send(new ServerProgressStatePacketMaster("Server.class", progress));
             System.out.println("[Server.class] Send new progress state '" + progress.toString()  +"' to server Master...");
         }catch (Exception e){
             System.out.println("[Server.clas] Could not be sent new progress state to server Master");
@@ -324,8 +310,10 @@ public class Server {
 
     private int calculatePort() {
         int port = 4000;
-        while (WrapperServer.getInstance().getServers().iterator().hasNext())
-            port = WrapperServer.getInstance().getServers().iterator().next().getInfo().getPort();
+
+        for (Server server : WrapperServer.getInstance().getServers()) {
+            port = server.getInfo().getPort();
+        }
 
         port++;
         return port;

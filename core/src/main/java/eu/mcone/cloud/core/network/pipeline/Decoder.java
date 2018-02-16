@@ -24,7 +24,6 @@ public class Decoder extends ByteToMessageDecoder {
             packet.read(in);
 
             out.add(packet);
-            return;
         }
     }
 }

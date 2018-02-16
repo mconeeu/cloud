@@ -19,7 +19,6 @@ public class Encoder extends MessageToByteEncoder<Packet> {
         if (packetID > -1) {
             out.writeInt(packetID);
             packet.write(out);
-            return;
         }
     }
 }

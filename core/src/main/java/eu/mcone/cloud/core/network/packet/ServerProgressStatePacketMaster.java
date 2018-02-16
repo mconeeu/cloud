@@ -15,13 +15,19 @@ public class ServerProgressStatePacketMaster extends Packet {
     @Getter
     private Progress progress;
 
+    @Getter
+    private String event_class;
+
     public enum Progress{
         NOTPROGRESSING,
         INPROGRESSING
     }
 
-    public ServerProgressStatePacketMaster(Progress progress) {
+    public ServerProgressStatePacketMaster(){}
+
+    public ServerProgressStatePacketMaster(String event_class, Progress progress) {
         this.progress = progress;
+        this.event_class = event_class;
     }
 
     @Override
@@ -30,6 +36,7 @@ public class ServerProgressStatePacketMaster extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
+            out.writeUTF(event_class);
             out.writeUTF(progress.toString());
 
             byte[] result = stream.toByteArray();
@@ -47,7 +54,8 @@ public class ServerProgressStatePacketMaster extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            progress = progress.valueOf(input.readUTF());
+            event_class = input.readUTF();
+            progress = Progress.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }

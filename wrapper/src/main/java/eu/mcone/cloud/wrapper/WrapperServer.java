@@ -10,6 +10,7 @@ import eu.mcone.cloud.core.console.ConsoleReader;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.wrapper.console.CommandExecutor;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
+import eu.mcone.cloud.wrapper.server.Bungee;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.cloud.core.mysql.MySQL;
 import io.netty.channel.Channel;
@@ -40,6 +41,8 @@ public class WrapperServer {
     private long ram;
     @Getter
     private List<Server> servers = new ArrayList<>();
+    @Getter
+    private List<Bungee> bungees = new ArrayList<>();
 
     public static void main(String args[]) {
         new WrapperServer(args[0]);
@@ -58,6 +61,7 @@ public class WrapperServer {
         fileManager.createHomeDir("wrapper"+File.separator+"templates");
         fileManager.createHomeDir("wrapper"+File.separator+"servers");
         fileManager.createHomeDir("wrapper"+File.separator+"config");
+        fileManager.createHomeDir("wrapper"+File.separator+"bungee");
 
         consoleReader = new ConsoleReader();
         consoleReader.registerCommand(new CommandExecutor());
@@ -78,12 +82,12 @@ public class WrapperServer {
 
         System.out.println("[Shutdowm progress] Stopping running servers...");
         for (Server s : servers) {
-            s.sendcommand("stop");
+            s.stop();
         }
 
         try {
             System.out.println("[Shutdowm progress] Waiting for servers to stop...");
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(10);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -101,6 +105,15 @@ public class WrapperServer {
         for (Server s : servers) {
             if (s.getInfo().getUuid().equals(uuid)) {
                 return s;
+            }
+        }
+        return null;
+    }
+
+    public Bungee getBungee(UUID uuid){
+        for(Bungee b : bungees){
+            if(b.getInfo().getUuid().equals(uuid)){
+                return b;
             }
         }
         return null;
