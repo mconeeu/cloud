@@ -44,6 +44,7 @@ public class Bungee {
         if (serverDir.exists()) serverDir.delete();
         serverDir.mkdir();
 
+
         new Thread(() -> {
             try{
                 processBuilder = new ProcessBuilder().inheritIO()
