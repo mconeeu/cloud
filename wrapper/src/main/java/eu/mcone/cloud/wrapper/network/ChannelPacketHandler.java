@@ -7,11 +7,8 @@ package eu.mcone.cloud.wrapper.network;
 
 import eu.mcone.cloud.core.network.packet.*;
 import eu.mcone.cloud.core.server.ServerInfo;
-import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.WrapperServer;
-import eu.mcone.cloud.wrapper.server.Bungee;
 import eu.mcone.cloud.wrapper.server.Server;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
