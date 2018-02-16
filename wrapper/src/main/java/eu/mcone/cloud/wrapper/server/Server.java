@@ -24,15 +24,18 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
 
     @Getter @Setter
     private ServerInfo info;
     @Getter
-    private ProcessBuilder processBuilder;
-    @Getter
     private Process process;
+    @Getter
+    public Runtime rt;
 
     public Server(ServerInfo info) {
         this.info = info;
@@ -42,6 +45,8 @@ public class Server {
 
     public void start() {
         this.sendProgressState(ServerProgressStatePacketMaster.Progress.INPROGRESSING);
+        this.rt = Runtime.getRuntime();
+
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
         final File serverDir = new File(homeDir+s+"wrapper"+s+"servers"+s+info.getName());
@@ -66,17 +71,10 @@ public class Server {
 
                 //createConsoleLogDirectory();
 
-                processBuilder = new ProcessBuilder()
-                        .inheritIO()
-                        .directory(serverDir)
-                        .redirectErrorStream(true)
-                        .redirectInput(ProcessBuilder.Redirect.PIPE)
-                        .redirectOutput(ProcessBuilder.Redirect.PIPE);
-
                 if (info.getVersion().equals(ServerVersion.BUNGEE)) {
                     setBungeeConfig();
 
-                    processBuilder.command("java",
+                    String[] command = new String[]{"java",
                             "-Dfile.encoding=UTF-8",
                             "-jar",
                             "-XX:+UseG1GC",
@@ -84,17 +82,18 @@ public class Server {
                             "-XX:-UseAdaptiveSizePolicy",
                             "-Dio.netty.recycler.maxCapacity=0 ",
                             "-Dio.netty.recycler.maxCapacity.default=0",
-                            "-Djline.terminal=jline.UnsupportedTerminal",
-                            "-Xmx" + info.getRam() + "M",
-                            serverDir + s + "bungee.jar"
-                    );
+                            "-Xmx"+info.getRam()+"M",
+                            serverDir+s+"bungee.jar"};
+
+                    this.process = this.rt.exec(command, null, serverDir);
 
                     //Register all Output for Spigot console
                     new ConsoleInputReaderBungee(this, true);
                 } else if (info.getVersion().equals(ServerVersion.SPIGOT) || info.getVersion().equals(ServerVersion.BUKKIT)) {
                     setSpigotConfig();
 
-                    processBuilder.command("java",
+
+                    String[] command = new String[]{"java",
                             "-Dfile.encoding=UTF-8",
                             "-jar",
                             "-XX:+UseG1GC",
@@ -105,14 +104,14 @@ public class Server {
                             "-Dio.netty.recycler.maxCapacity.default=0",
                             "-Djline.terminal=jline.UnsupportedTerminal",
                             "-Xmx"+info.getRam()+"M",
-                            serverDir+s+"server.jar"
-                    );
+                            serverDir+s+"server.jar"};
+
+                    this.process = this.rt.exec(command, null, serverDir);
 
                     //Register all Output for Spigot console
                     new ConsoleInputReaderServer(this, true);
                 }
 
-                this.process = this.processBuilder.start();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                 writer.flush();
 
@@ -148,7 +147,7 @@ public class Server {
          */
         System.out.println("[Server.class] Set all server properties for server " + serverName + "...");
         Properties ps = new Properties();
-        InputStreamReader isrProperties = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
+        final InputStreamReader isrProperties = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
         ps.load(isrProperties);
 
         //Server Data
@@ -164,6 +163,7 @@ public class Server {
         ps.setProperty("server-name", serverName);
 
         OutputStream outputstream = Files.newOutputStream(Paths.get(propertyFile.getPath()));
+        outputstream.flush();
         ps.store(outputstream, "MCONE_WRAPPER");
 
 
@@ -171,8 +171,8 @@ public class Server {
          * spigot.yml
          */
         System.out.println("[Server.class] Set all spigot.yml settings for server " + serverName + "...");
-        InputStreamReader isrSpigot = new InputStreamReader(Files.newInputStream(Paths.get(spigotFile.getPath())), StandardCharsets.UTF_8);
-        Configuration spigotConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrSpigot);
+        final InputStreamReader isrSpigot = new InputStreamReader(Files.newInputStream(Paths.get(spigotFile.getPath())), StandardCharsets.UTF_8);
+        final Configuration spigotConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrSpigot);
 
         Configuration sectionSettings = spigotConf.getSection("settings");
         sectionSettings.set("bungeecord", true);
@@ -185,13 +185,15 @@ public class Server {
         sectionMessages.set("outdated-server", "§7§oBitte verwende die Minecraft Version {0}");
         sectionMessages.set("restart", "§7§oDer Server startet neu...");
 
+        OutputStream os = Files.newOutputStream(Paths.get(spigotFile.getPath()));
+        os.flush();
 
         /*
          * bukkit.yml
          */
         System.out.println("[Server.class] Set all spigot.yml settings for server " + serverName + "...");
-        InputStreamReader isrBukkit = new InputStreamReader(Files.newInputStream(Paths.get(bukkitFile.getPath())), StandardCharsets.UTF_8);
-        Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrBukkit);
+        final InputStreamReader isrBukkit = new InputStreamReader(Files.newInputStream(Paths.get(bukkitFile.getPath())), StandardCharsets.UTF_8);
+        final Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrBukkit);
 
         Configuration sectionBukkitSettings = bukkitConf.getSection("settings");
         sectionBukkitSettings.set("shutdown-message", "§7§oDer Server startet neu...");
@@ -207,8 +209,8 @@ public class Server {
         final File configFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"config.yml");
 
         System.out.println("[Server.class] Set all spigot.yml settings for server " + serverName + "...");
-        InputStreamReader isrSpigot = new InputStreamReader(Files.newInputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
-        Configuration bungeeConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrSpigot);
+        final InputStreamReader isrSpigot = new InputStreamReader(Files.newInputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
+        final Configuration bungeeConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrSpigot);
 
         bungeeConf.set("ip_forward", true);
         bungeeConf.set("online_mode", true);
