@@ -59,14 +59,14 @@ public abstract class Server {
 
         new Thread(() -> {
             try {
-                Logger.log(getClass(), "["+info.getName()+"] Downloading Template...");
-                URL website = new URL("http://templates.mcone.eu/"+info.getTemplateName()+".zip");
-                FileOutputStream fos = new FileOutputStream(templateZip);
-                fos.getChannel().transferFrom(Channels.newChannel(website.openStream()), 0, Long.MAX_VALUE);
+                //Logger.log(getClass(), "["+info.getName()+"] Downloading Template...");
+                //URL website = new URL("http://templates.mcone.eu/"+info.getTemplateName()+".zip");
+                //FileOutputStream fos = new FileOutputStream(templateZip);
+                //fos.getChannel().transferFrom(Channels.newChannel(website.openStream()), 0, Long.MAX_VALUE);
 
                 Logger.log(getClass(), "["+info.getName()+"] Unzipping Template...");
-                new UnZip(templateZip.getPath(), serverDir.getPath());
-                templateZip.delete();
+                //new UnZip(templateZip.getPath(), serverDir.getPath());
+                //templateZip.delete();
 
                 setConfig();
 
@@ -74,7 +74,7 @@ public abstract class Server {
                 this.process = this.runtime.exec(command, null, serverDir);
 
                 //Register all Output for Spigot console
-                reader.getDeclaredConstructor(Server.class, Boolean.class).newInstance(this, false);
+                reader.getDeclaredConstructor(Server.class, Boolean.class).newInstance(this, true);
 
                 this.process.waitFor();
                 this.process.destroy();

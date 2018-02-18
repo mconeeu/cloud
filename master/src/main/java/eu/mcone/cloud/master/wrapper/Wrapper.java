@@ -81,6 +81,11 @@ public class Wrapper {
         Logger.log(getClass(), "["+name+"] Deleted server " + server.getInfo().getName() + "!");
     }
 
+    public void deleteServer(UUID uuid, long ram) {
+        this.ramInUse -= ram;
+        channel.writeAndFlush(new ServerChangeStatePacketWrapper(uuid, ServerChangeStatePacketWrapper.State.DELETE));
+    }
+
     public void startServer(Server server) {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.START));
         Logger.log(getClass(), "["+name+"] Setting Wrapper Busy...");

@@ -20,6 +20,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.*;
 
 public class BungeeCord extends Server {
 
@@ -72,7 +73,40 @@ public class BungeeCord extends Server {
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
         final String serverName = info.getName();
+        final File propertyFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"server.properties");
         final File configFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"config.yml");
+
+        /*
+         * server.properties
+         */
+        if (!propertyFile.exists()) {
+            propertyFile.createNewFile();
+        }
+        Logger.log(getClass(), "["+info.getName()+"] Setting all server properties...");
+        Properties ps = new Properties();
+        final InputStreamReader isrProperties = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
+        ps.load(isrProperties);
+
+        //Server Data
+        ps.setProperty("online-mode", "false");
+        ps.setProperty("server-ip", WrapperServer.getInstance().getHostname());
+        ps.setProperty("server-port", Integer.toString(info.getPort()));
+        ps.setProperty("max-players", Integer.toString(info.getMaxPlayers()));
+        ps.setProperty("motd", "\u00A7f\u00A7lMC ONE \u00A73Server \u00A78» \u00A77" + serverName);
+
+        //CloudSystem Data
+        ps.setProperty("server-uuid", info.getUuid().toString());
+        ps.setProperty("server-templateID", Integer.toString(info.getTemplateID()));
+        ps.setProperty("server-name", serverName);
+
+        OutputStream outputstream = Files.newOutputStream(Paths.get(propertyFile.getPath()));
+        outputstream.flush();
+        ps.store(outputstream, "MCONE_WRAPPER");
+
+
+        /*
+         * config.yml
+         */
 
         Logger.log(getClass(), "["+info.getName()+"] Set all config.yml settings!");
         if (!configFile.exists()) {
@@ -85,12 +119,28 @@ public class BungeeCord extends Server {
         bungeeConf.set("ip_forward", true);
         bungeeConf.set("online_mode", true);
 
-        Configuration sectionSettings = bungeeConf.getSection("listeners");
-        sectionSettings.set("host", "0.0.0.0:"+info.getPort());
-        sectionSettings.set("max_players", info.getMaxPlayers());
+        bungeeConf.set("host", "0.0.0.0:" + info.getPort());
+        bungeeConf.set("max_players", info.getMaxPlayers());
 
-        OutputStreamWriter oswSpigot = new OutputStreamWriter(Files.newOutputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
-        ConfigurationProvider.getProvider(YamlConfiguration.class).save(bungeeConf, oswSpigot);
+        bungeeConf.set("ip_forward", true);
+        bungeeConf.set("online_mode", true);
+
+        bungeeConf.set("host", "0.0.0.0:"+info.getPort());
+        bungeeConf.set("max_players", info.getMaxPlayers());
+
+        HashMap<Object, Object> hashischMap = new HashMap<>((HashMap<Object, Object>) bungeeConf.getList("listeners").get(0));
+        System.out.println("Host: " + hashischMap.get("host"));
+        hashischMap.put("host", "0.0.0.0:"+info.getPort());
+
+        bungeeConf.set("listeners", hashischMap);
+
+        for(Object key : bungeeConf.getList("listeners")){
+            System.out.println("TEST:" + key);
+        }
+
+
+        OutputStreamWriter oswBungee = new OutputStreamWriter(Files.newOutputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
+        ConfigurationProvider.getProvider(YamlConfiguration.class).save(bungeeConf, oswBungee);
     }
 
     private static int calculatePort() {
