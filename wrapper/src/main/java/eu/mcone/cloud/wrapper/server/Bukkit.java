@@ -15,8 +15,10 @@ import eu.mcone.cloud.wrapper.server.console.BukkitInputReader;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -81,15 +83,12 @@ public class Bukkit extends Server {
         final File spigotFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"spigot.yml");
         final File bukkitFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"bukkit.yml");
 
-        if (!propertyFile.exists()) {
-            propertyFile.createNewFile();
-        }
-
         /*
          * server.properties
          */
         if (!propertyFile.exists()) {
-            propertyFile.createNewFile();
+            URL fileUrl = getClass().getResource("/server.properties");
+            FileUtils.copyURLToFile(fileUrl, spigotFile);
         }
         Logger.log(getClass(), "["+info.getName()+"] Setting all server properties...");
         Properties ps = new Properties();
@@ -101,7 +100,7 @@ public class Bukkit extends Server {
         ps.setProperty("server-ip", WrapperServer.getInstance().getHostname());
         ps.setProperty("server-port", Integer.toString(info.getPort()));
         ps.setProperty("max-players", Integer.toString(info.getMaxPlayers()));
-        ps.setProperty("motd", "\u00A7f\u00A7lMC ONE \u00A73Server \u00A78» \u00A77" + serverName);
+        ps.setProperty("motd", "\u00A7f\u00A7lMC ONE \u00A73CloudServer \u00A78» \u00A77" + serverName);
 
         //CloudSystem Data
         ps.setProperty("server-uuid", info.getUuid().toString());
@@ -118,7 +117,8 @@ public class Bukkit extends Server {
              * spigot.yml
              */
             if (!spigotFile.exists()) {
-                spigotFile.createNewFile();
+                URL fileUrl = getClass().getResource("/spigot.yml");
+                FileUtils.copyURLToFile(fileUrl, spigotFile);
             }
 
             Logger.log(getClass(), "["+info.getName()+"] Setting all spigot.yml settings...");
@@ -144,7 +144,8 @@ public class Bukkit extends Server {
          * bukkit.yml
          */
         if (!bukkitFile.exists()) {
-            bukkitFile.createNewFile();
+            URL fileUrl = getClass().getResource("/bukkit.yml");
+            FileUtils.copyURLToFile(fileUrl, spigotFile);
         }
 
         Logger.log(getClass(), "["+info.getName()+"] Setting all bukkit.yml settings...");

@@ -47,7 +47,7 @@ public class CloudPlugin {
             e.printStackTrace();
         }
 
-        new ClientBootstrap("localhost", 4567, this);
+        new Thread(() -> new ClientBootstrap("localhost", 4567, this)).start();
     }
 
     public void unload() {

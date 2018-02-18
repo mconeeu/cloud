@@ -61,7 +61,6 @@ public class WrapperServer {
         fileManager.createHomeDir("wrapper"+File.separator+"templates");
         fileManager.createHomeDir("wrapper"+File.separator+"servers");
         fileManager.createHomeDir("wrapper"+File.separator+"config");
-        fileManager.createHomeDir("wrapper"+File.separator+"bungees");
 
         consoleReader = new ConsoleReader();
         consoleReader.registerCommand(new CommandExecutor());

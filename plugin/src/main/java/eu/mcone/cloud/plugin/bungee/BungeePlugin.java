@@ -8,6 +8,7 @@ package eu.mcone.cloud.plugin.bungee;
 import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacketWrapper;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.plugin.CloudPlugin;
+import eu.mcone.cloud.plugin.bungee.server.ReconnectHandler;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -24,6 +25,7 @@ public class BungeePlugin extends Plugin implements eu.mcone.cloud.plugin.Plugin
     public void onEnable() {
         ProxyServer.getInstance().getPluginManager().registerListener(this, new PlayerListener(this.instance));
         ProxyServer.getInstance().getServers().clear();
+        ProxyServer.getInstance().setReconnectHandler(new ReconnectHandler());
     }
 
     @Override

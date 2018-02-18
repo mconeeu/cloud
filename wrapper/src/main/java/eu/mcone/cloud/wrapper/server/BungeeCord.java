@@ -15,8 +15,10 @@ import eu.mcone.cloud.wrapper.server.console.BungeeInputReader;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -107,37 +109,28 @@ public class BungeeCord extends Server {
         /*
          * config.yml
          */
-
-        Logger.log(getClass(), "["+info.getName()+"] Set all config.yml settings!");
+        Logger.log(getClass(), "["+info.getName()+"] Setting all config.yml settings!");
         if (!configFile.exists()) {
-            configFile.createNewFile();
+            URL fileUrl = getClass().getResource("/bungeeconfig.yml");
+            FileUtils.copyURLToFile(fileUrl, configFile);
         }
 
         final InputStreamReader isrBungee = new InputStreamReader(Files.newInputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
         final Configuration bungeeConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrBungee);
 
-        bungeeConf.set("ip_forward", true);
         bungeeConf.set("online_mode", true);
-
-        bungeeConf.set("host", "0.0.0.0:" + info.getPort());
-        bungeeConf.set("max_players", info.getMaxPlayers());
-
         bungeeConf.set("ip_forward", true);
-        bungeeConf.set("online_mode", true);
 
-        bungeeConf.set("host", "0.0.0.0:"+info.getPort());
-        bungeeConf.set("max_players", info.getMaxPlayers());
+        List<?> listeners = bungeeConf.getList("listeners");
 
-        HashMap<Object, Object> hashischMap = new HashMap<>((HashMap<Object, Object>) bungeeConf.getList("listeners").get(0));
-        System.out.println("Host: " + hashischMap.get("host"));
+        HashMap<Object, Object> hashischMap = (listeners != null && listeners.size() > 0) ? (HashMap<Object, Object>) listeners.get(0) : new HashMap<>();
         hashischMap.put("host", "0.0.0.0:"+info.getPort());
+        hashischMap.put("max_players", info.getMaxPlayers());
+        hashischMap.put("motd", "&f&lMC ONE &3CloudServer &8» &7"+info.getName());
 
-        bungeeConf.set("listeners", hashischMap);
-
-        for(Object key : bungeeConf.getList("listeners")){
-            System.out.println("TEST:" + key);
-        }
-
+        List<Map<Object, Object>> result = new ArrayList<>();
+        result.add(hashischMap);
+        bungeeConf.set("listeners", result);
 
         OutputStreamWriter oswBungee = new OutputStreamWriter(Files.newOutputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
         ConfigurationProvider.getProvider(YamlConfiguration.class).save(bungeeConf, oswBungee);

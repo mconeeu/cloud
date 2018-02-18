@@ -32,7 +32,7 @@ public class Server {
     @Getter @Setter
     private int playerCount = -1;
     @Getter @Setter
-    private ServerState state;
+    private ServerState state = ServerState.OFFLINE;
     @Getter @Setter
     private Channel channel;
 

@@ -16,8 +16,9 @@ public enum Protocol {
     SERVER_CHANGE_STATE(4, ServerChangeStatePacketWrapper.class),
     SERVER_UPDATE_STATE(5, ServerUpdateStatePacketWrapper.class),
     SERVER_PLAYER_COUNT_UPDATE(6, ServerPlayerCountUpdatePacketPlugin.class),
-    SERVER_RESULT(7, ServerResultPacketWrapper.class),
-    PLUGIN_SERVER_LIST(8, ServerListPacketAddPlugin.class);
+    SERVER_REGISTER(7, ServerRegisterPacketPlugin.class),
+    SERVER_RESULT(8, ServerResultPacketWrapper.class),
+    PLUGIN_SERVER_LIST(9, ServerListPacketAddPlugin.class);
 
     @Getter
     private int id;

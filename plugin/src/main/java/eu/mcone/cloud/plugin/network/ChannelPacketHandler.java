@@ -10,6 +10,9 @@ import eu.mcone.cloud.plugin.CloudPlugin;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.ReconnectHandler;
+import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.net.InetSocketAddress;
 
@@ -38,7 +41,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, Packet packet) {
         if (packet instanceof ServerListPacketAddPlugin) {
             ServerListPacketAddPlugin result = (ServerListPacketAddPlugin) packet;
-            System.out.println("new ServerUpdateStatePacketPlugin (NAME: "+result.getName()+", HOSTNAME: "+result.getHostname()+":"+result.getPort()+")");
+            System.out.println("new ServerListPacketAddPlugin (NAME: "+result.getName()+", HOSTNAME: "+result.getHostname()+":"+result.getPort()+")");
 
             ProxyServer.getInstance().getServers().put(
                     result.getName(),

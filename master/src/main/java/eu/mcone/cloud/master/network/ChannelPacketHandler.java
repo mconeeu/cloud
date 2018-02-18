@@ -93,11 +93,16 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             if (s != null) {
                 s.setState(state);
 
+                boolean busy = false;
+                for (Server ser : s.getWrapper().getServers()) {
+                    if (busy) break;
+                    busy = ser.getState().equals(ServerState.STARTING);
+                }
+                Logger.log(getClass(), "["+s.getWrapper().getName()+"] Wrapper is busy? "+busy);
+                s.getWrapper().setBusy(busy);
+
                 switch (state) {
                     case WAITING: {
-                        Logger.log(getClass(), "["+s.getWrapper().getName()+"] Wrapper is no more busy");
-                        s.getWrapper().setBusy(false);
-
                         for (Server server : MasterServer.getInstance().getServers()) {
                             if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
                                 server.send(new ServerListPacketAddPlugin(s.getInfo()));
