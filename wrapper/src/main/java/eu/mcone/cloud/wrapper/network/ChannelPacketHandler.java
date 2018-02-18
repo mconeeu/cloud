@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.wrapper.network;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.*;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.wrapper.WrapperServer;
@@ -20,13 +21,14 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     public void channelActive(ChannelHandlerContext ctx) {
         WrapperServer.getInstance().setChannel(ctx.channel());
         ctx.writeAndFlush(new WrapperRegisterPacketWrapper(WrapperServer.getInstance().getRam()));
-        System.out.println("new channel to " + ctx.channel().remoteAddress().toString());
+        Logger.log(getClass(), "new channel to " + ctx.channel().remoteAddress().toString());
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Unregister");
-        super.channelUnregistered(ctx);
+        Logger.log(getClass(), "Unregistered Master channel!");
+        Logger.log(getClass(), "Falling back to standalone Mode. Deleting all stopped servers...");
+        WrapperServer.getInstance().startStandaloneMode();
     }
 
     @Override
@@ -34,7 +36,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
         if (packet instanceof ServerInfoPacket) {
             ServerInfoPacket result = (ServerInfoPacket) packet;
             ServerInfo info = result.getServerInfo();
-            System.out.println("new ServerInfoPacket (UUID: "+result.getServerInfo().getUuid()+", NAME: "+result.getServerInfo().getName()+")");
+            Logger.log(getClass(), "new ServerInfoPacket (UUID: "+result.getServerInfo().getUuid()+", NAME: "+result.getServerInfo().getName()+")");
 
             for (Server s : WrapperServer.getInstance().getServers()) {
                 if (s.getInfo().getUuid().equals(info.getUuid())) {
@@ -49,7 +51,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             }
         } else if (packet instanceof ServerChangeStatePacketWrapper) {
             ServerChangeStatePacketWrapper result = (ServerChangeStatePacketWrapper) packet;
-            System.out.println("new ServerChangeStatePacketWrapper (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
+            Logger.log(getClass(), "new ServerChangeStatePacketWrapper (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
 
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
 
@@ -57,20 +59,21 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                 case START: s.start(); break;
                 case STOP: s.stop(); break;
                 case FORCESTOP: s.forcestop(); break;
+                case RESTART: s.restart(); break;
                 case DELETE: s.delete(); break;
             }
         } else if (packet instanceof ServerCommandExecutePacketWrapper) {
             ServerCommandExecutePacketWrapper result = (ServerCommandExecutePacketWrapper) packet;
-            System.out.println("new ServerCommandExecutePacketWrapper (UUID: "+result.getServerUuid()+", COMMAND: "+result.getCmd()+")");
+            Logger.log(getClass(), "new ServerCommandExecutePacketWrapper (UUID: "+result.getServerUuid()+", COMMAND: "+result.getCmd()+")");
 
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
             if (s != null) {
                 s.sendCommand(result.getCmd());
             } else {
-                System.out.println("s == null");
+                Logger.log(getClass(), "s == null");
             }
         } else if (packet instanceof WrapperShutdownPacketWrapper) {
-            System.out.println("[ChannelPacketHandler] Received WrapperShutdownPacketWrapper from master. Shutting down...");
+            Logger.log(getClass(), "[ChannelPacketHandler] Received WrapperShutdownPacketWrapper from master. Shutting down...");
             WrapperServer.getInstance().shutdown();
         }
     }
@@ -79,7 +82,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
-        System.out.println("Close Channel");
+        Logger.log(getClass(), "Close Channel");
     }
 
 }

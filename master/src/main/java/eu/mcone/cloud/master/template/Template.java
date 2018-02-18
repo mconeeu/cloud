@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master.template;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
@@ -72,9 +73,9 @@ public class Template {
 
                 //Put Server Object in HashMap
                 this.servers.add(server);
-                System.out.println("[Template.class] Creating Server \"" + name + "-" + (actualservers + serverid) + "\"!");
+                Logger.log(getClass(), "["+name+"] Creating Server \"" + name + "-" + (actualservers + serverid) + "\"!");
             } else {
-                System.out.println("[Template.class] Cannot create more Servers than maximum of group " + name + "!");
+                Logger.err(getClass(), "["+name+"] Cannot create more Servers than maximum of group " + name + "!");
             }
         }
     }
@@ -83,7 +84,7 @@ public class Template {
         //If Server is part of this template
         for (Server s : servers) {
             if (s.getInfo().getUuid().equals(uuid)) {
-                System.out.println("[Template.deleteServer] Deleting Server " + s.getInfo().getName() + "!");
+                Logger.log(getClass(), "["+name+"] Deleting Server " + s.getInfo().getName() + "!");
 
                 //Remove Server from HashMap and delete it from Wrapper
                 this.servers.remove(s);
@@ -92,19 +93,19 @@ public class Template {
             }
         }
 
-        System.out.println("[Template.deleteServer] Server with UUID " + uuid.toString() + " is not part of Template " + this.name + "!");
+        Logger.err(getClass(), "["+name+"] Server with UUID " + uuid.toString() + " is not part of Template " + this.name + "!");
     }
 
     public void deleteServer(Server server) {
         //If Server is part of this template
         if (servers.contains(server)) {
-            System.out.println("[Template.deleteServer] Deleting Server " + server.getInfo().getName() + "!");
+            Logger.log(getClass(), "["+name+"] Deleting Server " + server.getInfo().getName() + "!");
 
             //Remove Server from HashMap and delete it from Wrapper
             this.servers.remove(server);
             server.delete();
         } else {
-            System.out.println("[Template.deleteServer] Server " + server.getInfo().getName() + " is not part of Template " + this.name + "!");
+            Logger.err(getClass(), "["+name+"] Server " + server.getInfo().getName() + " is not part of Template " + this.name + "!");
         }
     }
 

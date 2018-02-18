@@ -5,26 +5,22 @@
 
 package eu.mcone.cloud.wrapper.server.console;
 
-import eu.mcone.cloud.core.network.packet.ServerProgressStatePacketMaster;
-import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
+import eu.mcone.cloud.core.console.Logger;
+import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.server.Server;
 
 public class BukkitInputReader extends ConsoleInputReader {
 
-    public BukkitInputReader(Server server, boolean outputConsole) {
-        super(server, outputConsole);
+    public BukkitInputReader(Server server, boolean filter) {
+        super(server, filter);
     }
 
     @Override
     void filter(String[] lineArray, String line) {
-        if (line != null) {
-            if (line.contains("! For help, type \"help\" or \"?\"")) {
-                //Server is finishing
-                String message = String.join(" ", lineArray);
-                System.out.println("[" + this.server.getInfo().getName() + " >> " + message);
-                this.server.sendProgressState(ServerProgressStatePacketMaster.Progress.NOTPROGRESSING);
-                this.server.sendResult("[Bukkit." + server.getInfo().getName() + "] The server started successfully...", ServerResultPacketWrapper.Result.SUCCESSFUL);
-            }
+        if (lineArray[2].equalsIgnoreCase("Done")) {
+            //Server started
+            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] >> " + line);
+            this.server.setState(ServerState.WAITING);
         }
     }
 

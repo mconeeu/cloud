@@ -5,25 +5,24 @@
 
 package eu.mcone.cloud.core.network.packet;
 
-import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.UUID;
+import java.util.*;
 
-public class ServerUpdateStatePacketPlugin extends Packet {
+public class WrapperRegisterFromStandalonePacketWrapper extends Packet {
 
     @Getter
-    private UUID uuid;
+    private Long ram;
     @Getter
-    private ServerState state;
+    private Map<UUID, Long> servers;
 
-    public ServerUpdateStatePacketPlugin() {}
+    public WrapperRegisterFromStandalonePacketWrapper() {}
 
-    public ServerUpdateStatePacketPlugin(UUID uuid, ServerState state) {
-        this.uuid = uuid;
-        this.state = state;
+    public WrapperRegisterFromStandalonePacketWrapper(Map<UUID, Long> servers, long ram) {
+        this.ram = ram;
+        this.servers = servers;
     }
 
     @Override
@@ -32,8 +31,12 @@ public class ServerUpdateStatePacketPlugin extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(uuid.toString());
-            out.writeUTF(state.toString());
+            out.writeLong(ram);
+            out.writeInt(servers.size());
+            for (HashMap.Entry<UUID, Long> e : servers.entrySet()) {
+                out.writeUTF(e.getKey().toString());
+                out.writeLong(e.getValue());
+            }
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -50,8 +53,12 @@ public class ServerUpdateStatePacketPlugin extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            uuid = UUID.fromString(input.readUTF());
-            state = ServerState.valueOf(input.readUTF());
+            ram = input.readLong();
+            int size = input.readInt();
+            servers = new HashMap<>();
+            for (int i = 1; i >= size; i++) {
+                servers.put(UUID.fromString(input.readUTF()), input.readLong());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

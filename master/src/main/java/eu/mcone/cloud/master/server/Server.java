@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
@@ -17,8 +18,6 @@ import eu.mcone.cloud.master.wrapper.WrapperManager;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.UUID;
 
 public class Server {
 
@@ -33,6 +32,8 @@ public class Server {
     @Getter @Setter
     private int playerCount = -1;
     @Getter @Setter
+    private ServerState state;
+    @Getter @Setter
     private Channel channel;
 
     public Server(ServerInfo info, Template template, String wrapperName) {
@@ -42,7 +43,7 @@ public class Server {
 
         //Check if Wrapper is set
         if (this.wrapperName == null) {
-            MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
+            MasterServer.getInstance().getServerManager().addToServerWaitListIfNotExists(this);
         } else {
             Wrapper wrapper = WrapperManager.getWrapperbyString(this.wrapperName);
 
@@ -52,7 +53,7 @@ public class Server {
                 wrapper.createServer(this);
             } else {
                 //Add to ServerWaitingList
-                MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
+                MasterServer.getInstance().getServerManager().addToServerWaitListIfNotExists(this);
             }
         }
     }
@@ -60,8 +61,8 @@ public class Server {
     public void start() {
         //Check if Wrapper is set
         if (wrapper == null) {
-            System.out.println("[Server.start] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
+            Logger.log(getClass(), "["+info.getName()+"] No wrapper set for server. Adding to ServerWaitList...");
+            MasterServer.getInstance().getServerManager().addToServerWaitListIfNotExists(this);
         } else {
             if (!info.getVersion().equals(ServerVersion.BUNGEE)) {
                 for (Server s : MasterServer.getInstance().getServers()) {
@@ -72,7 +73,7 @@ public class Server {
             }
 
             //Start server on Wrapper
-            System.out.println("[Server.start] Starting server " + this.info.getName() + "!");
+            Logger.log(getClass(), "["+info.getName()+"] Starting server...");
             this.wrapper.startServer(this);
         }
     }
@@ -80,25 +81,48 @@ public class Server {
     public void stop() {
         //Check if Wrapper is set
         if (wrapper == null) {
-            System.out.println("[Server.stop] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
+            Logger.log(getClass(), "["+info.getName()+"] No wrapper set for server. Adding to ServerWaitList...");
+            MasterServer.getInstance().getServerManager().addToServerWaitListIfNotExists(this);
         } else {
             //Stop server on Wrapper
-            System.out.println("[Server.stop] Stopping server " + this.info.getName() + "!");
+            Logger.log(getClass(), "["+info.getName()+"] Stopping server...");
             this.wrapper.stopServer(this);
         }
     }
 
-    public void delete() {
+    public void forcestop() {
         //Check if Wrapper is set
         if (wrapper == null) {
-            System.out.println("[Server.delete] No wrapper set for server " + this.info.getName() + ". Adding to ServerWaitList...");
-            MasterServer.getInstance().getServerManager().addtoServerWaitList(this);
+            Logger.log(getClass(), "["+info.getName()+"] No wrapper set for server. Adding to ServerWaitList...");
+            MasterServer.getInstance().getServerManager().addToServerWaitListIfNotExists(this);
         } else {
-            //Delete Server on Wrapper
-            this.wrapper.deleteServer(this);
-            this.template.deleteServer(this);
+            //Stop server on Wrapper
+            Logger.log(getClass(), "["+info.getName()+"] Forcestopping server...");
+            this.wrapper.forcestopServer(this);
         }
+    }
+
+    public void restart() {
+        //Check if Wrapper is set
+        if (wrapper == null) {
+            Logger.log(getClass(), "["+info.getName()+"] No wrapper set for server. Adding to ServerWaitList...");
+            MasterServer.getInstance().getServerManager().addToServerWaitListIfNotExists(this);
+        } else {
+            //Stop server on Wrapper
+            Logger.log(getClass(), "["+info.getName()+"] Restarting server...");
+            this.wrapper.restartServer(this);
+        }
+    }
+
+    public void delete() {
+        //Delete Server on Wrapper || from ServerWaitList
+        if (wrapper != null) {
+            this.wrapper.deleteServer(this);
+        } else {
+            MasterServer.getInstance().getServerManager().removeFromServerWaitList(this);
+        }
+
+        this.template.deleteServer(this);
     }
 
     public void send(Packet packet) {

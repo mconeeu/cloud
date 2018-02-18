@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
@@ -27,7 +28,7 @@ public class StaticServerManager {
         mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_static_servers;", rs -> {
             try {
                 while (rs.next()) {
-                    System.out.println("[StaticServerManager.class] Creating Static Server " + rs.getString("name") + "...");
+                    Logger.log(getClass(), "Creating Static Server " + rs.getString("name") + "...");
 
                     //Create Server and store in HashMap
                     UUID uuid = UUID.randomUUID();
@@ -54,7 +55,7 @@ public class StaticServerManager {
     }
 
     public void addStaticServer(String name, int maxPlayers, int ram, ServerVersion version, String wrappername) {
-        System.out.println("[StaticServerManager.class] Creating Static Server " + name + "...");
+        Logger.log(getClass(), "Creating Static Server " + name + "...");
         mysql.update("INSERT INTO " + mysql.getTablePrefix() + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + Integer.valueOf(ram).toString() + " , '" + wrappername + "');");
 
         UUID uuid = UUID.randomUUID();
@@ -77,7 +78,7 @@ public class StaticServerManager {
 
     public void deleteStaticServer(Server server) {
         if (staticServers.contains(server)) {
-            System.out.println("[StaticServerManager.class] Removing Static Server " + server.getInfo().getName() + "...");
+            Logger.log(getClass(), "Removing Static Server " + server.getInfo().getName() + "...");
             mysql.update("DELETE FROM " + mysql.getTablePrefix() + "_static_servers WHERE name='" + server.getInfo().getName() + "';");
 
             server.delete();

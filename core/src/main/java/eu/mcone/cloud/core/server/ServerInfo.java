@@ -17,8 +17,6 @@ public class ServerInfo {
     @Getter @Setter
     private String name, templateName, hostname;
     @Getter @Setter
-    private ServerState state;
-    @Getter @Setter
     private int templateID, maxPlayers, ram, port = 0;
     @Getter @Setter
     private ServerVersion version;
@@ -31,7 +29,5 @@ public class ServerInfo {
         this.ram = ram;
         this.templateID = templateID;
         this.version = version;
-
-        this.state = ServerState.OFFLINE;
     }
 }

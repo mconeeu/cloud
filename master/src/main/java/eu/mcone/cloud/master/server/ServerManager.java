@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
@@ -18,9 +19,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ServerManager {
-
-    @Getter
-    private Wrapper wrapper;
 
     private ScheduledExecutorService es;
     private static List<Server> serverWaitList = new ArrayList<>();
@@ -51,7 +49,7 @@ public class ServerManager {
                 //If the amount of empty servers is smaller then the set amount, create more empty servers
                 if (emptycount < t.getEmptyservers()) {
                     //If the maximum server count is not reached after adding server, create server
-                    if (t.getServers().size() + 1 <= t.getMax()) {
+                    if (t.getServers().size()+1 <= t.getMax()) {
                         t.createServer(1);
                     }
                     //Else if the amount of empty servers is bigger then the set amount, delete empty servers
@@ -59,11 +57,11 @@ public class ServerManager {
                     int deleteServers = emptycount - t.getEmptyservers();
 
                     for (Server s : t.getServers()) {
-                        if (s.getPlayerCount() == 0 && deleteServers > 0) {
+                        if (s.getPlayerCount()==0 && deleteServers>0) {
                             deleteServers--;
 
                             //If the minimum server count is not reached after deleting server, delete server.
-                            if (t.getServers().size() - 1 >= t.getMin()) {
+                            if (t.getServers().size()-1 >= t.getMin()) {
                                 t.deleteServer(s);
                             }
                         }
@@ -79,31 +77,16 @@ public class ServerManager {
 
                 if (wrapperName == null) {
                     Wrapper bestwrapper = getBestWrapper();
-                    this.wrapper = bestwrapper;
 
                     if (bestwrapper != null) {
-                        if (bestwrapper.isProgressing()) {
-                            System.out.println("[ServerManager.class] Server '" + server.getInfo().getName() + "' waiting...");
-                        } else {
-                            if (bestwrapper.isHasBungee()) {
-                                if (server.getInfo().getVersion().equals(ServerVersion.SPIGOT) || server.getInfo().getVersion().equals(ServerVersion.BUKKIT)) {
-                                    server.setWrapper(bestwrapper);
-                                    i.remove();
-                                    System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
-                                    bestwrapper.createServer(server);
-                                    server.start();
-                                }
-                            } else {
-                                if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
-                                    server.setWrapper(bestwrapper);
-                                    bestwrapper.setHasBungee(true);
-                                    i.remove();
-                                    System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for bungee " + server.getInfo().getName() + "! Creating Bungeecord!");
-                                    bestwrapper.createServer(server);
-                                    server.start();
-                                }
-                            }
-                            break;
+                        if(bestwrapper.isBusy()){
+                            Logger.log(getClass(), "Server '" + server.getInfo().getName() + "' waiting...");
+                        }else {
+                            server.setWrapper(bestwrapper);
+                            i.remove();
+                            Logger.log(getClass(), "Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                            bestwrapper.createServer(server);
+                            server.start();
                         }
                     } else {
                         System.out.println("[ServerManager.class] No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
@@ -112,18 +95,18 @@ public class ServerManager {
                     Wrapper wrapper = WrapperManager.getWrapperbyString(wrapperName);
 
                     if (wrapper != null) {
-                        if (wrapper.isProgressing()) {
-                            System.out.println("[ServerManager.class] Server '" + server.getInfo().getName() + "' waiting...");
-                        } else {
+                        if(wrapper.isBusy()){
+                            Logger.log(getClass(), "Server '" + server.getInfo().getName() + "' waiting...");
+                        }else{
                             server.setWrapper(wrapper);
                             i.remove();
-                            System.out.println("[ServerManager.class] Found explicit wrapper " + wrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                            Logger.log(getClass(), "Found explicit wrapper " + wrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
                             wrapper.createServer(server);
                             server.start();
                             break;
                         }
                     } else {
-                        System.out.println("[ServerManager.class] Explicit wrapper " + wrapperName + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
+                        Logger.log(getClass(), "Explicit wrapper " + wrapperName + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
                     }
                 }
             }
@@ -151,13 +134,18 @@ public class ServerManager {
         }
     }
 
-    void addtoServerWaitList(Server server) {
+    void addToServerWaitListIfNotExists(Server server) {
         if (serverWaitList.contains(server)) {
-            System.out.println("[ServerManager.addtoServerWaitList] " + server.getInfo().getName() + " already in ServerWaitList!");
+            Logger.err(getClass(), "Error while adding Server to waitlist: " + server.getInfo().getName() + " already in ServerWaitList!");
         } else {
-            System.out.println("[ServerManager.addtoServerWaitList] Added " + server.getInfo().getName() + " to ServerWaitList!");
+            Logger.log(getClass(), "Added " + server.getInfo().getName() + " to ServerWaitList!");
             serverWaitList.add(server);
         }
+    }
+
+    public void removeFromServerWaitList(Server server) {
+        if (serverWaitList.contains(server)) serverWaitList.remove(server);
+        Logger.log(getClass(), "Removed Server "+server.getInfo().getName()+" from ServerWaitList");
     }
 
     public void shutdown() {

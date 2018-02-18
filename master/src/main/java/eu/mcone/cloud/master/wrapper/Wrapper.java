@@ -5,6 +5,8 @@
 
 package eu.mcone.cloud.master.wrapper;
 
+import eu.mcone.cloud.core.console.Logger;
+import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.network.packet.ServerChangeStatePacketWrapper;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.network.packet.WrapperShutdownPacketWrapper;
@@ -17,24 +19,18 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Wrapper {
 
     @Getter
     private String name;
-
     @Getter
     private long ram, ramInUse;
-
     @Getter
     private Channel channel;
-
     @Getter @Setter
-    private boolean progressing = false;
-
-    @Getter @Setter
-    private boolean hasBungee = false;
-
+    private boolean busy = false;
     @Getter
     private List<Server> servers = new ArrayList<>();
 
@@ -44,7 +40,7 @@ public class Wrapper {
         this.name = "Wrapper-"+MasterServer.getInstance().getWrappers().size()+1;
 
         MasterServer.getInstance().getWrappers().add(this);
-        System.out.println("registered new Wrapper: "+toString());
+        Logger.log(getClass(), "["+name+"] Registered wrapper");
     }
 
     public void shutdown() {
@@ -59,7 +55,7 @@ public class Wrapper {
         }
 
         MasterServer.getInstance().getWrappers().remove(this);
-        System.out.println("[Wrapper.class] Destroyed Wrapper " + name + "!");
+        Logger.log(getClass(), "["+name+"] Destroyed Wrapper!");
     }
 
     public void createServer(Server s) {
@@ -71,9 +67,9 @@ public class Wrapper {
 
             s.setWrapper(this);
             servers.add(s);
-            System.out.println("[Wrapper.class] Created server " + s.getInfo().getName() + " at wrapper " + name + "!");
+            Logger.log(getClass(), "["+name+"] Created server " + s.getInfo().getName() + "!");
         } else {
-            System.err.println("[Wrapper.class] Cannot create Server because less ram available!");
+            Logger.err(getClass(), "["+name+"] Cannot create Server because less ram available!");
         }
     }
 
@@ -82,21 +78,37 @@ public class Wrapper {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.DELETE));
 
         server.setWrapper(null);
-        System.out.println("[Wrapper.class] Deleted server " + server.getInfo().getName() + " from wrapper " + name + "!");
+        Logger.log(getClass(), "["+name+"] Deleted server " + server.getInfo().getName() + "!");
     }
 
     public void startServer(Server server) {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.START));
-        System.out.println("[Wrapper.class] Started server " + server.getInfo().getName() + " at wrapper " + name + "!");
+        Logger.log(getClass(), "["+name+"] Setting Wrapper Busy...");
+        setBusy(true);
+        Logger.log(getClass(), "["+name+"] Started server " + server.getInfo().getName() + "!");
     }
 
     public void stopServer(Server server) {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.STOP));
-        System.out.println("[Wrapper.class] Stopped server " + server.getInfo().getName() + " from wrapper " + name + "!");
+        Logger.log(getClass(), "["+name+"] Stopped server " + server.getInfo().getName() + "!");
+    }
+
+    public void forcestopServer(Server server) {
+        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.FORCESTOP));
+        Logger.log(getClass(), "["+name+"] Stopped server " + server.getInfo().getName() + "!");
+    }
+
+    public void restartServer(Server server) {
+        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.RESTART));
+        Logger.log(getClass(), "["+name+"] Stopped server " + server.getInfo().getName() + "!");
     }
     
     public int getServercount() {
         return servers.size();
+    }
+
+    public void send(Packet packet) {
+        channel.writeAndFlush(packet);
     }
 
     @Override

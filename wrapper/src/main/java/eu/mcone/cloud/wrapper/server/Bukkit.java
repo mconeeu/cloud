@@ -5,7 +5,7 @@
 
 package eu.mcone.cloud.wrapper.server;
 
-import eu.mcone.cloud.core.network.packet.ServerProgressStatePacketMaster;
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
@@ -30,93 +30,56 @@ public class Bukkit extends Server {
 
     @Override
     public void start() {
-        this.sendProgressState(ServerProgressStatePacketMaster.Progress.INPROGRESSING);
         this.runtime = Runtime.getRuntime();
 
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
-        final File serverDir = new File(homeDir + s + "wrapper" + s + "servers" + s + info.getName());
-        final File templateZip = new File(serverDir + s + info.getTemplateName() + ".zip");
+        final File serverDir = new File(homeDir+s+"wrapper"+s+"servers"+s+info.getName());
 
-        System.out.println("[Server.class] Starting new server with the UUID: '" + info.getUuid() + "', Template '" + info.getTemplateName() + "', '" + info.getRam() + "gb ram, on the port '" + info.getPort() + "'...");
-
-        if (serverDir.exists()) serverDir.delete();
-        serverDir.mkdir();
-
-        new Thread(() -> {
-            try {
-                System.out.println("[Server.class] Downloading Template...");
-                //URL website = new URL("http://templates.mcone.eu/"+info.getTemplateName()+".zip");
-                //FileOutputStream fos = new FileOutputStream(templateZip);
-                //fos.getChannel().transferFrom(Channels.newChannel(website.openStream()), 0, Long.MAX_VALUE);
-
-                System.out.println("[Server.class] Unzipping Template...");
-                //System.out.println("new UnZip("+templateZip.getPath()+", "+serverDir.getPath()+");");
-                //new UnZip(templateZip.getPath(), serverDir.getPath());
-                //templateZip.delete();
-
-                //createConsoleLogDirectory();
-
-                setConfigs();
-
-                String[] command = new String[]{"java",
-                        "-Dfile.encoding=UTF-8",
-                        "-jar",
-                        "-XX:+UseG1GC",
-                        "-XX:MaxGCPauseMillis=50",
-                        "-XX:-UseAdaptiveSizePolicy",
-                        "-Dcom.mojang.eula.agree=true",
-                        "-Dio.netty.recycler.maxCapacity=0 ",
-                        "-Dio.netty.recycler.maxCapacity.default=0",
-                        "-Djline.terminal=jline.UnsupportedTerminal",
-                        "-Xmx" + info.getRam() + "M",
-                        serverDir + s + "server.jar"};
-
-                this.process = this.runtime.exec(command, null, serverDir);
-
-                //Register all Output for Spigot console
-                new BukkitInputReader(this, true);
-
-                this.process.waitFor();
-                this.process.destroy();
-            } catch (IOException | InterruptedException e) {
-                System.err.println("[Server.class] Could not start server " + info.getName() + ":");
-                if (e instanceof FileNotFoundException) {
-                    System.err.println("[Server.class] Template does not exist, cancelling...");
-                    return;
-                }
-
-                e.printStackTrace();
-            }
-        }).start();
-        System.out.println("[Server.class] Server start of " + info.getName() + " initialised, method returned");
+        this.initialise(
+                serverDir,
+                BukkitInputReader.class,
+                new String[]{"java",
+                "-Dfile.encoding=UTF-8",
+                "-jar",
+                "-XX:+UseG1GC",
+                "-XX:MaxGCPauseMillis=50",
+                "-XX:-UseAdaptiveSizePolicy",
+                "-Dcom.mojang.eula.agree=true",
+                "-Dio.netty.recycler.maxCapacity=0 ",
+                "-Dio.netty.recycler.maxCapacity.default=0",
+                "-Djline.terminal=jline.UnsupportedTerminal",
+                "-Xmx"+info.getRam()+"M",
+                serverDir+s+"server.jar"}
+        );
     }
 
     @Override
     public void stop() {
         if (process != null) {
             if (process.isAlive()) {
-                System.out.println("[Server.class] Stopping the server " + this.info.getName() + "...");
+                Logger.log(getClass(), "["+info.getName()+"] Stopping server...");
                 this.sendCommand("stop");
-                this.info.setState(ServerState.OFFLINE);
-                this.sendResult("[Server." + this.info.getName() + "] the server was stopped...", ServerResultPacketWrapper.Result.SUCCESSFUL);
+                this.setState(ServerState.OFFLINE);
+                this.sendResult("[Server." + this.info.getName() + "] the server was stopped!", ServerResultPacketWrapper.Result.SUCCESSFUL);
             } else {
-                System.out.println("[Server.class] The server '" + this.info.getName() + "' could not be stopped because the process is dead...");
+                Logger.err(getClass(), "["+info.getName()+"] Could not stop server because the process is dead!");
                 this.sendResult("[Server." + this.info.getName() + "] The server cloud not be stopped because the process is dead...", ServerResultPacketWrapper.Result.COOMMAND_ERROR);
             }
         } else {
-            System.out.println("[Serevr.class] The server '" + this.info.getName() + "' could not be stopped because it has no process...");
+            Logger.err(getClass(), "["+info.getName()+"] Could not stop server because it has no process!");
             this.sendResult("[Server." + this.info.getName() + "] The server could not be stopped because it has no process...", ServerResultPacketWrapper.Result.COOMMAND_ERROR);
         }
     }
 
-    private void setConfigs() throws IOException {
+    @Override
+    void setConfig() throws IOException {
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
         final String serverName = info.getName();
-        final File propertyFile = new File(homeDir + s + "wrapper" + s + "servers" + s + serverName + s + "server.properties");
-        final File spigotFile = new File(homeDir + s + "wrapper" + s + "servers" + s + serverName + s + "spigot.yml");
-        final File bukkitFile = new File(homeDir + s + "wrapper" + s + "servers" + s + serverName + s + "bukkit.yml");
+        final File propertyFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"server.properties");
+        final File spigotFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"spigot.yml");
+        final File bukkitFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"bukkit.yml");
 
         if (!propertyFile.exists()) {
             propertyFile.createNewFile();
@@ -125,7 +88,10 @@ public class Bukkit extends Server {
         /*
          * server.properties
          */
-        System.out.println("[Server.class] Set all server properties for server " + serverName + "...");
+        if (!propertyFile.exists()) {
+            propertyFile.createNewFile();
+        }
+        Logger.log(getClass(), "["+info.getName()+"] Setting all server properties...");
         Properties ps = new Properties();
         final InputStreamReader isrProperties = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
         ps.load(isrProperties);
@@ -151,7 +117,11 @@ public class Bukkit extends Server {
             /*
              * spigot.yml
              */
-            System.out.println("[Server.class] Set all spigot.yml settings for server " + serverName + "...");
+            if (!spigotFile.exists()) {
+                spigotFile.createNewFile();
+            }
+
+            Logger.log(getClass(), "["+info.getName()+"] Setting all spigot.yml settings...");
             final InputStreamReader isrSpigot = new InputStreamReader(Files.newInputStream(Paths.get(spigotFile.getPath())), StandardCharsets.UTF_8);
             final Configuration spigotConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrSpigot);
 
@@ -173,7 +143,11 @@ public class Bukkit extends Server {
         /*
          * bukkit.yml
          */
-        System.out.println("[Server.class] Set all bukkit.yml settings for server " + serverName + "...");
+        if (!bukkitFile.exists()) {
+            bukkitFile.createNewFile();
+        }
+
+        Logger.log(getClass(), "["+info.getName()+"] Setting all bukkit.yml settings...");
         final InputStreamReader isrBukkit = new InputStreamReader(Files.newInputStream(Paths.get(bukkitFile.getPath())), StandardCharsets.UTF_8);
         final Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrBukkit);
 

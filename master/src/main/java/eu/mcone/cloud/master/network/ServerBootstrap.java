@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master.network;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.pipeline.Decoder;
 import eu.mcone.cloud.core.network.pipeline.Encoder;
 import io.netty.channel.*;
@@ -42,9 +43,9 @@ public class ServerBootstrap {
             System.out.println("["+getClass().getName()+"] Netty Server starting on port "+port);
             ChannelFuture f = b.bind(port).sync().addListener((ChannelFutureListener) channelFuture -> {
                 if (channelFuture.isSuccess()) {
-                    System.out.println("Netty is listening @ Port:" + port);
+                    Logger.log(getClass(), "Netty is listening @ Port:" + port);
                 } else {
-                    System.out.println("Failed to bind @ Port:" + port);
+                    Logger.log(getClass(), "Failed to bind @ Port:" + port);
                 }
             }).addListener(ChannelFutureListener.CLOSE_ON_FAILURE).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
             f.channel().closeFuture().sync();

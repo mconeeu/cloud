@@ -5,9 +5,11 @@
 
 package eu.mcone.cloud.wrapper;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.file.FileManager;
 import eu.mcone.cloud.core.console.ConsoleReader;
 import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.console.CommandExecutor;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
@@ -21,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class WrapperServer {
@@ -49,9 +52,9 @@ public class WrapperServer {
         instance = this;
 
         this.hostname = hostname;
-        this.ram = Runtime.getRuntime().maxMemory() / 1000000;
+        this.ram = Runtime.getRuntime().maxMemory() / 1024 / 1024;
 
-        System.out.println(ram);
+        Logger.log(getClass(), ram+"M RAM");
 
         fileManager = new FileManager();
         fileManager.createHomeDir("wrapper");
@@ -71,6 +74,19 @@ public class WrapperServer {
 
         System.out.println("[Enable progress] Trying to connect to master...");
         new ClientBootstrap("localhost", 4567);
+    }
+
+    public void startStandaloneMode() {
+        for (Server s : servers) {
+            if (s.getState().equals(ServerState.OFFLINE)) {
+                s.delete();
+            }
+        }
+
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            //reconnect
+        }, 0, 5, TimeUnit.SECONDS);
+        Logger.log(getClass(), "Standalone Mode started.");
     }
 
     public void shutdown() {

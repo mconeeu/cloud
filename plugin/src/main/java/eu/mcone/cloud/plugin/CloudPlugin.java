@@ -10,6 +10,7 @@ import eu.mcone.cloud.plugin.network.ClientBootstrap;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,6 +21,8 @@ import java.util.UUID;
 
 public class CloudPlugin {
 
+    @Getter
+    private Plugin plugin;
     @Getter @Setter
     private Channel channel;
     @Getter
@@ -29,7 +32,9 @@ public class CloudPlugin {
     @Getter
     private int port;
 
-    public CloudPlugin() {
+    public CloudPlugin(Plugin plugin) {
+        this.plugin = plugin;
+
         Properties ps = new Properties();
         try {
             ps.load(new InputStreamReader(Files.newInputStream(Paths.get("server.properties"))));

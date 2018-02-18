@@ -33,7 +33,6 @@ public class ServerInfoPacket extends Packet {
         try {
             out.writeUTF(serverInfo.getUuid().toString());
             out.writeUTF(serverInfo.getName());
-            out.writeUTF(serverInfo.getState().toString());
             out.writeUTF(serverInfo.getTemplateName());
             out.writeInt(serverInfo.getTemplateID());
             out.writeInt(serverInfo.getRam());
@@ -58,7 +57,6 @@ public class ServerInfoPacket extends Packet {
         try {
             UUID uuid = UUID.fromString(input.readUTF());
             String name = input.readUTF();
-            ServerState state = ServerState.valueOf(input.readUTF());
             String templateName = input.readUTF();
             int templateId = input.readInt();
             int ram = input.readInt();
@@ -67,7 +65,6 @@ public class ServerInfoPacket extends Packet {
             ServerVersion version = ServerVersion.valueOf(input.readUTF());
 
             serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram, version);
-            serverInfo.setState(state);
             serverInfo.setPort(port);
         } catch (IOException e) {
             e.printStackTrace();

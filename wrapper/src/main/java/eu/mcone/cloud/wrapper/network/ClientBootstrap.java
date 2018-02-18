@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.wrapper.network;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.pipeline.Decoder;
 import eu.mcone.cloud.core.network.pipeline.Encoder;
 import io.netty.bootstrap.Bootstrap;
@@ -14,19 +15,18 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class ClientBootstrap {
 
-    @Getter
-    private int port;
-
     public ClientBootstrap(String host, int port) {
-        this.port = port;
-
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
-            Bootstrap b = new Bootstrap();
-            b.group(workerGroup)
+            Bootstrap bootstrap = new Bootstrap();
+            bootstrap.group(workerGroup)
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.SO_KEEPALIVE, true)
                     .handler(new ChannelInitializer<SocketChannel>() {
@@ -38,13 +38,15 @@ public class ClientBootstrap {
                         }
                     });
 
-            ChannelFuture f =b.connect(host, port).sync().addListener((ChannelFutureListener) channelFuture -> {
+            ChannelFuture f = bootstrap.connect(host, port).sync();
+            f.addListener((ChannelFutureListener) channelFuture -> {
                 if (channelFuture.isSuccess()) {
-                    System.out.println("Netty is connected @ Port:" + port);
+                    Logger.log(getClass(), "Netty is connected @ Port:" + port);
                 } else {
-                    System.out.println("Failed to connect to @ Port:" + port);
+                    Logger.log(getClass(), "Failed to connect to @ Port:" + port);
                 }
             }).addListener(ChannelFutureListener.CLOSE_ON_FAILURE).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -5,29 +5,25 @@
 
 package eu.mcone.cloud.core.network.packet;
 
+import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
+import java.util.UUID;
 
-public class ServerProgressStatePacketMaster extends Packet {
-
-    @Getter
-    private Progress progress;
+public class ServerUpdateStatePacketWrapper extends Packet {
 
     @Getter
-    private String event_class;
+    private UUID uuid;
+    @Getter
+    private ServerState state;
 
-    public enum Progress{
-        NOTPROGRESSING,
-        INPROGRESSING
-    }
+    public ServerUpdateStatePacketWrapper() {}
 
-    public ServerProgressStatePacketMaster(){}
-
-    public ServerProgressStatePacketMaster(String event_class, Progress progress) {
-        this.progress = progress;
-        this.event_class = event_class;
+    public ServerUpdateStatePacketWrapper(UUID uuid, ServerState state) {
+        this.uuid = uuid;
+        this.state = state;
     }
 
     @Override
@@ -36,8 +32,8 @@ public class ServerProgressStatePacketMaster extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(event_class);
-            out.writeUTF(progress.toString());
+            out.writeUTF(uuid.toString());
+            out.writeUTF(state.toString());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -54,10 +50,11 @@ public class ServerProgressStatePacketMaster extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            event_class = input.readUTF();
-            progress = Progress.valueOf(input.readUTF());
+            uuid = UUID.fromString(input.readUTF());
+            state = ServerState.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }

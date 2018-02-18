@@ -5,34 +5,23 @@
 
 package eu.mcone.cloud.wrapper.server.console;
 
-import eu.mcone.cloud.core.network.packet.ServerProgressStatePacketMaster;
-import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
+import eu.mcone.cloud.core.console.Logger;
+import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.server.Server;
-import lombok.Getter;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 public class BungeeInputReader extends ConsoleInputReader {
 
-    public BungeeInputReader(Server server, boolean outputConsole) {
-        super(server, outputConsole);
+    public BungeeInputReader(Server server, Boolean outputToConsole) {
+        super(server, outputToConsole);
     }
 
     @Override
     void filter(String[] lineArray, String line) {
-        if (line != null) {
-            if (line.contains("Listening on ")) {
-
-                //Server is finishing
-                //System.out.println("[" + this.server.getInfo().getName() + " >> " + line);
-
-                this.server.sendProgressState(ServerProgressStatePacketMaster.Progress.NOTPROGRESSING);
-                this.server.sendResult("[Bungee." + server.getInfo().getName() + "] The bungeecord started successfully...", ServerResultPacketWrapper.Result.SUCCESSFUL);
-            }
-        }else{
-            System.out.println("The Line is null, that's a problem");
+        if (lineArray[2].equalsIgnoreCase("Done")) {
+            //Server started
+            this.server.setState(ServerState.WAITING);
+            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] >> " + line);
         }
     }
 }

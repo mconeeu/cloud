@@ -23,7 +23,7 @@ public class ConsoleReader {
             while(sc.hasNext()) {
                 String next;
                 if ((next = sc.nextLine()) != null) {
-                    System.out.println("new console input: '"+next+"'");
+                    Logger.log(getClass(), "new console input: '"+next+"'");
                     String[] line = next.split(" ");
 
                     for (HashMap.Entry<String, CommandExecutor> e : executors.entrySet()) {

@@ -5,7 +5,7 @@
 
 package eu.mcone.cloud.wrapper.server.console;
 
-import eu.mcone.cloud.core.server.ServerVersion;
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.wrapper.server.Server;
 import lombok.Getter;
 
@@ -15,9 +15,12 @@ public abstract class ConsoleInputReader {
 
     @Getter
     protected Server server;
+    @Getter
+    protected boolean outputToConsole;
 
-    ConsoleInputReader(Server server, boolean outputConsole) {
+    public ConsoleInputReader(Server server, boolean outputToConsole) {
         this.server = server;
+        this.outputToConsole = outputToConsole;
 
         new Thread(() -> {
             try {
@@ -27,22 +30,16 @@ public abstract class ConsoleInputReader {
                     String line = sc.nextLine();
 
                     if (line != null) {
-                        String[] line_array = line.split(" ");
-                        this.filter(line_array, line);
+                        String[] lineArray = line.split(" ");
+                        this.filter(lineArray, line);
 
-                        if (outputConsole) {
-                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
-                                //String console = sc.nextLine().replace("\n", System.getProperty("line.separator"));
-
-                                System.out.println("[" + this.server.getInfo().getName() + "] >> " + line);
-                            } else {
-                                System.out.println("[" + this.server.getInfo().getName() + "] >> " + line);
-                            }
+                        if (this.outputToConsole) {
+                            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] >> " + line);
                         }
                     }
                 }
 
-                //sc.close();
+                sc.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }

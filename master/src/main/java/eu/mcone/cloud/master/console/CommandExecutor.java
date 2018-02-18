@@ -5,10 +5,12 @@
 
 package eu.mcone.cloud.master.console;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacketWrapper;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
+import sun.rmi.runtime.Log;
 
 public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecutor {
 
@@ -32,10 +34,11 @@ public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecu
                         }
                     }
                 }
+                Logger.log(getClass(), "no suitable server found for name "+args[0]);
             }
         } else if (cmd.equalsIgnoreCase("stop")) {
             if (args.length == 0) {
-                System.out.println("------- [STOP] -------\n" +
+                Logger.log(getClass(), "------- [STOP] -------\n" +
                         "MasterServer will shutdown shortly");
                 MasterServer.getInstance().shutdown();
             }
