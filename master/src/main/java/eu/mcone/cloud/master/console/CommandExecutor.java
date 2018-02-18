@@ -15,12 +15,19 @@ public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecu
     @Override
     public void onCommand(String cmd, String[] args) {
         if (cmd.equalsIgnoreCase("cmd")) {
-            if (args.length == 2) {
+            if (args.length >= 2) {
                 for (Template t : MasterServer.getInstance().getTemplates()) {
                     for (Server s : t.getServers()) {
                         if (s.getInfo().getName().equalsIgnoreCase(args[0])) {
-                            s.getWrapper().getChannel().writeAndFlush(new ServerCommandExecutePacketWrapper(s.getInfo().getUuid(), args[1]));
-                            System.out.println("Sent new command '" + args[1] + "' to server wrapper...");
+                            StringBuilder sb = new StringBuilder();
+
+                            for (int i = 1; i < args.length; i++) {
+                                sb.append(args[i]);
+                                if (i != args.length-1) sb.append(" ");
+                            }
+
+                            s.getWrapper().getChannel().writeAndFlush(new ServerCommandExecutePacketWrapper(s.getInfo().getUuid(), sb.toString()));
+                            System.out.println("Sent new command '" + sb.toString() + "' to server wrapper...");
                             return;
                         }
                     }

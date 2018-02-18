@@ -9,17 +9,17 @@ import eu.mcone.cloud.core.network.packet.ServerProgressStatePacketMaster;
 import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 
 public abstract class Server {
 
-    @Getter @Setter
+    @Getter
+    @Setter
     protected ServerInfo info;
     @Getter
     protected Runtime runtime;
@@ -93,9 +93,11 @@ public abstract class Server {
     public void sendCommand(String command) {
         try {
             if (process != null) {
-                if (process.isAlive() == Boolean.TRUE) {
-                    BufferedWriter input = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                    input.write(command);
+                if (process.isAlive()) {
+                    OutputStreamWriter os = new OutputStreamWriter(process.getOutputStream());
+                    process.getOutputStream().write((command + "\n").getBytes());
+                    process.getOutputStream().flush();
+
                     System.out.println("[Server.class] Sent command '" + command + "' to the server " + this.info.getName());
                     this.sendResult("[Server." + this.info.getName() + "] Sent command '" + command + "' to server...", ServerResultPacketWrapper.Result.COMMAND);
                 } else {
@@ -123,11 +125,11 @@ public abstract class Server {
         }
     }
 
-    public void sendProgressState(ServerProgressStatePacketMaster.Progress progress){
-        try{
+    public void sendProgressState(ServerProgressStatePacketMaster.Progress progress) {
+        try {
             WrapperServer.getInstance().send(new ServerProgressStatePacketMaster("Server.class", progress));
-            System.out.println("[Server.class] Send new progress state '" + progress.toString()  +"' to server Master...");
-        }catch (Exception e){
+            System.out.println("[Server.class] Send new progress state '" + progress.toString() + "' to server Master...");
+        } catch (Exception e) {
             System.out.println("[Server.clas] Could not be sent new progress state to server Master");
             e.printStackTrace();
         }

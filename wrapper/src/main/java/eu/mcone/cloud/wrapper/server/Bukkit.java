@@ -35,8 +35,8 @@ public class Bukkit extends Server {
 
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
-        final File serverDir = new File(homeDir+s+"wrapper"+s+"servers"+s+info.getName());
-        final File templateZip = new File(serverDir+s+info.getTemplateName()+".zip");
+        final File serverDir = new File(homeDir + s + "wrapper" + s + "servers" + s + info.getName());
+        final File templateZip = new File(serverDir + s + info.getTemplateName() + ".zip");
 
         System.out.println("[Server.class] Starting new server with the UUID: '" + info.getUuid() + "', Template '" + info.getTemplateName() + "', '" + info.getRam() + "gb ram, on the port '" + info.getPort() + "'...");
 
@@ -69,21 +69,18 @@ public class Bukkit extends Server {
                         "-Dio.netty.recycler.maxCapacity=0 ",
                         "-Dio.netty.recycler.maxCapacity.default=0",
                         "-Djline.terminal=jline.UnsupportedTerminal",
-                        "-Xmx"+info.getRam()+"M",
-                        serverDir+s+"server.jar"};
+                        "-Xmx" + info.getRam() + "M",
+                        serverDir + s + "server.jar"};
 
                 this.process = this.runtime.exec(command, null, serverDir);
 
                 //Register all Output for Spigot console
                 new BukkitInputReader(this, true);
 
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                writer.flush();
-
                 this.process.waitFor();
                 this.process.destroy();
             } catch (IOException | InterruptedException e) {
-                System.err.println("[Server.class] Could not start server "+info.getName()+":");
+                System.err.println("[Server.class] Could not start server " + info.getName() + ":");
                 if (e instanceof FileNotFoundException) {
                     System.err.println("[Server.class] Template does not exist, cancelling...");
                     return;
@@ -92,7 +89,7 @@ public class Bukkit extends Server {
                 e.printStackTrace();
             }
         }).start();
-        System.out.println("[Server.class] Server start of "+info.getName()+" initialised, method returned");
+        System.out.println("[Server.class] Server start of " + info.getName() + " initialised, method returned");
     }
 
     @Override
@@ -117,9 +114,9 @@ public class Bukkit extends Server {
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
         final String serverName = info.getName();
-        final File propertyFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"server.properties");
-        final File spigotFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"spigot.yml");
-        final File bukkitFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"bukkit.yml");
+        final File propertyFile = new File(homeDir + s + "wrapper" + s + "servers" + s + serverName + s + "server.properties");
+        final File spigotFile = new File(homeDir + s + "wrapper" + s + "servers" + s + serverName + s + "spigot.yml");
+        final File bukkitFile = new File(homeDir + s + "wrapper" + s + "servers" + s + serverName + s + "bukkit.yml");
 
         if (!propertyFile.exists()) {
             propertyFile.createNewFile();
@@ -176,7 +173,7 @@ public class Bukkit extends Server {
         /*
          * bukkit.yml
          */
-        System.out.println("[Server.class] Set all spigot.yml settings for server " + serverName + "...");
+        System.out.println("[Server.class] Set all bukkit.yml settings for server " + serverName + "...");
         final InputStreamReader isrBukkit = new InputStreamReader(Files.newInputStream(Paths.get(bukkitFile.getPath())), StandardCharsets.UTF_8);
         final Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrBukkit);
 

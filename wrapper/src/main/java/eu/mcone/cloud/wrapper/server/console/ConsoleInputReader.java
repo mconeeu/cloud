@@ -5,38 +5,44 @@
 
 package eu.mcone.cloud.wrapper.server.console;
 
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.server.Server;
 import lombok.Getter;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.util.Scanner;
 
 public abstract class ConsoleInputReader {
 
     @Getter
     protected Server server;
 
-    public ConsoleInputReader(Server server, boolean filter) {
+    ConsoleInputReader(Server server, boolean outputConsole) {
         this.server = server;
 
         new Thread(() -> {
             try {
-                BufferedReader br = new BufferedReader(new InputStreamReader(server.getProcess().getInputStream()));
+                Scanner sc = new Scanner(server.getProcess().getInputStream());
 
-                String line = br.readLine();
-                String[] lineArray;
+                while (sc.hasNext()) {
+                    String line = sc.nextLine();
 
-                while (line != null) {
-                    if (filter) {
-                        lineArray = br.readLine().split(" ");
-                        this.filter(lineArray, line);
-                    } else {
-                        line = br.readLine();
-                        System.out.println("[" + this.server.getInfo().getName() + "] >> " + line);
+                    if (line != null) {
+                        String[] line_array = line.split(" ");
+                        this.filter(line_array, line);
+
+                        if (outputConsole) {
+                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                                //String console = sc.nextLine().replace("\n", System.getProperty("line.separator"));
+
+                                System.out.println("[" + this.server.getInfo().getName() + "] >> " + line);
+                            } else {
+                                System.out.println("[" + this.server.getInfo().getName() + "] >> " + line);
+                            }
+                        }
                     }
                 }
 
-                br.close();
+                //sc.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }

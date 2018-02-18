@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import eu.mcone.cloud.master.wrapper.WrapperManager;
@@ -50,7 +51,7 @@ public class ServerManager {
                 //If the amount of empty servers is smaller then the set amount, create more empty servers
                 if (emptycount < t.getEmptyservers()) {
                     //If the maximum server count is not reached after adding server, create server
-                    if (t.getServers().size()+1 <= t.getMax()) {
+                    if (t.getServers().size() + 1 <= t.getMax()) {
                         t.createServer(1);
                     }
                     //Else if the amount of empty servers is bigger then the set amount, delete empty servers
@@ -58,11 +59,11 @@ public class ServerManager {
                     int deleteServers = emptycount - t.getEmptyservers();
 
                     for (Server s : t.getServers()) {
-                        if (s.getPlayerCount()==0 && deleteServers>0) {
+                        if (s.getPlayerCount() == 0 && deleteServers > 0) {
                             deleteServers--;
 
                             //If the minimum server count is not reached after deleting server, delete server.
-                            if (t.getServers().size()-1 >= t.getMin()) {
+                            if (t.getServers().size() - 1 >= t.getMin()) {
                                 t.deleteServer(s);
                             }
                         }
@@ -81,14 +82,27 @@ public class ServerManager {
                     this.wrapper = bestwrapper;
 
                     if (bestwrapper != null) {
-                        if(bestwrapper.isProgressing()){
+                        if (bestwrapper.isProgressing()) {
                             System.out.println("[ServerManager.class] Server '" + server.getInfo().getName() + "' waiting...");
-                        }else{
-                            server.setWrapper(bestwrapper);
-                            i.remove();
-                            System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
-                            bestwrapper.createServer(server);
-                            server.start();
+                        } else {
+                            if (bestwrapper.isHasBungee()) {
+                                if (server.getInfo().getVersion().equals(ServerVersion.SPIGOT) || server.getInfo().getVersion().equals(ServerVersion.BUKKIT)) {
+                                    server.setWrapper(bestwrapper);
+                                    i.remove();
+                                    System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                                    bestwrapper.createServer(server);
+                                    server.start();
+                                }
+                            } else {
+                                if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                                    server.setWrapper(bestwrapper);
+                                    bestwrapper.setHasBungee(true);
+                                    i.remove();
+                                    System.out.println("[ServerManager.class] Found wrapper " + bestwrapper.getName() + " for bungee " + server.getInfo().getName() + "! Creating Bungeecord!");
+                                    bestwrapper.createServer(server);
+                                    server.start();
+                                }
+                            }
                             break;
                         }
                     } else {
@@ -98,9 +112,9 @@ public class ServerManager {
                     Wrapper wrapper = WrapperManager.getWrapperbyString(wrapperName);
 
                     if (wrapper != null) {
-                        if(wrapper.isProgressing()){
+                        if (wrapper.isProgressing()) {
                             System.out.println("[ServerManager.class] Server '" + server.getInfo().getName() + "' waiting...");
-                        }else{
+                        } else {
                             server.setWrapper(wrapper);
                             i.remove();
                             System.out.println("[ServerManager.class] Found explicit wrapper " + wrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");

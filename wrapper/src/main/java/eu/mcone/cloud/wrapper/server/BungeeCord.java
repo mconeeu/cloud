@@ -34,7 +34,7 @@ public class BungeeCord extends Server {
 
         final String s = File.separator;
         final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
-        final File serverDir = new File(homeDir+s+"wrapper"+s+"servers"+s+info.getName());
+        final File serverDir = new File(homeDir+s+"wrapper"+s+"bungees"+s+info.getName());
         final File templateZip = new File(serverDir+s+info.getTemplateName()+".zip");
 
         System.out.println("[Server.class] Starting new server with the UUID: '" + info.getUuid() + "', Template '" + info.getTemplateName() + "', '" + info.getRam() + "gb ram, on the port '" + info.getPort() + "'...");
@@ -56,7 +56,7 @@ public class BungeeCord extends Server {
 
                 //createConsoleLogDirectory();
 
-                setConfig();
+                //setConfig();
 
                 String[] command = new String[]{"java",
                         "-Dfile.encoding=UTF-8",
@@ -71,11 +71,8 @@ public class BungeeCord extends Server {
 
                 this.process = this.runtime.exec(command, null, serverDir);
 
-                    //Register all Output for Spigot console
-                    new BungeeInputReader(this, true);
-
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                writer.flush();
+                //Register all Output for bungeecord console
+                new BungeeInputReader(this, true);
 
                 this.process.waitFor();
                 this.process.destroy();

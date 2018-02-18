@@ -11,19 +11,19 @@ import eu.mcone.cloud.wrapper.server.Server;
 
 public class BukkitInputReader extends ConsoleInputReader {
 
-    public BukkitInputReader(Server server, boolean filter) {
-        super(server, filter);
+    public BukkitInputReader(Server server, boolean outputConsole) {
+        super(server, outputConsole);
     }
 
     @Override
     void filter(String[] lineArray, String line) {
-        if (lineArray[2].equalsIgnoreCase("Done")) {
-            if (!(line == null)) {
+        if (line != null) {
+            if (line.contains("! For help, type \"help\" or \"?\"")) {
                 //Server is finishing
                 String message = String.join(" ", lineArray);
                 System.out.println("[" + this.server.getInfo().getName() + " >> " + message);
                 this.server.sendProgressState(ServerProgressStatePacketMaster.Progress.NOTPROGRESSING);
-                this.server.sendResult("[Server." + server.getInfo().getName() + "] The server started successfully...", ServerResultPacketWrapper.Result.SUCCESSFUL);
+                this.server.sendResult("[Bukkit." + server.getInfo().getName() + "] The server started successfully...", ServerResultPacketWrapper.Result.SUCCESSFUL);
             }
         }
     }

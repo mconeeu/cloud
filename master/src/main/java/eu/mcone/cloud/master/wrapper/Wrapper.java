@@ -32,6 +32,9 @@ public class Wrapper {
     @Getter @Setter
     private boolean progressing = false;
 
+    @Getter @Setter
+    private boolean hasBungee = false;
+
     @Getter
     private List<Server> servers = new ArrayList<>();
 
