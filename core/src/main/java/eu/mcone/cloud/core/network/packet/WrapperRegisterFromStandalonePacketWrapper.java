@@ -16,11 +16,11 @@ public class WrapperRegisterFromStandalonePacketWrapper extends Packet {
     @Getter
     private Long ram;
     @Getter
-    private Map<UUID, Long> servers;
+    private Map<UUID, String> servers;
 
     public WrapperRegisterFromStandalonePacketWrapper() {}
 
-    public WrapperRegisterFromStandalonePacketWrapper(Map<UUID, Long> servers, long ram) {
+    public WrapperRegisterFromStandalonePacketWrapper(Map<UUID, String> servers, long ram) {
         this.ram = ram;
         this.servers = servers;
     }
@@ -33,9 +33,10 @@ public class WrapperRegisterFromStandalonePacketWrapper extends Packet {
         try {
             out.writeLong(ram);
             out.writeInt(servers.size());
-            for (HashMap.Entry<UUID, Long> e : servers.entrySet()) {
+            for (HashMap.Entry<UUID, String> e : servers.entrySet()) {
+                System.out.println("going through server with uuid "+e.getKey());
                 out.writeUTF(e.getKey().toString());
-                out.writeLong(e.getValue());
+                out.writeUTF(e.getValue());
             }
 
             byte[] result = stream.toByteArray();
@@ -54,10 +55,15 @@ public class WrapperRegisterFromStandalonePacketWrapper extends Packet {
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
             ram = input.readLong();
+
             int size = input.readInt();
             servers = new HashMap<>();
-            for (int i = 1; i >= size; i++) {
-                servers.put(UUID.fromString(input.readUTF()), input.readLong());
+
+            for (int i = 1; i <= size; i++) {
+                UUID uuid = UUID.fromString(input.readUTF());
+                String name = input.readUTF();
+
+                servers.put(uuid, name);
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -35,7 +35,7 @@ public class ServerInfoPacket extends Packet {
             out.writeUTF(serverInfo.getName());
             out.writeUTF(serverInfo.getTemplateName());
             out.writeInt(serverInfo.getTemplateID());
-            out.writeInt(serverInfo.getRam());
+            out.writeLong(serverInfo.getRam());
             out.writeInt(serverInfo.getPort());
             out.writeInt(serverInfo.getMaxPlayers());
             out.writeUTF(serverInfo.getVersion().toString());
@@ -59,7 +59,7 @@ public class ServerInfoPacket extends Packet {
             String name = input.readUTF();
             String templateName = input.readUTF();
             int templateId = input.readInt();
-            int ram = input.readInt();
+            long ram = input.readLong();
             int port = input.readInt();
             int maxplayers = input.readInt();
             ServerVersion version = ServerVersion.valueOf(input.readUTF());

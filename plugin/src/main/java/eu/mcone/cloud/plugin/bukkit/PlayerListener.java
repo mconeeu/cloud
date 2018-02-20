@@ -23,12 +23,12 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void on(PlayerJoinEvent e) {
-        instance.getChannel().writeAndFlush(new ServerPlayerCountUpdatePacketPlugin(Bukkit.getOnlinePlayers().size()));
+        instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), Bukkit.getOnlinePlayers().size()));
     }
 
     @EventHandler
     public void on(PlayerQuitEvent e) {
-        instance.getChannel().writeAndFlush(new ServerPlayerCountUpdatePacketPlugin(Bukkit.getOnlinePlayers().size()));
+        instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), Bukkit.getOnlinePlayers().size()));
     }
 
 }

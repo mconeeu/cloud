@@ -10,15 +10,17 @@ import lombok.Getter;
 
 public enum Protocol {
     WRAPPER_REGISTER(0, WrapperRegisterPacketWrapper.class),
-    WRAPPER_SHUTDOWN(1, WrapperShutdownPacketWrapper.class),
-    SERVER_INFO(2, ServerInfoPacket.class),
-    SERVER_COMMAND_EXECUTE(3, ServerCommandExecutePacketWrapper.class),
-    SERVER_CHANGE_STATE(4, ServerChangeStatePacketWrapper.class),
-    SERVER_UPDATE_STATE(5, ServerUpdateStatePacketWrapper.class),
-    SERVER_PLAYER_COUNT_UPDATE(6, ServerPlayerCountUpdatePacketPlugin.class),
-    SERVER_REGISTER(7, ServerRegisterPacketPlugin.class),
-    SERVER_RESULT(8, ServerResultPacketWrapper.class),
-    PLUGIN_SERVER_LIST(9, ServerListPacketAddPlugin.class);
+    Wrapper_REGISTER_FROM_STANDALONE(1, WrapperRegisterFromStandalonePacketWrapper.class),
+    WRAPPER_SHUTDOWN(2, WrapperShutdownPacketWrapper.class),
+    SERVER_INFO(3, ServerInfoPacket.class),
+    SERVER_COMMAND_EXECUTE(4, ServerCommandExecutePacketWrapper.class),
+    SERVER_CHANGE_STATE(5, ServerChangeStatePacketWrapper.class),
+    SERVER_UPDATE_STATE(6, ServerUpdateStatePacketWrapper.class),
+    SERVER_PLAYER_COUNT_UPDATE(7, ServerPlayerCountUpdatePacketPlugin.class),
+    SERVER_REGISTER(8, ServerRegisterPacketPlugin.class),
+    SERVER_RESULT(9, ServerResultPacketWrapper.class),
+    PLUGIN_SERVER_LIST_ADD(10, ServerListPacketAddPlugin.class),
+    PLUGIN_SERVER_LIST_REMOVE(11, ServerListPacketRemovePlugin.class);
 
     @Getter
     private int id;

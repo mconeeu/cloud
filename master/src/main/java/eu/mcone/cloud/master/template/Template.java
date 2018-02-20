@@ -22,13 +22,15 @@ public class Template {
     @Getter
     private String name;
     @Getter
-    private int ram, maxPlayers, min, max, emptyservers;
+    private int maxPlayers, min, max, emptyservers;
+    @Getter
+    private long ram;
     @Getter
     private boolean startup;
     @Getter
     private ServerVersion version;
 
-    public Template(String name, int ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, boolean startup) {
+    public Template(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, boolean startup) {
         this.name = name;
         this.ram = ram;
         this.maxPlayers = maxPlayers;
@@ -80,22 +82,6 @@ public class Template {
         }
     }
 
-    public void deleteServer(UUID uuid) {
-        //If Server is part of this template
-        for (Server s : servers) {
-            if (s.getInfo().getUuid().equals(uuid)) {
-                Logger.log(getClass(), "["+name+"] Deleting Server " + s.getInfo().getName() + "!");
-
-                //Remove Server from HashMap and delete it from Wrapper
-                this.servers.remove(s);
-                s.delete();
-                return;
-            }
-        }
-
-        Logger.err(getClass(), "["+name+"] Server with UUID " + uuid.toString() + " is not part of Template " + this.name + "!");
-    }
-
     public void deleteServer(Server server) {
         //If Server is part of this template
         if (servers.contains(server)) {
@@ -103,7 +89,6 @@ public class Template {
 
             //Remove Server from HashMap and delete it from Wrapper
             this.servers.remove(server);
-            server.delete();
         } else {
             Logger.err(getClass(), "["+name+"] Server " + server.getInfo().getName() + " is not part of Template " + this.name + "!");
         }

@@ -41,18 +41,20 @@ public class Bukkit extends Server {
         this.initialise(
                 serverDir,
                 BukkitInputReader.class,
-                new String[]{"java",
-                "-Dfile.encoding=UTF-8",
-                "-jar",
-                "-XX:+UseG1GC",
-                "-XX:MaxGCPauseMillis=50",
-                "-XX:-UseAdaptiveSizePolicy",
-                "-Dcom.mojang.eula.agree=true",
-                "-Dio.netty.recycler.maxCapacity=0 ",
-                "-Dio.netty.recycler.maxCapacity.default=0",
-                "-Djline.terminal=jline.UnsupportedTerminal",
-                "-Xmx"+info.getRam()+"M",
-                serverDir+s+"server.jar"}
+                new String[]{
+                        "java",
+                        "-Dfile.encoding=UTF-8",
+                        "-jar",
+                        "-XX:+UseG1GC",
+                        "-XX:MaxGCPauseMillis=50",
+                        "-XX:-UseAdaptiveSizePolicy",
+                        "-Dcom.mojang.eula.agree=true",
+                        "-Dio.netty.recycler.maxCapacity=0 ",
+                        "-Dio.netty.recycler.maxCapacity.default=0",
+                        "-Djline.terminal=jline.UnsupportedTerminal",
+                        "-Xmx"+info.getRam()+"M",
+                        serverDir+s+"server.jar"
+                }
         );
     }
 
@@ -97,7 +99,8 @@ public class Bukkit extends Server {
 
         //Server Data
         ps.setProperty("online-mode", "false");
-        ps.setProperty("server-ip", WrapperServer.getInstance().getHostname());
+        ps.setProperty("server-ip", "0.0.0.0");
+        ps.setProperty("wrapper-ip", WrapperServer.getInstance().getHostname());
         ps.setProperty("server-port", Integer.toString(info.getPort()));
         ps.setProperty("max-players", Integer.toString(info.getMaxPlayers()));
         ps.setProperty("motd", "\u00A7f\u00A7lMC ONE \u00A73CloudServer \u00A78» \u00A77" + serverName);

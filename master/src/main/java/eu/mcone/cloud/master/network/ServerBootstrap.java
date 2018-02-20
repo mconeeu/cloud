@@ -9,6 +9,9 @@ import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.pipeline.Decoder;
 import eu.mcone.cloud.core.network.pipeline.Encoder;
 import io.netty.channel.*;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -16,19 +19,20 @@ import lombok.Getter;
 
 public class ServerBootstrap {
 
+    private static final boolean EPOLL = Epoll.isAvailable();
     @Getter
     private int port;
 
     public ServerBootstrap(int port) {
         this.port = port;
 
-        EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        EventLoopGroup bossGroup = EPOLL ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
+        EventLoopGroup workerGroup = EPOLL ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
 
         try {
             io.netty.bootstrap.ServerBootstrap b = new io.netty.bootstrap.ServerBootstrap();
             b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(EPOLL ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
@@ -40,7 +44,6 @@ public class ServerBootstrap {
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-            System.out.println("["+getClass().getName()+"] Netty Server starting on port "+port);
             ChannelFuture f = b.bind(port).sync().addListener((ChannelFutureListener) channelFuture -> {
                 if (channelFuture.isSuccess()) {
                     Logger.log(getClass(), "Netty is listening @ Port:" + port);
@@ -56,5 +59,7 @@ public class ServerBootstrap {
             bossGroup.shutdownGracefully();
         }
     }
+
+
 
 }

@@ -57,7 +57,7 @@ public abstract class Server {
             serverDir.mkdir();
         }
 
-        new Thread(() -> {
+        WrapperServer.getInstance().getThreadPool().execute(() -> {
             try {
                 //Logger.log(getClass(), "["+info.getName()+"] Downloading Template...");
                 //URL website = new URL("http://templates.mcone.eu/"+info.getTemplateName()+".zip");
@@ -94,7 +94,7 @@ public abstract class Server {
                 }
                 e.printStackTrace();
             }
-        }).start();
+        });
         Logger.log(getClass(), "["+info.getName()+"] Server start initialised, method returned");
     }
 
@@ -166,7 +166,7 @@ public abstract class Server {
         WrapperServer.getInstance().send(new ServerUpdateStatePacketWrapper(info.getUuid(), state));
     }
 
-    public void sendResult(String message, ServerResultPacketWrapper.Result result) {
+    void sendResult(String message, ServerResultPacketWrapper.Result result) {
         WrapperServer.getInstance().send(new ServerResultPacketWrapper("Server.class", message, result));
         System.out.println("[Server.class] The result '" + message + "\\" + result.toString() + "' was sent to the master...");
     }

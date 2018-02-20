@@ -15,7 +15,10 @@ import eu.mcone.cloud.master.wrapper.Wrapper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
@@ -35,33 +38,39 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             Logger.log(getClass(), "new WrapperRegisterFromStandalonePacketWrapper");
             Logger.log("WrapperRegister", "Wrapper registering with still "+result.getServers().size()+" servers running!");
 
-            Map<UUID, Long> unknown = new HashMap<>();
+            List<UUID> unknown = new ArrayList<>();
             List<Server> newServer = new ArrayList<>();
-            for (HashMap.Entry<UUID, Long> e : result.getServers().entrySet()) {
+            for (HashMap.Entry<UUID, String> e : result.getServers().entrySet()) {
                 UUID uuid = e.getKey();
-                long ram = e.getValue();
-                Server s = MasterServer.getInstance().getServer(uuid);
+                String name = e.getValue();
+                Server s = MasterServer.getInstance().getServer(name);
 
                 if (s == null) {
-                    unknown.put(uuid, ram);
+                    unknown.add(uuid);
                 } else {
-                    MasterServer.getInstance().getServerManager().removeFromServerWaitList(s);
-                    s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
+                    s.setAllowStart(false);
+                    s.getInfo().setUuid(uuid);
                     newServer.add(s);
                 }
             }
 
             Wrapper w = new Wrapper(ctx.channel(), result.getRam());
+            long ramInUse = 0;
 
             Logger.log("WrapperRegister", "Found "+newServer.size()+" valid servers!");
             for (Server s : newServer) {
-                MasterServer.getInstance().getServerManager().removeFromServerWaitList(s);
+                ramInUse += s.getInfo().getRam();
+
                 s.setWrapper(w);
+                s.setAllowStart(true);
+                w.send(new ServerInfoPacket(s.getInfo()));
             }
 
+            w.setRamInUse(ramInUse);
+
             Logger.log("WrapperRegister", "Found "+unknown.size()+" invalid servers! Deleting from Wrapper...");
-            for (HashMap.Entry<UUID, Long> e : unknown.entrySet()) {
-                w.deleteServer(e.getKey(), e.getValue());
+            for (UUID uuid : unknown) {
+                w.destroyServer(uuid);
             }
 
             Logger.log("WrapperRegister", w.getName()+" is successfully registered from Standalone Mode!");
@@ -76,6 +85,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                 s.getInfo().setPort(result.getPort());
 
                 if (s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                    Logger.log(getClass(), "Sending Gameserver data to BungeeCord...");
                     for (Server server : MasterServer.getInstance().getServers()) {
                         if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
                             s.send(new ServerListPacketAddPlugin(server.getInfo()));
@@ -83,7 +93,16 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                     }
                 }
             }
+        } else if (packet instanceof ServerPlayerCountUpdatePacketPlugin) {
+            ServerPlayerCountUpdatePacketPlugin result = (ServerPlayerCountUpdatePacketPlugin) packet;
+            Logger.log(getClass(), "new ServerPlayerCountUpdatePacketPlugin (UUID: "+result.getUuid()+", COUNT: "+result.getPlayerCount()+")");
+            Server s = MasterServer.getInstance().getServer(result.getUuid());
 
+            if (s != null) {
+                s.setPlayerCount(result.getPlayerCount());
+            } else {
+                Logger.err(getClass(), "Playercount for Server with UUID "+result.getUuid()+" could not be changed! (Server does not exist)");
+            }
         } else if (packet instanceof ServerUpdateStatePacketWrapper) {
             ServerUpdateStatePacketWrapper result = (ServerUpdateStatePacketWrapper) packet;
             Logger.log(getClass(), "new ServerUpdateStatePacketPlugin (UUID: "+result.getUuid()+", STATE: "+result.getState().toString()+")");
@@ -101,22 +120,24 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                 Logger.log(getClass(), "["+s.getWrapper().getName()+"] Wrapper is busy? "+busy);
                 s.getWrapper().setBusy(busy);
 
-                switch (state) {
-                    case WAITING: {
-                        for (Server server : MasterServer.getInstance().getServers()) {
-                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                                server.send(new ServerListPacketAddPlugin(s.getInfo()));
+                if (!s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                    switch (state) {
+                        case WAITING: {
+                            for (Server server : MasterServer.getInstance().getServers()) {
+                                if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
+                                    server.send(new ServerListPacketAddPlugin(s.getInfo()));
+                                }
                             }
+                            break;
                         }
-                        break;
-                    }
-                    case OFFLINE: {
-                        for (Server server : MasterServer.getInstance().getServers()) {
-                            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                                server.send(new ServerListPacketRemovePlugin(s.getInfo()));
+                        case OFFLINE: {
+                            for (Server server : MasterServer.getInstance().getServers()) {
+                                if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
+                                    server.send(new ServerListPacketRemovePlugin(s.getInfo()));
+                                }
                             }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -139,9 +160,19 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (cause instanceof IOException) {
+            ctx.channel().close();
+
+            Wrapper w = MasterServer.getInstance().getWrapper(ctx.channel());
+            String name = w != null ? w.getName() : ctx.channel().remoteAddress().toString();
+
+            Logger.err(getClass(), "Lost Connection to Client: "+name+".");
+            Logger.err(getClass(), cause.getMessage());
+            return;
+        }
+
+        Logger.err(getClass(), "Netty Exception:");
         cause.printStackTrace();
-        ctx.close();
-        System.out.println("Close Channel");
     }
 
 }

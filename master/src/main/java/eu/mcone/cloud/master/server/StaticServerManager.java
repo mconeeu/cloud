@@ -54,9 +54,9 @@ public class StaticServerManager {
         });
     }
 
-    public void addStaticServer(String name, int maxPlayers, int ram, ServerVersion version, String wrappername) {
+    public void addStaticServer(String name, int maxPlayers, long ram, ServerVersion version, String wrappername) {
         Logger.log(getClass(), "Creating Static Server " + name + "...");
-        mysql.update("INSERT INTO " + mysql.getTablePrefix() + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + Integer.valueOf(ram).toString() + " , '" + wrappername + "');");
+        mysql.update("INSERT INTO " + mysql.getTablePrefix() + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + ram + " , '" + wrappername + "');");
 
         UUID uuid = UUID.randomUUID();
         staticServers.add(
@@ -74,16 +74,6 @@ public class StaticServerManager {
                         wrappername
                 )
         );
-    }
-
-    public void deleteStaticServer(Server server) {
-        if (staticServers.contains(server)) {
-            Logger.log(getClass(), "Removing Static Server " + server.getInfo().getName() + "...");
-            mysql.update("DELETE FROM " + mysql.getTablePrefix() + "_static_servers WHERE name='" + server.getInfo().getName() + "';");
-
-            server.delete();
-            staticServers.remove(server);
-        }
     }
 
     public List<Server> getStaticServers() {

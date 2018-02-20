@@ -49,6 +49,7 @@ public class ClientBootstrap {
                     System.out.println("Failed to connect to @ Port:" + port);
                 }
             }).addListener(ChannelFutureListener.CLOSE_ON_FAILURE).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();

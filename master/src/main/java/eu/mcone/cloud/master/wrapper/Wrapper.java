@@ -26,7 +26,9 @@ public class Wrapper {
     @Getter
     private String name;
     @Getter
-    private long ram, ramInUse;
+    private long ram;
+    @Getter @Setter
+    private long ramInUse;
     @Getter
     private Channel channel;
     @Getter @Setter
@@ -51,11 +53,10 @@ public class Wrapper {
     public void delete() {
         for (Server s : servers) {
             s.setWrapper(null);
-            s.delete();
         }
 
         MasterServer.getInstance().getWrappers().remove(this);
-        Logger.log(getClass(), "["+name+"] Destroyed Wrapper!");
+        Logger.log(getClass(), "["+name+"] Deleted Wrapper!");
     }
 
     public void createServer(Server s) {
@@ -73,7 +74,7 @@ public class Wrapper {
         }
     }
 
-    public void deleteServer(Server server) {
+    public void destroyServer(Server server) {
         this.ramInUse -= server.getInfo().getRam();
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.DELETE));
 
@@ -81,7 +82,7 @@ public class Wrapper {
         Logger.log(getClass(), "["+name+"] Deleted server " + server.getInfo().getName() + "!");
     }
 
-    public void deleteServer(UUID uuid, long ram) {
+    public void destroyServer(UUID uuid) {
         this.ramInUse -= ram;
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(uuid, ServerChangeStatePacketWrapper.State.DELETE));
     }

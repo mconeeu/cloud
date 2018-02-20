@@ -39,16 +39,18 @@ public class BungeeCord extends Server {
         this.initialise(
                 serverDir,
                 BungeeInputReader.class,
-                new String[]{"java",
-                "-Dfile.encoding=UTF-8",
-                "-jar",
-                "-XX:+UseG1GC",
-                "-XX:MaxGCPauseMillis=50",
-                "-XX:-UseAdaptiveSizePolicy",
-                "-Dio.netty.recycler.maxCapacity=0 ",
-                "-Dio.netty.recycler.maxCapacity.default=0",
-                "-Xmx"+info.getRam()+"M",
-                serverDir+s+"bungee.jar"}
+                new String[]{
+                        "java",
+                        "-Dfile.encoding=UTF-8",
+                        "-jar",
+                        "-XX:+UseG1GC",
+                        "-XX:MaxGCPauseMillis=50",
+                        "-XX:-UseAdaptiveSizePolicy",
+                        "-Dio.netty.recycler.maxCapacity=0 ",
+                        "-Dio.netty.recycler.maxCapacity.default=0",
+                        "-Xmx"+info.getRam()+"M",
+                        serverDir+s+"bungee.jar"
+                }
         );
     }
 
@@ -90,15 +92,10 @@ public class BungeeCord extends Server {
         ps.load(isrProperties);
 
         //Server Data
-        ps.setProperty("online-mode", "false");
-        ps.setProperty("server-ip", WrapperServer.getInstance().getHostname());
+        ps.setProperty("wrapper-ip", WrapperServer.getInstance().getHostname());
         ps.setProperty("server-port", Integer.toString(info.getPort()));
         ps.setProperty("max-players", Integer.toString(info.getMaxPlayers()));
-        ps.setProperty("motd", "\u00A7f\u00A7lMC ONE \u00A73Server \u00A78» \u00A77" + serverName);
-
-        //CloudSystem Data
         ps.setProperty("server-uuid", info.getUuid().toString());
-        ps.setProperty("server-templateID", Integer.toString(info.getTemplateID()));
         ps.setProperty("server-name", serverName);
 
         OutputStream outputstream = Files.newOutputStream(Paths.get(propertyFile.getPath()));
@@ -123,13 +120,13 @@ public class BungeeCord extends Server {
 
         List<?> listeners = bungeeConf.getList("listeners");
 
-        HashMap<Object, Object> hashischMap = (listeners != null && listeners.size() > 0) ? (HashMap<Object, Object>) listeners.get(0) : new HashMap<>();
-        hashischMap.put("host", "0.0.0.0:"+info.getPort());
-        hashischMap.put("max_players", info.getMaxPlayers());
-        hashischMap.put("motd", "&f&lMC ONE &3CloudServer &8» &7"+info.getName());
+        HashMap<Object, Object> values = (listeners != null && listeners.size() > 0) ? (HashMap<Object, Object>) listeners.get(0) : new HashMap<>();
+        values.put("host", "0.0.0.0:"+info.getPort());
+        values.put("max_players", info.getMaxPlayers());
+        values.put("motd", "&f&lMC ONE &3CloudServer &8» &7"+info.getName());
 
         List<Map<Object, Object>> result = new ArrayList<>();
-        result.add(hashischMap);
+        result.add(values);
         bungeeConf.set("listeners", result);
 
         OutputStreamWriter oswBungee = new OutputStreamWriter(Files.newOutputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);

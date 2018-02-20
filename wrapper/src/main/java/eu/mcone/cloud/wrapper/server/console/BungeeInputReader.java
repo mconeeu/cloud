@@ -18,10 +18,10 @@ public class BungeeInputReader extends ConsoleInputReader {
 
     @Override
     void filter(String[] lineArray, String line) {
-        if (line.contains("Listening on ") || line.contains("Netty is connected @ ")) {
+        if (line.contains("Listening on ")) {
             //Server started
             this.server.setState(ServerState.WAITING);
-            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] >> " + line);
+            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] Server successfully started!");
         }
     }
 }

@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 
 public class CloudPlugin {
 
@@ -41,13 +42,13 @@ public class CloudPlugin {
 
             name = ps.getProperty("server-name");
             serverUuid = UUID.fromString(ps.getProperty("server-uuid"));
-            hostname = ps.getProperty("server-ip");
+            hostname = ps.getProperty("wrapper-ip");
             port = Integer.valueOf(ps.getProperty("server-port"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        new Thread(() -> new ClientBootstrap("localhost", 4567, this)).start();
+        Executors.newSingleThreadExecutor().execute(() -> new ClientBootstrap("localhost", 4567, this));
     }
 
     public void unload() {

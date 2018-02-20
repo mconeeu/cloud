@@ -17,11 +17,13 @@ public class ServerInfo {
     @Getter @Setter
     private String name, templateName, hostname;
     @Getter @Setter
-    private int templateID, maxPlayers, ram, port = 0;
+    private int templateID, maxPlayers, port = 0;
+    @Getter @Setter
+    private long ram;
     @Getter @Setter
     private ServerVersion version;
 
-    public ServerInfo(UUID uuid, String name, String templateName, int maxPlayers, int templateID, int ram, ServerVersion version) {
+    public ServerInfo(UUID uuid, String name, String templateName, int maxPlayers, int templateID, long ram, ServerVersion version) {
         this.uuid = uuid;
         this.name = name;
         this.templateName = templateName;

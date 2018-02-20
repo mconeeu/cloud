@@ -10,6 +10,7 @@ import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacketWrapper;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
+import eu.mcone.cloud.master.wrapper.Wrapper;
 import sun.rmi.runtime.Log;
 
 public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecutor {
@@ -40,6 +41,16 @@ public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecu
             if (args.length == 0) {
                 Logger.log(getClass(), "------- [STOP] -------\n" +
                         "MasterServer will shutdown shortly");
+                MasterServer.getInstance().shutdown();
+            } else if (args.length == 1 && args[0].equalsIgnoreCase("all")) {
+                Logger.log(getClass(), "------- [STOP] -------\n" +
+                        "MasterServer and all Wrappers will shutdown shortly");
+
+                Logger.log("Shutdown progress", "Shutting down Wrappers");
+                for (Wrapper w : MasterServer.getInstance().getWrappers()) {
+                    w.shutdown();
+                }
+
                 MasterServer.getInstance().shutdown();
             }
         }

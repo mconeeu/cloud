@@ -27,7 +27,6 @@ public class BukkitPlugin extends JavaPlugin implements Plugin {
 
     @Override
     public void onDisable() {
-        instance.send(new ServerUpdateStatePacketWrapper(instance.getServerUuid(), ServerState.OFFLINE));
         instance.unload();
     }
 

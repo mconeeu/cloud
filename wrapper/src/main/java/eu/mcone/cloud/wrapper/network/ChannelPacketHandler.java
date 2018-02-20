@@ -15,20 +15,26 @@ import eu.mcone.cloud.wrapper.server.Bukkit;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         WrapperServer.getInstance().setChannel(ctx.channel());
-        ctx.writeAndFlush(new WrapperRegisterPacketWrapper(WrapperServer.getInstance().getRam()));
-        Logger.log(getClass(), "new channel to " + ctx.channel().remoteAddress().toString());
-    }
 
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        Logger.log(getClass(), "Unregistered Master channel!");
-        Logger.log(getClass(), "Falling back to standalone Mode. Deleting all stopped servers...");
-        WrapperServer.getInstance().startStandaloneMode();
+        if (WrapperServer.getInstance().getServers().size() == 0) {
+            ctx.writeAndFlush(new WrapperRegisterPacketWrapper(WrapperServer.getInstance().getRam()));
+        } else {
+            Map<UUID, String> servers = new HashMap<>();
+            WrapperServer.getInstance().getServers().forEach(server -> servers.put(server.getInfo().getUuid(), server.getInfo().getName()));
+
+            ctx.writeAndFlush(new WrapperRegisterFromStandalonePacketWrapper(servers, WrapperServer.getInstance().getRam()));
+        }
+        Logger.log(getClass(), "new channel to " + ctx.channel().remoteAddress().toString());
     }
 
     @Override
@@ -79,10 +85,20 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     }
 
     @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) {
+        WrapperServer.getInstance().getNettyBootstrap().scheduleReconnect();
+    }
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (cause instanceof IOException) {
+            Logger.err(getClass(), cause.getMessage());
+            Logger.err(getClass(), "Reconnecting...");
+            return;
+        }
+
+        Logger.err(getClass(), "Netty Exception:");
         cause.printStackTrace();
-        ctx.close();
-        Logger.log(getClass(), "Close Channel");
     }
 
 }

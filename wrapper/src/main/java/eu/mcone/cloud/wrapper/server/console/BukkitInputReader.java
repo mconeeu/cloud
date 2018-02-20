@@ -19,8 +19,8 @@ public class BukkitInputReader extends ConsoleInputReader {
     void filter(String[] lineArray, String line) {
         if (lineArray[2].equalsIgnoreCase("Done")) {
             //Server started
-            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] >> " + line);
             this.server.setState(ServerState.WAITING);
+            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] Server successfully started");
         }
     }
 

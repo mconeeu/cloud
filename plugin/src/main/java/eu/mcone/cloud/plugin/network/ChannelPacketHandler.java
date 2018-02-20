@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.plugin.network;
 
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.*;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import io.netty.channel.ChannelHandlerContext;
@@ -14,6 +15,7 @@ import net.md_5.bungee.api.ReconnectHandler;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
@@ -61,9 +63,16 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (cause instanceof IOException) {
+            ctx.channel().close();
+
+            Logger.log(getClass(), "Lost Connection to Master.");
+            Logger.log(getClass(), cause.getMessage());
+            return;
+        }
+
+        Logger.log(getClass(), "Netty Exception:");
         cause.printStackTrace();
-        ctx.close();
-        System.out.println("Close Channel");
     }
 
 }

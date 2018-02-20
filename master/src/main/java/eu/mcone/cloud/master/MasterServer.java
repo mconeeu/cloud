@@ -6,6 +6,7 @@
 package eu.mcone.cloud.master;
 
 import eu.mcone.cloud.core.console.ConsoleReader;
+import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.console.CommandExecutor;
 import eu.mcone.cloud.master.network.ServerBootstrap;
@@ -98,18 +99,12 @@ public class MasterServer {
     }
 
     public void shutdown() {
-        System.out.println("[Shutdowm progress] Stopping Wrapper Server...");
+        Logger.log("Shutdown progress", "Shutting down ServerManager");
         serverManager.shutdown();
 
+        Logger.log("Shutdown progress", "The following Wrappers will stay online: "+getWrappers().size());
         for (Wrapper w : getWrappers()) {
-            w.shutdown();
-        }
-
-        try {
-            System.out.println("[Shutdowm progress] Waiting for wrappers to stop...");
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            Logger.log("Shutdown progress", " -"+w.getName());
         }
 
         System.out.println("[Shutdowm progress] Stopping instance...");
@@ -140,12 +135,21 @@ public class MasterServer {
         return null;
     }
 
-    public Server getServer(Channel channel) {
+    public Server getServer(String name) {
         for (Template t : templates) {
             for (Server s : t.getServers()) {
-                if (s.getChannel().equals(channel)) {
+                if (s.getInfo().getName().equals(name)) {
                     return s;
                 }
+            }
+        }
+        return null;
+    }
+
+    public Wrapper getWrapper(Channel channel) {
+        for (Wrapper w : wrappers) {
+            if (w.getChannel().equals(channel)) {
+                return w;
             }
         }
         return null;

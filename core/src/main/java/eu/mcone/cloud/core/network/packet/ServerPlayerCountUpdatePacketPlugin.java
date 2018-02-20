@@ -9,15 +9,19 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
+import java.util.UUID;
 
 public class ServerPlayerCountUpdatePacketPlugin extends Packet {
 
+    @Getter
+    private UUID uuid;
     @Getter
     private int playerCount;
 
     public ServerPlayerCountUpdatePacketPlugin() {}
 
-    public ServerPlayerCountUpdatePacketPlugin(int playerCount) {
+    public ServerPlayerCountUpdatePacketPlugin(UUID uuid, int playerCount) {
+        this.uuid = uuid;
         this.playerCount = playerCount;
     }
 
@@ -27,6 +31,7 @@ public class ServerPlayerCountUpdatePacketPlugin extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
+            out.writeUTF(uuid.toString());
             out.writeInt(playerCount);
 
             byte[] result = stream.toByteArray();
@@ -44,6 +49,7 @@ public class ServerPlayerCountUpdatePacketPlugin extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
+            uuid = UUID.fromString(input.readUTF());
             playerCount = input.readInt();
         } catch (IOException e) {
             e.printStackTrace();

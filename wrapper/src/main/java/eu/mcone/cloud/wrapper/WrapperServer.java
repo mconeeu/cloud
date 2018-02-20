@@ -20,9 +20,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -36,24 +39,24 @@ public class WrapperServer {
     @Getter
     private FileManager fileManager;
     @Getter
-    private String hostname;
+    private ClientBootstrap nettyBootstrap;
     @Getter @Setter
     private Channel channel;
     @Getter
     private long ram;
     @Getter
     private List<Server> servers = new ArrayList<>();
+    @Getter
+    private ExecutorService threadPool;
 
     public static void main(String args[]) {
-        new WrapperServer(args[0]);
+        new WrapperServer();
     }
 
-    private WrapperServer(String hostname) {
+    private WrapperServer() {
         instance = this;
 
-        this.hostname = hostname;
         this.ram = Runtime.getRuntime().maxMemory() / 1024 / 1024;
-
         Logger.log(getClass(), ram+"M RAM");
 
         fileManager = new FileManager();
@@ -65,6 +68,8 @@ public class WrapperServer {
         consoleReader = new ConsoleReader();
         consoleReader.registerCommand(new CommandExecutor());
 
+        threadPool = Executors.newCachedThreadPool();
+
         System.out.println("[Enable progress] Welcome to mc1cloud. Wrapper is starting...");
         System.out.println("[Enable progress] Connecting to Database...");
         mysql = new MySQL("localhost", 3306, "cloud", "root", "", "cloudwrapper");
@@ -72,20 +77,7 @@ public class WrapperServer {
         System.out.println("[Enable progress] Creating necessary tables if not exists...");
 
         System.out.println("[Enable progress] Trying to connect to master...");
-        new ClientBootstrap("localhost", 4567);
-    }
-
-    public void startStandaloneMode() {
-        for (Server s : servers) {
-            if (s.getState().equals(ServerState.OFFLINE)) {
-                s.delete();
-            }
-        }
-
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-            //reconnect
-        }, 0, 5, TimeUnit.SECONDS);
-        Logger.log(getClass(), "Standalone Mode started.");
+        nettyBootstrap = new ClientBootstrap("localhost", 4567);
     }
 
     public void shutdown() {
@@ -140,8 +132,20 @@ public class WrapperServer {
         return null;
     }
 
+    public String getHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            return "127.0.0.1";
+        }
+    }
+
     public void send(Packet packet) {
-        channel.writeAndFlush(packet);
+        if (channel.isOpen()) {
+            channel.writeAndFlush(packet);
+        } else {
+            Logger.log(getClass(), "Cannot send packet "+packet.getClass().getSimpleName()+" to Master because channel is closed!");
+        }
     }
 
 }

@@ -21,16 +21,22 @@ import java.util.concurrent.TimeUnit;
 public class ServerManager {
 
     private ScheduledExecutorService es;
-    private static List<Server> serverWaitList = new ArrayList<>();
 
     //creates or deletes empty servers for or from templates and tries to start servers from serverWaitList
     public ServerManager() {
         es = Executors.newSingleThreadScheduledExecutor();
         es.scheduleAtFixedRate(() -> {
+            List<Server> serverWaitList = new ArrayList<>();
+
             for (Template t : MasterServer.getInstance().getTemplates()) {
                 HashMap<Server, Integer> playercount = new HashMap<>();
 
                 for (Server s : t.getServers()) {
+                    //Add to ServerWaitlist if Wrapper == null
+                    if (s.getWrapper() == null && s.isAllowStart()) {
+                        serverWaitList.add(s);
+                    }
+
                     //Save actual playercount from every server in an hashmap
                     if (s.getPlayerCount() >= 0) {
                         playercount.put(s, s.getPlayerCount());
@@ -62,7 +68,7 @@ public class ServerManager {
 
                             //If the minimum server count is not reached after deleting server, delete server.
                             if (t.getServers().size()-1 >= t.getMin()) {
-                                t.deleteServer(s);
+                                s.delete();
                             }
                         }
                     }
@@ -132,20 +138,6 @@ public class ServerManager {
             //Return the wrapper with less ram
             return Collections.min(wrappers.entrySet(), HashMap.Entry.comparingByValue()).getKey();
         }
-    }
-
-    void addToServerWaitListIfNotExists(Server server) {
-        if (serverWaitList.contains(server)) {
-            Logger.err(getClass(), "Error while adding Server to waitlist: " + server.getInfo().getName() + " already in ServerWaitList!");
-        } else {
-            Logger.log(getClass(), "Added " + server.getInfo().getName() + " to ServerWaitList!");
-            serverWaitList.add(server);
-        }
-    }
-
-    public void removeFromServerWaitList(Server server) {
-        if (serverWaitList.contains(server)) serverWaitList.remove(server);
-        Logger.log(getClass(), "Removed Server "+server.getInfo().getName()+" from ServerWaitList");
     }
 
     public void shutdown() {

@@ -30,7 +30,6 @@ public class BungeePlugin extends Plugin implements eu.mcone.cloud.plugin.Plugin
 
     @Override
     public void onDisable() {
-        instance.send(new ServerUpdateStatePacketWrapper(instance.getServerUuid(), ServerState.OFFLINE));
         instance.unload();
     }
 
