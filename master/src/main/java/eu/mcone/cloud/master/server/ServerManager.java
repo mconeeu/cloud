@@ -6,12 +6,9 @@
 package eu.mcone.cloud.master.server;
 
 import eu.mcone.cloud.core.console.Logger;
-import eu.mcone.cloud.core.server.ServerVersion;
+import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.cloud.master.wrapper.WrapperManager;
-import eu.mcone.cloud.master.MasterServer;
-import lombok.Getter;
 
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -26,7 +23,7 @@ public class ServerManager {
     public ServerManager() {
         es = Executors.newSingleThreadScheduledExecutor();
         es.scheduleAtFixedRate(() -> {
-            List<Server> serverWaitList = new ArrayList<>();
+            LinkedHashSet<Server> serverWaitList = new LinkedHashSet<>();
 
             for (Template t : MasterServer.getInstance().getTemplates()) {
                 HashMap<Server, Integer> playercount = new HashMap<>();
@@ -75,44 +72,42 @@ public class ServerManager {
                 }
             }
 
+            for (Server s : MasterServer.getInstance().getStaticServerManager().getStaticServers()) {
+                if (s.getWrapper() == null && s.isAllowStart()) {
+                    serverWaitList.add(s);
+                }
+            }
+
             Iterator<Server> i = serverWaitList.iterator();
 
             while (i.hasNext()) {
                 Server server = i.next();
-                String wrapperName = server.getWrapperName();
+                UUID wrapperUuid = server.getWrapperUuid();
 
-                if (wrapperName == null) {
+                if (wrapperUuid == null) {
                     Wrapper bestwrapper = getBestWrapper();
 
                     if (bestwrapper != null) {
-                        if(bestwrapper.isBusy()){
-                            Logger.log(getClass(), "Server '" + server.getInfo().getName() + "' waiting...");
-                        }else {
-                            server.setWrapper(bestwrapper);
-                            i.remove();
-                            Logger.log(getClass(), "Found wrapper " + bestwrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
-                            bestwrapper.createServer(server);
-                            server.start();
-                        }
+                        server.setWrapper(bestwrapper);
+                        i.remove();
+                        Logger.log(getClass(), "Found wrapper " + bestwrapper.getUuid() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                        bestwrapper.createServer(server);
+                        server.start();
                     } else {
                         System.out.println("[ServerManager.class] No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
                     }
                 } else {
-                    Wrapper wrapper = WrapperManager.getWrapperbyString(wrapperName);
+                    Wrapper wrapper = MasterServer.getInstance().getWrapper(wrapperUuid);
 
-                    if (wrapper != null) {
-                        if(wrapper.isBusy()){
-                            Logger.log(getClass(), "Server '" + server.getInfo().getName() + "' waiting...");
-                        }else{
-                            server.setWrapper(wrapper);
-                            i.remove();
-                            Logger.log(getClass(), "Found explicit wrapper " + wrapper.getName() + " for server" + server.getInfo().getName() + "! Creating Server!");
-                            wrapper.createServer(server);
-                            server.start();
-                            break;
-                        }
+                    if (wrapper != null && wrapper.isOnline() && !wrapper.isBusy()) {
+                        server.setWrapper(wrapper);
+                        i.remove();
+                        Logger.log(getClass(), "Found explicit wrapper " + wrapper.getUuid() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                        wrapper.createServer(server);
+                        server.start();
+                        break;
                     } else {
-                        Logger.log(getClass(), "Explicit wrapper " + wrapperName + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
+                        Logger.log(getClass(), "Explicit wrapper " + wrapperUuid + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
                     }
                 }
             }
@@ -124,11 +119,13 @@ public class ServerManager {
         HashMap<Wrapper, Long> wrappers = new HashMap<>();
 
         for (Wrapper w : MasterServer.getInstance().getWrappers()) {
-            long difference = w.getRam() - w.getRamInUse();
+            if (w.isOnline() && !w.isBusy()) {
+                long difference = w.getRam() - w.getRamInUse();
 
-            //Exclude wrappers which ram is nearly full
-            if (difference > 100) {
-                wrappers.put(w, w.getRam() - w.getRamInUse());
+                //Exclude wrappers which ram is nearly full
+                if (difference > 100) {
+                    wrappers.put(w, w.getRam() - w.getRamInUse());
+                }
             }
         }
 

@@ -5,25 +5,25 @@
 
 package eu.mcone.cloud.wrapper;
 
-import eu.mcone.cloud.core.console.Logger;
-import eu.mcone.cloud.core.file.FileManager;
 import eu.mcone.cloud.core.console.ConsoleReader;
+import eu.mcone.cloud.core.console.Logger;
+import eu.mcone.cloud.core.file.CloudConfig;
+import eu.mcone.cloud.core.file.Downloader;
+import eu.mcone.cloud.core.file.FileManager;
 import eu.mcone.cloud.core.network.packet.Packet;
-import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.console.CommandExecutor;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
 import eu.mcone.cloud.wrapper.server.Server;
-import eu.mcone.cloud.core.mysql.MySQL;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,12 +32,15 @@ import java.util.concurrent.TimeUnit;
 public class WrapperServer {
 
     private static WrapperServer instance;
-    private final MySQL mysql;
 
+    @Getter
+    private UUID wrapperUuid;
     @Getter
     private ConsoleReader consoleReader;
     @Getter
     private FileManager fileManager;
+    @Getter
+    private CloudConfig config;
     @Getter
     private ClientBootstrap nettyBootstrap;
     @Getter @Setter
@@ -45,7 +48,9 @@ public class WrapperServer {
     @Getter
     private long ram;
     @Getter
-    private List<Server> servers = new ArrayList<>();
+    private boolean shutdown = false;
+    @Getter
+    private LinkedHashSet<Server> servers = new LinkedHashSet<>();
     @Getter
     private ExecutorService threadPool;
 
@@ -60,10 +65,12 @@ public class WrapperServer {
         Logger.log(getClass(), ram+"M RAM");
 
         fileManager = new FileManager();
-        fileManager.createHomeDir("wrapper");
-        fileManager.createHomeDir("wrapper"+File.separator+"templates");
-        fileManager.createHomeDir("wrapper"+File.separator+"servers");
-        fileManager.createHomeDir("wrapper"+File.separator+"config");
+        fileManager.createHomeDir("templates");
+        fileManager.createHomeDir("servers");
+        fileManager.createHomeDir("staticservers");
+        fileManager.createHomeDir("config");
+        fileManager.createHomeDir("jars");
+        fileManager.createHomeDir("jars"+File.separator+"jenkins");
 
         consoleReader = new ConsoleReader();
         consoleReader.registerCommand(new CommandExecutor());
@@ -71,16 +78,36 @@ public class WrapperServer {
         threadPool = Executors.newCachedThreadPool();
 
         System.out.println("[Enable progress] Welcome to mc1cloud. Wrapper is starting...");
-        System.out.println("[Enable progress] Connecting to Database...");
-        mysql = new MySQL("localhost", 3306, "cloud", "root", "", "cloudwrapper");
 
-        System.out.println("[Enable progress] Creating necessary tables if not exists...");
+        config = new CloudConfig(new File(fileManager.getHomeDir()+File.separator+"config.yml"));
+        try {
+            wrapperUuid = UUID.fromString(config.getConfig().getString("uuid"));
+            System.out.println("[Enable progress] Got wrapper UUID '"+wrapperUuid+"' from config...");
+        } catch (IllegalArgumentException e) {
+            UUID wrapperUuid = UUID.randomUUID();
+            config.getConfig().set("uuid", wrapperUuid.toString());
+            config.save();
+
+            System.out.println("[Enable progress] Initialising new Wrapper with UUID '"+wrapperUuid+"'...");
+            this.wrapperUuid = wrapperUuid;
+        }
+
+        System.out.println("[Enable progress] Downloading missing executeables for all ServerVersions:");
+        try {
+            for (ServerVersion v : ServerVersion.values()) {
+                Downloader.download(v.getDownloadLink(), new File(fileManager.getHomeDir()+File.separator+"jars"+File.separator+v.toString()+".jar"));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("[Enable progress] Trying to connect to master...");
         nettyBootstrap = new ClientBootstrap("localhost", 4567);
     }
 
     public void shutdown() {
+        shutdown = true;
+
         System.out.println("[Shutdowm progress] Closing channel to Master...");
         channel.close();
 

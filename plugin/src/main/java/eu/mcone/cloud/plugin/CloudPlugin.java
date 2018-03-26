@@ -6,6 +6,7 @@
 package eu.mcone.cloud.plugin;
 
 import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.plugin.network.ClientBootstrap;
 import io.netty.channel.Channel;
 import lombok.Getter;
@@ -23,17 +24,23 @@ import java.util.concurrent.Executors;
 public class CloudPlugin {
 
     @Getter
+    private static CloudPlugin instance;
+
+    @Getter
     private Plugin plugin;
     @Getter @Setter
     private Channel channel;
     @Getter
     private String name, hostname;
+    @Getter @Setter
+    private ServerState state = ServerState.WAITING;
     @Getter
     private UUID serverUuid;
     @Getter
     private int port;
 
     public CloudPlugin(Plugin plugin) {
+        instance = this;
         this.plugin = plugin;
 
         Properties ps = new Properties();

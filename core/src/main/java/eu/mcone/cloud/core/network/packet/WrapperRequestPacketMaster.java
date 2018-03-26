@@ -11,18 +11,25 @@ import lombok.Getter;
 import java.io.*;
 import java.util.UUID;
 
-public class WrapperRegisterPacketWrapper extends Packet {
+public class WrapperRequestPacketMaster extends Packet {
 
     @Getter
-    private long ram;
+    private Object object;
     @Getter
-    private UUID uuid;
+    private UUID request;
+    @Getter
+    private String value;
 
-    public WrapperRegisterPacketWrapper() {}
+    public enum Object {
+        LOG
+    }
 
-    public WrapperRegisterPacketWrapper(long ram, UUID uuid) {
-        this.ram = ram;
-        this.uuid = uuid;
+    public WrapperRequestPacketMaster() {}
+
+    public WrapperRequestPacketMaster(Object object, UUID request, String value) {
+        this.object = object;
+        this.request = request;
+        this.value = value;
     }
 
     @Override
@@ -31,8 +38,9 @@ public class WrapperRegisterPacketWrapper extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeLong(ram);
-            out.writeUTF(uuid.toString());
+            out.writeUTF(object.toString());
+            out.writeUTF(request.toString());
+            out.writeUTF(value);
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -49,8 +57,9 @@ public class WrapperRegisterPacketWrapper extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            ram = input.readLong();
-            uuid = UUID.fromString(input.readUTF());
+            object = Object.valueOf(input.readUTF());
+            request = UUID.fromString(input.readUTF());
+            value = input.readUTF();
         } catch (IOException e) {
             e.printStackTrace();
         }

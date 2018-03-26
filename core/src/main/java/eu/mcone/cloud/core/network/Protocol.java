@@ -9,18 +9,22 @@ import eu.mcone.cloud.core.network.packet.*;
 import lombok.Getter;
 
 public enum Protocol {
-    WRAPPER_REGISTER(0, WrapperRegisterPacketWrapper.class),
-    Wrapper_REGISTER_FROM_STANDALONE(1, WrapperRegisterFromStandalonePacketWrapper.class),
-    WRAPPER_SHUTDOWN(2, WrapperShutdownPacketWrapper.class),
-    SERVER_INFO(3, ServerInfoPacket.class),
-    SERVER_COMMAND_EXECUTE(4, ServerCommandExecutePacketWrapper.class),
-    SERVER_CHANGE_STATE(5, ServerChangeStatePacketWrapper.class),
-    SERVER_UPDATE_STATE(6, ServerUpdateStatePacketWrapper.class),
-    SERVER_PLAYER_COUNT_UPDATE(7, ServerPlayerCountUpdatePacketPlugin.class),
-    SERVER_REGISTER(8, ServerRegisterPacketPlugin.class),
-    SERVER_RESULT(9, ServerResultPacketWrapper.class),
-    PLUGIN_SERVER_LIST_ADD(10, ServerListPacketAddPlugin.class),
-    PLUGIN_SERVER_LIST_REMOVE(11, ServerListPacketRemovePlugin.class);
+    MASTER_REQUEST(0, MasterRequestPacketClient.class),
+    WRAPPER_REGISTER(1, WrapperRegisterPacketWrapper.class),
+    WRAPPER_REGISTER_FROM_STANDALONE(2, WrapperRegisterFromStandalonePacketWrapper.class),
+    WRAPPER_SHUTDOWN(3, WrapperShutdownPacketWrapper.class),
+    WRAPPER_REQUEST(4, WrapperRequestPacketMaster.class),
+    SERVER_INFO(5, ServerInfoPacket.class),
+    SERVER_COMMAND_EXECUTE(6, ServerCommandExecutePacketWrapper.class),
+    SERVER_CHANGE_STATE(7, ServerChangeStatePacketWrapper.class),
+    SERVER_UPDATE_STATE(8, ServerUpdateStatePacket.class),
+    SERVER_PLAYER_COUNT_UPDATE(9, ServerPlayerCountUpdatePacketPlugin.class),
+    SERVER_REGISTER(10, ServerRegisterPacketPlugin.class),
+    SERVER_RESULT(11, ServerResultPacketWrapper.class),
+    SERVER_LOG(12, ServerLogPacketClient.class),
+    PLUGIN_SERVER_LIST_ADD(13, ServerListPacketAddPlugin.class),
+    PLUGIN_SERVER_LIST_REMOVE(14, ServerListPacketRemovePlugin.class),
+    CLIENT_RETURN(15, ClientReturnPacketMaster.class);
 
     @Getter
     private int id;

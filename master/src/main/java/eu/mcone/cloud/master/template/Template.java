@@ -8,17 +8,17 @@ package eu.mcone.cloud.master.template;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
-import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import lombok.Getter;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 public class Template {
 
     @Getter
-    private List<Server> servers = new ArrayList<>();
-
+    private Set<Server> servers;
     @Getter
     private String name;
     @Getter
@@ -31,6 +31,7 @@ public class Template {
     private ServerVersion version;
 
     public Template(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, boolean startup) {
+        this.servers = new HashSet<>();
         this.name = name;
         this.ram = ram;
         this.maxPlayers = maxPlayers;
@@ -39,8 +40,6 @@ public class Template {
         this.emptyservers = emptyservers;
         this.version = version;
         this.startup = startup;
-
-        MasterServer.getInstance().getTemplates().add(this);
 
         if (min > 0) {
             createServer(min);
@@ -67,6 +66,7 @@ public class Template {
                                 serverid,
                                 maxPlayers,
                                 ram,
+                                false,
                                 version
                         ),
                         this,

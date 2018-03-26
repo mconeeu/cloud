@@ -9,11 +9,9 @@ import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
-import eu.mcone.cloud.master.MasterServer;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,14 +35,15 @@ public class StaticServerManager {
                                     new ServerInfo(
                                             uuid,
                                             rs.getString("name"),
-                                            null,
+                                            "",
                                             rs.getInt("max"),
                                             0,
                                             rs.getInt("ram"),
+                                            true,
                                             ServerVersion.valueOf(rs.getString("version"))
                                     ),
                                     null,
-                                    rs.getString("wrapper")
+                                    UUID.fromString(rs.getString("wrapper"))
                             )
                     );
                 }
@@ -68,10 +67,11 @@ public class StaticServerManager {
                                 maxPlayers,
                                 0,
                                 ram,
+                                true,
                                 version
                         ),
                         null,
-                        wrappername
+                        UUID.fromString(wrappername)
                 )
         );
     }

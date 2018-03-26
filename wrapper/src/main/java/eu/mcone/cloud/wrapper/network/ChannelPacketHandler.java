@@ -9,9 +9,9 @@ import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.*;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.wrapper.WrapperServer;
+import eu.mcone.cloud.wrapper.server.Bukkit;
 import eu.mcone.cloud.wrapper.server.BungeeCord;
 import eu.mcone.cloud.wrapper.server.Server;
-import eu.mcone.cloud.wrapper.server.Bukkit;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -26,13 +26,13 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     public void channelActive(ChannelHandlerContext ctx) {
         WrapperServer.getInstance().setChannel(ctx.channel());
 
-        if (WrapperServer.getInstance().getServers().size() == 0) {
-            ctx.writeAndFlush(new WrapperRegisterPacketWrapper(WrapperServer.getInstance().getRam()));
+        if (WrapperServer.getInstance().getServers().size() < 1) {
+            ctx.writeAndFlush(new WrapperRegisterPacketWrapper(WrapperServer.getInstance().getRam(), WrapperServer.getInstance().getWrapperUuid()));
         } else {
             Map<UUID, String> servers = new HashMap<>();
             WrapperServer.getInstance().getServers().forEach(server -> servers.put(server.getInfo().getUuid(), server.getInfo().getName()));
 
-            ctx.writeAndFlush(new WrapperRegisterFromStandalonePacketWrapper(servers, WrapperServer.getInstance().getRam()));
+            ctx.writeAndFlush(new WrapperRegisterFromStandalonePacketWrapper(servers, WrapperServer.getInstance().getRam(), WrapperServer.getInstance().getWrapperUuid()));
         }
         Logger.log(getClass(), "new channel to " + ctx.channel().remoteAddress().toString());
     }
@@ -81,12 +81,27 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
         } else if (packet instanceof WrapperShutdownPacketWrapper) {
             Logger.log(getClass(), "[ChannelPacketHandler] Received WrapperShutdownPacketWrapper from master. Shutting down...");
             WrapperServer.getInstance().shutdown();
+        } else if (packet instanceof WrapperRequestPacketMaster) {
+            WrapperRequestPacketMaster result = (WrapperRequestPacketMaster) packet;
+            Logger.log(getClass(), "new WrapperRequestPacketMaster (OBJECT: "+result.getObject()+", VALUE: "+result.getValue()+")");
+            Server s = WrapperServer.getInstance().getServer(UUID.fromString(result.getValue()));
+
+            if (s != null) {
+                switch (result.getObject()) {
+                    case LOG: {
+                        ctx.writeAndFlush(new ServerLogPacketClient(result.getRequest(), s.getInfo().getUuid(), s.getReader().getLog()));
+                        break;
+                    }
+                }
+            } else {
+                Logger.err(getClass(), "server does not exist!");
+            }
         }
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) {
-        WrapperServer.getInstance().getNettyBootstrap().scheduleReconnect();
+        if (!WrapperServer.getInstance().isShutdown()) WrapperServer.getInstance().getNettyBootstrap().scheduleReconnect();
     }
 
     @Override

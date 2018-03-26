@@ -5,27 +5,25 @@
 
 package eu.mcone.cloud.core.network.packet;
 
+import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
 import java.io.*;
-import java.util.*;
+import java.util.UUID;
 
-public class WrapperRegisterFromStandalonePacketWrapper extends Packet {
+public class ServerUpdateStatePacket extends Packet {
 
-    @Getter
-    private Long ram;
     @Getter
     private UUID uuid;
     @Getter
-    private Map<UUID, String> servers;
+    private ServerState state;
 
-    public WrapperRegisterFromStandalonePacketWrapper() {}
+    public ServerUpdateStatePacket() {}
 
-    public WrapperRegisterFromStandalonePacketWrapper(Map<UUID, String> servers, long ram, UUID uuid) {
-        this.ram = ram;
+    public ServerUpdateStatePacket(UUID uuid, ServerState state) {
         this.uuid = uuid;
-        this.servers = servers;
+        this.state = state;
     }
 
     @Override
@@ -34,13 +32,8 @@ public class WrapperRegisterFromStandalonePacketWrapper extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeLong(ram);
             out.writeUTF(uuid.toString());
-            out.writeInt(servers.size());
-            for (HashMap.Entry<UUID, String> e : servers.entrySet()) {
-                out.writeUTF(e.getKey().toString());
-                out.writeUTF(e.getValue());
-            }
+            out.writeUTF(state.toString());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -57,18 +50,8 @@ public class WrapperRegisterFromStandalonePacketWrapper extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            ram = input.readLong();
             uuid = UUID.fromString(input.readUTF());
-
-            int size = input.readInt();
-            servers = new HashMap<>();
-
-            for (int i = 0; i < size; i++) {
-                UUID uuid = UUID.fromString(input.readUTF());
-                String name = input.readUTF();
-
-                servers.put(uuid, name);
-            }
+            state = ServerState.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }

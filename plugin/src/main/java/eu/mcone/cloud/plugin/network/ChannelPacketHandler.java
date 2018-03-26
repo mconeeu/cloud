@@ -6,14 +6,14 @@
 package eu.mcone.cloud.plugin.network;
 
 import eu.mcone.cloud.core.console.Logger;
-import eu.mcone.cloud.core.network.packet.*;
+import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.core.network.packet.ServerListPacketAddPlugin;
+import eu.mcone.cloud.core.network.packet.ServerListPacketRemovePlugin;
+import eu.mcone.cloud.core.network.packet.ServerRegisterPacketPlugin;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.ReconnectHandler;
-import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -34,17 +34,12 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     }
 
     @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Unregister");
-        super.channelUnregistered(ctx);
-    }
-
-    @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, Packet packet) {
+    protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
         if (packet instanceof ServerListPacketAddPlugin) {
             ServerListPacketAddPlugin result = (ServerListPacketAddPlugin) packet;
             System.out.println("new ServerListPacketAddPlugin (NAME: "+result.getName()+", HOSTNAME: "+result.getHostname()+":"+result.getPort()+")");
 
+            System.out.println("adding server "+result.getName()+" to bc server map");
             ProxyServer.getInstance().getServers().put(
                     result.getName(),
                     ProxyServer.getInstance().constructServerInfo(

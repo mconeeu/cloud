@@ -7,24 +7,22 @@ package eu.mcone.cloud.master.server;
 
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.Packet;
-import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
-import eu.mcone.cloud.core.server.ServerVersion;
-import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.cloud.master.wrapper.WrapperManager;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.UUID;
 
 public class Server {
 
     @Getter
     private ServerInfo info;
     @Getter
-    private String wrapperName;
+    private UUID wrapperUuid;
     @Getter
     private Template template;
     @Getter @Setter
@@ -38,21 +36,10 @@ public class Server {
     @Getter @Setter
     private Channel channel;
 
-    public Server(ServerInfo info, Template template, String wrapperName) {
+    public Server(ServerInfo info, Template template, UUID wrapperUuid) {
         this.info = info;
         this.template = template;
-        this.wrapperName = wrapperName;
-
-        //Check if Wrapper is set
-        if (this.wrapperName != null) {
-            Wrapper wrapper = WrapperManager.getWrapperbyString(this.wrapperName);
-
-            //Check if Wrapper exists
-            if (wrapper != null) {
-                //Create Server on Wrapper
-                wrapper.createServer(this);
-            }
-        }
+        this.wrapperUuid = wrapperUuid;
     }
 
     public void start() {
@@ -60,14 +47,6 @@ public class Server {
         if (wrapper == null) {
             Logger.err(getClass(), "["+info.getName()+"] No wrapper set for server!");
         } else {
-            if (!info.getVersion().equals(ServerVersion.BUNGEE)) {
-                for (Server s : MasterServer.getInstance().getServers()) {
-                    if (s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
-                        s.send(new ServerInfoPacket(info));
-                    }
-                }
-            }
-
             //Start server on Wrapper
             Logger.log(getClass(), "["+info.getName()+"] Starting server...");
             this.wrapper.startServer(this);
@@ -123,7 +102,7 @@ public class Server {
         if (channel != null) {
             channel.writeAndFlush(packet);
         } else {
-            Logger.err(getClass(), "Could not send Packet "+packet.getClass().getSimpleName()+" (Channel == null)");
+            Logger.err(getClass(), "["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel == null)");
         }
     }
 

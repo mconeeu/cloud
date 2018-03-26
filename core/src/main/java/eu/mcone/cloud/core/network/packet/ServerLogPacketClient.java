@@ -5,25 +5,25 @@
 
 package eu.mcone.cloud.core.network.packet;
 
-import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
-import lombok.Getter;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-public class ServerUpdateStatePacketWrapper extends Packet {
+public class ServerLogPacketClient extends ClientReturnPacketMaster {
 
-    @Getter
-    private UUID uuid;
-    @Getter
-    private ServerState state;
+    private UUID serverUuid;
+    private List<String> log;
 
-    public ServerUpdateStatePacketWrapper() {}
+    public ServerLogPacketClient() {}
 
-    public ServerUpdateStatePacketWrapper(UUID uuid, ServerState state) {
-        this.uuid = uuid;
-        this.state = state;
+    public ServerLogPacketClient(UUID request, UUID serverUuid, List<String> log) {
+        super(request, null);
+
+        this.serverUuid = serverUuid;
+        this.log = log;
     }
 
     @Override
@@ -32,8 +32,13 @@ public class ServerUpdateStatePacketWrapper extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeUTF(uuid.toString());
-            out.writeUTF(state.toString());
+            out.writeUTF(request.toString());
+            out.writeUTF(serverUuid.toString());
+
+            out.writeInt(log.size());
+            for (String line : log) {
+                out.writeUTF(line);
+            }
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -50,8 +55,15 @@ public class ServerUpdateStatePacketWrapper extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            uuid = UUID.fromString(input.readUTF());
-            state = ServerState.valueOf(input.readUTF());
+            request = UUID.fromString(input.readUTF());
+            serverUuid = UUID.fromString(input.readUTF());
+
+            int size = input.readInt();
+            log = new ArrayList<>();
+
+            for (int i = 0; i < size; i++) {
+                log.add(input.readUTF());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

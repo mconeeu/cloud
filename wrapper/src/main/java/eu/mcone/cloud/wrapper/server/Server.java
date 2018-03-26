@@ -7,22 +7,26 @@ package eu.mcone.cloud.wrapper.server;
 
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.file.UnZip;
-import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacketWrapper;
 import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
+import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
-import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.WrapperServer;
+import eu.mcone.cloud.wrapper.jenkins.JenkinsDownloader;
 import eu.mcone.cloud.wrapper.server.console.ConsoleInputReader;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.Socket;
 import java.net.URL;
 import java.nio.channels.Channels;
 
 public abstract class Server {
+
+    private static final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
 
     @Getter @Setter
     protected ServerInfo info;
@@ -31,11 +35,21 @@ public abstract class Server {
     @Getter
     protected Process process;
     @Getter
-    protected ServerState state;
+    protected File serverDir;
+    @Getter
+    protected ServerState state = ServerState.OFFLINE;
+    @Getter
+    private ConsoleInputReader reader;
 
-    public Server(ServerInfo info, int port) {
+    public Server(ServerInfo info) {
         this.info = info;
-        this.info.setPort(port);
+
+        if (info.isStaticServer()) {
+            this.serverDir = new File(homeDir + File.separator + "staticservers" + File.separator + info.getName());
+        } else {
+            this.serverDir = new File(homeDir + File.separator + "servers" + File.separator + info.getName());
+        }
+
         WrapperServer.getInstance().getServers().add(this);
     }
 
@@ -45,36 +59,48 @@ public abstract class Server {
 
     abstract void setConfig() throws IOException;
 
-    void initialise(final File serverDir, final Class<? extends ConsoleInputReader> reader, final String[] command) {
+    void initialise(final int port, final Class<? extends ConsoleInputReader> reader, final String[] command) {
+        info.setPort(port);
+
         Logger.log(getClass(), "["+info.getName()+"] Starting server (Version: '"+info.getVersion()+"', UUID: '" + info.getUuid() + "', Template: '" + info.getTemplateName() + "', RAM: '" + info.getRam() + "M, Port: '" + info.getPort() + "')...");
         setState(ServerState.STARTING);
 
-        final File templateZip = new File(serverDir+File.separator+info.getTemplateName()+".zip");
-
-        if (serverDir.exists()) {
-            serverDir.delete();
-        } else {
-            serverDir.mkdir();
-        }
-
         WrapperServer.getInstance().getThreadPool().execute(() -> {
-            try {
-                //Logger.log(getClass(), "["+info.getName()+"] Downloading Template...");
-                //URL website = new URL("http://templates.mcone.eu/"+info.getTemplateName()+".zip");
-                //FileOutputStream fos = new FileOutputStream(templateZip);
-                //fos.getChannel().transferFrom(Channels.newChannel(website.openStream()), 0, Long.MAX_VALUE);
+            final File templateZip = new File(serverDir+File.separator+info.getTemplateName()+".zip");
+            final File executable = new File(homeDir+File.separator+"jars"+File.separator+info.getVersion().toString()+".jar");
 
-                Logger.log(getClass(), "["+info.getName()+"] Unzipping Template...");
-                //new UnZip(templateZip.getPath(), serverDir.getPath());
-                //templateZip.delete();
+            try {
+                if (!info.isStaticServer()) {
+                    if (serverDir.exists()) FileUtils.deleteDirectory(serverDir);
+                    serverDir.mkdir();
+
+                    Logger.log(getClass(), "[" + info.getName() + "] Downloading Template...");
+                    URL website = new URL("http://templates.mcone.eu/" + info.getTemplateName() + ".zip");
+                    FileOutputStream fos = new FileOutputStream(templateZip);
+                    fos.getChannel().transferFrom(Channels.newChannel(website.openStream()), 0, Long.MAX_VALUE);
+
+                    Logger.log(getClass(), "[" + info.getName() + "] Unzipping Template...");
+                    new UnZip(templateZip.getPath(), serverDir.getPath());
+                    templateZip.delete();
+                } else {
+                    if (!serverDir.exists()) serverDir.mkdir();
+                }
+
+                Logger.log(getClass(), "Implementing Jenkins Files");
+                FileUtils.copyFile(
+                        new JenkinsDownloader(JenkinsDownloader.CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "plugin"),
+                        new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
+                );
+
+                FileUtils.copyFile(executable, new File(serverDir+File.separator+"server.jar"));
 
                 setConfig();
 
                 this.runtime = Runtime.getRuntime();
                 this.process = this.runtime.exec(command, null, serverDir);
 
-                //Register all Output for Spigot console
-                reader.getDeclaredConstructor(Server.class, Boolean.class).newInstance(this, true);
+                //Register all Output for Server console
+                this.reader = reader.getDeclaredConstructor(Server.class, Boolean.class).newInstance(this, true);
 
                 this.process.waitFor();
                 this.process.destroy();
@@ -90,6 +116,7 @@ public abstract class Server {
                 Logger.log(getClass(), "["+info.getName()+"] Could not start server:");
                 if (e instanceof FileNotFoundException) {
                     Logger.err(getClass(), "["+info.getName()+"] Template does not exist, cancelling...");
+                    e.printStackTrace();
                     return;
                 }
                 e.printStackTrace();
@@ -139,9 +166,8 @@ public abstract class Server {
         try {
             if (process != null) {
                 if (process.isAlive()) {
-                    OutputStreamWriter out = new OutputStreamWriter(process.getOutputStream());
-                    out.write(command);
-                    out.write("\n");
+                    BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+                    out.write(command+"\n");
                     out.flush();
 
                     Logger.log(getClass(), "["+info.getName()+"] Sent command '" + command + "'");
@@ -163,12 +189,32 @@ public abstract class Server {
 
     public void setState(ServerState state) {
         this.state = state;
-        WrapperServer.getInstance().send(new ServerUpdateStatePacketWrapper(info.getUuid(), state));
+        WrapperServer.getInstance().send(new ServerUpdateStatePacket(info.getUuid(), state));
     }
 
     void sendResult(String message, ServerResultPacketWrapper.Result result) {
         WrapperServer.getInstance().send(new ServerResultPacketWrapper("Server.class", message, result));
         System.out.println("[Server.class] The result '" + message + "\\" + result.toString() + "' was sent to the master...");
+    }
+
+    private static int getNextAvailablePort(int port) {
+        boolean result;
+        Socket s = null;
+
+        try {
+            s = new Socket("localhost", port);
+            result = true;
+        } catch (Exception e) {
+            result = false;
+        } finally {
+            if(s != null) try {s.close();} catch(Exception ignored){}
+        }
+
+        if (result) {
+            return port;
+        } else {
+            return getNextAvailablePort(++port);
+        }
     }
 
 }

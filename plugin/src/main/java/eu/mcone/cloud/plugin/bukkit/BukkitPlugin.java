@@ -5,10 +5,10 @@
 
 package eu.mcone.cloud.plugin.bukkit;
 
-import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacketWrapper;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import eu.mcone.cloud.plugin.Plugin;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BukkitPlugin extends JavaPlugin implements Plugin {

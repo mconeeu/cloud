@@ -6,7 +6,6 @@
 package eu.mcone.cloud.core.network.packet;
 
 import eu.mcone.cloud.core.server.ServerInfo;
-import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
@@ -38,6 +37,7 @@ public class ServerInfoPacket extends Packet {
             out.writeLong(serverInfo.getRam());
             out.writeInt(serverInfo.getPort());
             out.writeInt(serverInfo.getMaxPlayers());
+            out.writeBoolean(serverInfo.isStaticServer());
             out.writeUTF(serverInfo.getVersion().toString());
 
             byte[] result = stream.toByteArray();
@@ -62,9 +62,10 @@ public class ServerInfoPacket extends Packet {
             long ram = input.readLong();
             int port = input.readInt();
             int maxplayers = input.readInt();
+            boolean staticServer = input.readBoolean();
             ServerVersion version = ServerVersion.valueOf(input.readUTF());
 
-            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram, version);
+            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram, staticServer, version);
             serverInfo.setPort(port);
         } catch (IOException e) {
             e.printStackTrace();

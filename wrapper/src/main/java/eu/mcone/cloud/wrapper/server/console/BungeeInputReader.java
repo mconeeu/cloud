@@ -17,7 +17,7 @@ public class BungeeInputReader extends ConsoleInputReader {
     }
 
     @Override
-    void filter(String[] lineArray, String line) {
+    void filter(String line) {
         if (line.contains("Listening on ")) {
             //Server started
             this.server.setState(ServerState.WAITING);

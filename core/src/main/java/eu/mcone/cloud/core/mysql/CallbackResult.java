@@ -3,12 +3,8 @@
  *  You are not allowed to decompile the code.
  */
 
-package eu.mcone.cloud.core.server;
+package eu.mcone.cloud.core.mysql;
 
-public enum ServerState {
-    STARTING,
-    WAITING,
-    FULL,
-    INGAME,
-    OFFLINE
+public interface CallbackResult<rs> {
+    Object run(rs rs);
 }

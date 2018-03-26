@@ -5,8 +5,6 @@
 
 package eu.mcone.cloud.plugin.bungee;
 
-import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacketWrapper;
-import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import eu.mcone.cloud.plugin.bungee.server.ReconnectHandler;
 import net.md_5.bungee.api.ProxyServer;

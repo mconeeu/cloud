@@ -11,18 +11,18 @@ import lombok.Getter;
 import java.io.*;
 import java.util.UUID;
 
-public class WrapperRegisterPacketWrapper extends Packet {
+public class ClientReturnPacketMaster extends Packet {
 
     @Getter
-    private long ram;
+    protected UUID request;
     @Getter
-    private UUID uuid;
+    protected String json;
 
-    public WrapperRegisterPacketWrapper() {}
+    public ClientReturnPacketMaster() {}
 
-    public WrapperRegisterPacketWrapper(long ram, UUID uuid) {
-        this.ram = ram;
-        this.uuid = uuid;
+    public ClientReturnPacketMaster(UUID request, String json) {
+        this.request = request;
+        this.json = json;
     }
 
     @Override
@@ -31,8 +31,8 @@ public class WrapperRegisterPacketWrapper extends Packet {
         DataOutputStream out = new DataOutputStream(stream);
 
         try {
-            out.writeLong(ram);
-            out.writeUTF(uuid.toString());
+            out.writeUTF(request.toString());
+            out.writeUTF(json);
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -49,8 +49,8 @@ public class WrapperRegisterPacketWrapper extends Packet {
 
         DataInputStream input = new DataInputStream(new ByteArrayInputStream(msg));
         try {
-            ram = input.readLong();
-            uuid = UUID.fromString(input.readUTF());
+            request = UUID.fromString(input.readUTF());
+            json = input.readUTF();
         } catch (IOException e) {
             e.printStackTrace();
         }

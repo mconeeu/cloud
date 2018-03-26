@@ -7,6 +7,7 @@ package eu.mcone.cloud.master;
 
 import eu.mcone.cloud.core.console.ConsoleReader;
 import eu.mcone.cloud.core.console.Logger;
+import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.console.CommandExecutor;
 import eu.mcone.cloud.master.network.ServerBootstrap;
@@ -15,27 +16,28 @@ import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.cloud.core.mysql.Config;
-import eu.mcone.cloud.core.mysql.MySQL;
 import io.netty.channel.Channel;
 import lombok.Getter;
 
 import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 public class MasterServer {
 
     @Getter
     private static MasterServer instance;
+    @Getter
     private MySQL mysql;
 
-    @Getter
-    private Config config;
     @Getter
     private ConsoleReader consoleReader;
     @Getter
     private ServerManager serverManager;
+    @Getter
+    private StaticServerManager staticServerManager;
     @Getter
     private List<Template> templates = new ArrayList<>();
     @Getter
@@ -56,21 +58,26 @@ public class MasterServer {
         mysql = new MySQL("localhost", 3306, "cloud", "root", "", "cloudmaster");
 
         System.out.println("[Enable progress] Creating necessary tables if not exists...");
-        mysql.createMasterTables();
+        createMySQLTables(mysql);
 
-        System.out.println("[Enable progress] Creating mysql config...");
-        config = new Config(mysql, "mainconfig");
-        config.createTable();
-
-        System.out.println("[Enable progress] Insert ignore config values...");
-        createConfigValues(config);
+        System.out.println("[Enable progress] Getting wrappers from database...");
+        mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_wrappers;", rs -> {
+            try {
+                while (rs.next()) {
+                    System.out.println("[Enable progress] Creating Wrapper " + rs.getString("uuid") + " with adress "+rs.getString("adress")+" ...");
+                    createWrapper(UUID.fromString(rs.getString("uuid")));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
 
         System.out.println("[Enable progress] Getting templates from database...");
         mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_templates;", rs -> {
             try {
                 while (rs.next()) {
                     System.out.println("[Enable progress] Creating Template " + rs.getString("name") + " and it's servers ...");
-                    new Template(
+                    createTemplate(
                             rs.getString("name"),
                             rs.getInt("ram"),
                             rs.getInt("max_players"),
@@ -87,7 +94,7 @@ public class MasterServer {
         });
 
         System.out.println("[Enable progress] Starting static server manager...");
-        new StaticServerManager(mysql);
+        staticServerManager = new StaticServerManager(mysql);
 
         System.out.println("[Enable progress] Starting ServerManager with TimeTask...");
         serverManager = new ServerManager();
@@ -104,7 +111,7 @@ public class MasterServer {
 
         Logger.log("Shutdown progress", "The following Wrappers will stay online: "+getWrappers().size());
         for (Wrapper w : getWrappers()) {
-            Logger.log("Shutdown progress", " -"+w.getName());
+            Logger.log("Shutdown progress", " -"+w.getUuid());
         }
 
         System.out.println("[Shutdowm progress] Stopping instance...");
@@ -112,16 +119,50 @@ public class MasterServer {
         System.exit(0);
     }
 
-    private static void createConfigValues(final Config config) {
-        Map<String, String> keys = new HashMap<>();
+    private void createMySQLTables(MySQL mySQL) {
+        mySQL.update("CREATE TABLE IF NOT EXISTS `" + mySQL.getTablePrefix() + "_templates` " +
+                "(" +
+                "`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "`name` varchar(100) NOT NULL UNIQUE KEY, " +
+                "`max_players` int(5) NOT NULL, " +
+                "`ram` int(8) NOT NULL, " +
+                "`min` int(5) NOT NULL, " +
+                "`max` int(5) NOT NULL, " +
+                "`version` varchar(10) NOT NULL, " +
+                "`update` int(5) NOT NULL, " +
+                "`emptyservers` int(5) NOT NULL, " +
+                "`startup` boolean NOT NULL" +
+                ") " +
+                "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 
-        //All Config keys and values
-        keys.put("a", "1");
-        keys.put("b", "2");
+        mySQL.update("CREATE TABLE IF NOT EXISTS `" + mySQL.getTablePrefix() + "_static_servers` " +
+                "(" +
+                "`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "`name` varchar(100) NOT NULL, `max` int(5) NOT NULL, " +
+                "`ram` int(8) NOT NULL, " +
+                "`version` varchar(10) NOT NULL, " +
+                "`wrapper` varchar(100)" +
+                ") " +
+                "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 
-        //Insert into database
-        keys.forEach(config::insert);
-        System.out.println("[Enable progress] Config Values inserted!");
+        mySQL.update("CREATE TABLE IF NOT EXISTS `" + mySQL.getTablePrefix() + "_wrappers` " +
+                "(" +
+                "`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+                "`uuid` varchar(100) NOT NULL, " +
+                "`adress` varchar(100) NOT NULL" +
+                ") " +
+                "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    }
+
+    private void createTemplate(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, boolean startup) {
+        templates.add(new Template(name, ram, maxPlayers, min, max, emptyservers, version, startup));
+    }
+
+    public Wrapper createWrapper(UUID uuid) {
+        Wrapper w = new Wrapper(uuid);
+
+        wrappers.add(w);
+        return w;
     }
 
     public Server getServer(UUID uuid) {
@@ -148,7 +189,16 @@ public class MasterServer {
 
     public Wrapper getWrapper(Channel channel) {
         for (Wrapper w : wrappers) {
-            if (w.getChannel().equals(channel)) {
+            if (w.getChannel() != null && w.getChannel().equals(channel)) {
+                return w;
+            }
+        }
+        return null;
+    }
+
+    public Wrapper getWrapper(UUID uuid) {
+        for (Wrapper w : wrappers) {
+            if (w.getUuid().equals(uuid)) {
                 return w;
             }
         }

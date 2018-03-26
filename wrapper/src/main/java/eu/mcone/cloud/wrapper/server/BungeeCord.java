@@ -27,29 +27,21 @@ import java.util.*;
 public class BungeeCord extends Server {
 
     public BungeeCord(ServerInfo info) {
-        super(info, calculatePort());
+        super(info);
     }
 
     @Override
     public void start() {
-        final String s = File.separator;
-        final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
-        final File serverDir = new File(homeDir+s+"wrapper"+s+"servers"+s+info.getName());
-
         this.initialise(
-                serverDir,
+                calculatePort(),
                 BungeeInputReader.class,
                 new String[]{
                         "java",
                         "-Dfile.encoding=UTF-8",
-                        "-jar",
-                        "-XX:+UseG1GC",
-                        "-XX:MaxGCPauseMillis=50",
-                        "-XX:-UseAdaptiveSizePolicy",
-                        "-Dio.netty.recycler.maxCapacity=0 ",
-                        "-Dio.netty.recycler.maxCapacity.default=0",
+                        "-Djline.terminal=jline.UnsupportedTerminal",
                         "-Xmx"+info.getRam()+"M",
-                        serverDir+s+"bungee.jar"
+                        "-jar",
+                        serverDir+File.separator+"server.jar"
                 }
         );
     }
@@ -74,11 +66,8 @@ public class BungeeCord extends Server {
 
     @Override
     void setConfig() throws IOException {
-        final String s = File.separator;
-        final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
-        final String serverName = info.getName();
-        final File propertyFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"server.properties");
-        final File configFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"config.yml");
+        final File propertyFile = new File(serverDir+File.separator+"server.properties");
+        final File configFile = new File(serverDir+File.separator+"config.yml");
 
         /*
          * server.properties
@@ -96,7 +85,7 @@ public class BungeeCord extends Server {
         ps.setProperty("server-port", Integer.toString(info.getPort()));
         ps.setProperty("max-players", Integer.toString(info.getMaxPlayers()));
         ps.setProperty("server-uuid", info.getUuid().toString());
-        ps.setProperty("server-name", serverName);
+        ps.setProperty("server-name", info.getName());
 
         OutputStream outputstream = Files.newOutputStream(Paths.get(propertyFile.getPath()));
         outputstream.flush();
@@ -137,13 +126,13 @@ public class BungeeCord extends Server {
         int port = 25564;
 
         for (Server server : WrapperServer.getInstance().getServers()) {
-            if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+            if (!server.getState().equals(ServerState.OFFLINE) && server.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
                 port = server.getInfo().getPort();
             }
         }
 
-        port++;
-        return port;
+        //return getNextAvailablePort(++port);
+        return ++port;
     }
 
 }

@@ -5,7 +5,10 @@
 
 package eu.mcone.cloud.plugin.bukkit;
 
+import eu.mcone.cloud.core.network.packet.ServerChangeStatePacketWrapper;
 import eu.mcone.cloud.core.network.packet.ServerPlayerCountUpdatePacketPlugin;
+import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacket;
+import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -24,11 +27,23 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void on(PlayerJoinEvent e) {
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), Bukkit.getOnlinePlayers().size()));
+
+        if (instance.getState().equals(ServerState.WAITING)) {
+            if (Bukkit.getOnlinePlayers().size() >= Bukkit.getMaxPlayers()) {
+                instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.FULL));
+            }
+        }
     }
 
     @EventHandler
     public void on(PlayerQuitEvent e) {
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), Bukkit.getOnlinePlayers().size()));
+
+        if (instance.getState().equals(ServerState.FULL)) {
+            if (Bukkit.getOnlinePlayers().size() < Bukkit.getMaxPlayers()) {
+                instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.WAITING));
+            }
+        }
     }
 
 }

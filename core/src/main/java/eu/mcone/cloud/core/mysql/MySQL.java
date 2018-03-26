@@ -7,42 +7,46 @@ package eu.mcone.cloud.core.mysql;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.concurrent.Executors;
 
 public class MySQL {
 
     private HikariDataSource ds;
+    @Getter
     private String tablePrefix;
 	
 	public MySQL(String host, int port, String database, String username, String password, String tablePrefix) {
-	    this.tablePrefix = tablePrefix;
-
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://"+host+":"+port+"/"+database);
         config.setUsername(username);
         config.setPassword(password);
+        config.setMaximumPoolSize(2);
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
         this.ds = new HikariDataSource(config);
-        System.out.println("[MySQL.class] Verbunden zur Datenbank");
+        this.tablePrefix = tablePrefix;
+        System.out.println("Verbunden zu Datenbank "+database);
 	}
 
 	public void close() {
 	    this.ds.close();
     }
 
-    public void update(String qry) {
+    public void update(String qry, Object... parameters) {
         try {
             Connection con = this.ds.getConnection();
 
             PreparedStatement preparedstatement = con.prepareStatement(qry);
+            for (int i = 0; i < parameters.length; i++) {
+                preparedstatement.setObject(i+1, parameters[i]);
+            }
             preparedstatement.executeUpdate();
 
             preparedstatement.close();
@@ -52,17 +56,20 @@ public class MySQL {
         }
     }
 
-    public int updateWithGetID(String qry){
-        int i = -1;
+    public int updateWithGetID(String qry, Object... parameters){
+        int id = -1;
         try{
             Connection con = this.ds.getConnection();
 
             PreparedStatement preparedStatement = con.prepareStatement(qry, PreparedStatement.RETURN_GENERATED_KEYS);
+            for (int i = 0; i < parameters.length; i++) {
+                preparedStatement.setObject(i+1, parameters[i]);
+            }
             preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.getGeneratedKeys();
 
             if (rs.next()) {
-                i = rs.getInt(1);
+                id = rs.getInt(1);
             }
 
             rs.close();
@@ -72,12 +79,29 @@ public class MySQL {
             e.printStackTrace();
         }
 
-        return i;
+        return id;
     }
 
-    public void select(final String qry, final Callback<ResultSet> cb){
-        Executors.newSingleThreadExecutor().execute(() -> {
-	        ResultSet result = null;
+    public void select(String qry, Callback<ResultSet> cb){
+        try {
+            final Connection con = this.ds.getConnection();
+
+            PreparedStatement preparedStatement = con.prepareStatement(qry);
+            ResultSet result = preparedStatement.executeQuery();
+
+            cb.run(result);
+
+            result.close();
+            preparedStatement.close();
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void selectAsync(final String qry, final Callback<ResultSet> cb){
+        new Thread(() -> {
+            ResultSet result = null;
             Connection con = null;
             PreparedStatement preparedStatement = null;
 
@@ -97,7 +121,7 @@ public class MySQL {
                     e.printStackTrace();
                 }
             }
-        });
+        }).start();
     }
 
     public Object select(String qry, CallbackResult<ResultSet> cb){
@@ -121,42 +145,14 @@ public class MySQL {
         return o;
     }
 
-    public interface Callback<rs> {
-        void run(rs rs);
-    }
-
-    public interface CallbackResult<rs> {
-        Object run(rs rs);
-    }
-
-    public void createMasterTables() {
-        update("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "_templates` " +
-                "(" +
-                    "`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                    "`name` varchar(100) NOT NULL UNIQUE KEY, " +
-                    "`max_players` int(5) NOT NULL, " +
-                    "`ram` int(8) NOT NULL, " +
-                    "`min` int(5) NOT NULL, " +
-                    "`max` int(5) NOT NULL, " +
-                    "`version` varchar(10) NOT NULL, " +
-                    "`emptyservers` int(3) NOT NULL, " +
-                    "`startup` boolean NOT NULL" +
-                ") " +
-                "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-
-        update("CREATE TABLE IF NOT EXISTS `" + tablePrefix + "_static_servers` " +
-                "(" +
-                    "`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                    "`name` varchar(100) NOT NULL, `max` int(5) NOT NULL, " +
-                    "`ram` int(8) NOT NULL, " +
-                    "`version` varchar(10) NOT NULL, " +
-                    "`wrapper` varchar(100)" +
-                ") " +
-                "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-    }
-
-    public String getTablePrefix() {
-        return tablePrefix;
+    public Connection getConnection() {
+	    Connection result = null;
+        try {
+            result = ds.getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
 }

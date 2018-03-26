@@ -17,9 +17,11 @@ import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -27,19 +29,13 @@ import java.util.Properties;
 public class Bukkit extends Server {
 
     public Bukkit(ServerInfo info) {
-        super(info, calculatePort());
+        super(info);
     }
 
     @Override
     public void start() {
-        this.runtime = Runtime.getRuntime();
-
-        final String s = File.separator;
-        final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
-        final File serverDir = new File(homeDir+s+"wrapper"+s+"servers"+s+info.getName());
-
         this.initialise(
-                serverDir,
+                calculatePort(),
                 BukkitInputReader.class,
                 new String[]{
                         "java",
@@ -53,7 +49,7 @@ public class Bukkit extends Server {
                         "-Dio.netty.recycler.maxCapacity.default=0",
                         "-Djline.terminal=jline.UnsupportedTerminal",
                         "-Xmx"+info.getRam()+"M",
-                        serverDir+s+"server.jar"
+                        serverDir+File.separator+"server.jar"
                 }
         );
     }
@@ -78,19 +74,16 @@ public class Bukkit extends Server {
 
     @Override
     void setConfig() throws IOException {
-        final String s = File.separator;
-        final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
-        final String serverName = info.getName();
-        final File propertyFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"server.properties");
-        final File spigotFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"spigot.yml");
-        final File bukkitFile = new File(homeDir+s+"wrapper"+s+"servers"+s+serverName+s+"bukkit.yml");
+        final File propertyFile = new File(serverDir+File.separator+"server.properties");
+        final File spigotFile = new File(serverDir+File.separator+"spigot.yml");
+        final File bukkitFile = new File(serverDir+File.separator+"bukkit.yml");
 
         /*
          * server.properties
          */
         if (!propertyFile.exists()) {
             URL fileUrl = getClass().getResource("/server.properties");
-            FileUtils.copyURLToFile(fileUrl, spigotFile);
+            FileUtils.copyURLToFile(fileUrl, propertyFile);
         }
         Logger.log(getClass(), "["+info.getName()+"] Setting all server properties...");
         Properties ps = new Properties();
@@ -103,12 +96,12 @@ public class Bukkit extends Server {
         ps.setProperty("wrapper-ip", WrapperServer.getInstance().getHostname());
         ps.setProperty("server-port", Integer.toString(info.getPort()));
         ps.setProperty("max-players", Integer.toString(info.getMaxPlayers()));
-        ps.setProperty("motd", "\u00A7f\u00A7lMC ONE \u00A73CloudServer \u00A78» \u00A77" + serverName);
+        ps.setProperty("motd", "\u00A7f\u00A7lMC ONE \u00A73CloudServer \u00A78» \u00A77" + info.getName());
 
         //CloudSystem Data
         ps.setProperty("server-uuid", info.getUuid().toString());
         ps.setProperty("server-templateID", Integer.toString(info.getTemplateID()));
-        ps.setProperty("server-name", serverName);
+        ps.setProperty("server-name", info.getName());
 
         OutputStream outputstream = Files.newOutputStream(Paths.get(propertyFile.getPath()));
         outputstream.flush();
@@ -125,8 +118,7 @@ public class Bukkit extends Server {
             }
 
             Logger.log(getClass(), "["+info.getName()+"] Setting all spigot.yml settings...");
-            final InputStreamReader isrSpigot = new InputStreamReader(Files.newInputStream(Paths.get(spigotFile.getPath())), StandardCharsets.UTF_8);
-            final Configuration spigotConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrSpigot);
+            final Configuration spigotConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(spigotFile);
 
             Configuration sectionSettings = spigotConf.getSection("settings");
             sectionSettings.set("bungeecord", true);
@@ -139,8 +131,7 @@ public class Bukkit extends Server {
             sectionMessages.set("outdated-server", "§7§oBitte verwende die Minecraft Version {0}");
             sectionMessages.set("restart", "§7§oDer Server startet neu...");
 
-            OutputStreamWriter oswSpigot = new OutputStreamWriter(Files.newOutputStream(Paths.get(spigotFile.getPath())), StandardCharsets.UTF_8);
-            ConfigurationProvider.getProvider(YamlConfiguration.class).save(spigotConf, oswSpigot);
+            ConfigurationProvider.getProvider(YamlConfiguration.class).save(spigotConf, spigotFile);
         }
 
         /*
@@ -148,32 +139,29 @@ public class Bukkit extends Server {
          */
         if (!bukkitFile.exists()) {
             URL fileUrl = getClass().getResource("/bukkit.yml");
-            FileUtils.copyURLToFile(fileUrl, spigotFile);
+            FileUtils.copyURLToFile(fileUrl, bukkitFile);
         }
 
         Logger.log(getClass(), "["+info.getName()+"] Setting all bukkit.yml settings...");
-        final InputStreamReader isrBukkit = new InputStreamReader(Files.newInputStream(Paths.get(bukkitFile.getPath())), StandardCharsets.UTF_8);
-        final Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrBukkit);
+        final Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(bukkitFile);
 
         Configuration sectionBukkitSettings = bukkitConf.getSection("settings");
         sectionBukkitSettings.set("shutdown-message", "§7§oDer Server startet neu...");
 
-        System.out.println("[Server.class] Done all server.properties have been set...");
-        this.sendResult("[Server." + serverName + "] Done all server.properties have been set...", ServerResultPacketWrapper.Result.SUCCESSFUL);
-
-        OutputStreamWriter oswBukkit = new OutputStreamWriter(Files.newOutputStream(Paths.get(spigotFile.getPath())), StandardCharsets.UTF_8);
-        ConfigurationProvider.getProvider(YamlConfiguration.class).save(bukkitConf, oswBukkit);
+        ConfigurationProvider.getProvider(YamlConfiguration.class).save(bukkitConf, bukkitFile);
     }
 
     private static int calculatePort() {
         int port = 4000;
 
         for (Server server : WrapperServer.getInstance().getServers()) {
-            port = server.getInfo().getPort();
+            if (!server.getState().equals(ServerState.OFFLINE) && !server.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                port = server.getInfo().getPort();
+            }
         }
 
-        port++;
-        return port;
+        //return getNextAvailablePort(++port);
+        return ++port;
     }
 
 }

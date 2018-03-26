@@ -9,6 +9,8 @@ import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.wrapper.server.Server;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public abstract class ConsoleInputReader {
@@ -17,10 +19,13 @@ public abstract class ConsoleInputReader {
     protected Server server;
     @Getter
     protected boolean outputToConsole;
+    @Getter
+    private List<String> log;
 
-    public ConsoleInputReader(Server server, boolean outputToConsole) {
+    ConsoleInputReader(Server server, boolean outputToConsole) {
         this.server = server;
         this.outputToConsole = outputToConsole;
+        this.log = new ArrayList<>();
 
         new Thread(() -> {
             try {
@@ -30,8 +35,8 @@ public abstract class ConsoleInputReader {
                     String line = sc.nextLine();
 
                     if (line != null) {
-                        String[] lineArray = line.split(" ");
-                        this.filter(lineArray, line);
+                        log.add(line);
+                        this.filter(line);
 
                         if (this.outputToConsole) {
                             Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] >> " + line);
@@ -46,6 +51,6 @@ public abstract class ConsoleInputReader {
         }).start();
     }
 
-    abstract void filter(String[] lineArray, String line);
+    abstract void filter(String line);
 
 }
