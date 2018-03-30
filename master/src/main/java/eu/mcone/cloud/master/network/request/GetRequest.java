@@ -41,7 +41,7 @@ public class GetRequest {
                 tServers.add(ser.getInfo().getUuid().toString());
             }
 
-            templates.add(new eu.mcone.cloud.master.network.request.pojo.Template(t.getName(), t.getServers().size(), t.getMaxPlayers(), t.getMin(), t.getMax(), t.getEmptyservers(), t.isStartup(), tServers));
+            templates.add(new eu.mcone.cloud.master.network.request.pojo.Template(t.getName(), t.getServers().size(), t.getMaxPlayers(), t.getMin(), t.getMax(), t.getEmptyservers(), tServers));
         }
 
         for (Wrapper w : MasterServer.getInstance().getWrappers()) {

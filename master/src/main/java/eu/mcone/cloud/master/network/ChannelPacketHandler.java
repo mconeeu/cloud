@@ -37,13 +37,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             WrapperRegisterPacketWrapper result = (WrapperRegisterPacketWrapper) packet;
             Logger.log(getClass(), "new WrapperRegisterPacketWrapper (UUID: "+result.getUuid()+", RAM: "+result.getRam()+")");
 
-            Wrapper w = MasterServer.getInstance().getWrapper(result.getUuid());
-            if (w == null) {
-                MasterServer.getInstance().createWrapper(result.getUuid()).setOnline(ctx.channel(), result.getRam());
-                MasterServer.getInstance().getMysql().update("INSERT INTO " + MasterServer.getInstance().getMysql().getTablePrefix() + "_wrappers (`uuid`, `adress`) VALUES ('"+result.getUuid()+"', '"+ctx.channel().remoteAddress().toString()+"')");
-            } else {
-                w.setOnline(ctx.channel(), result.getRam());
-            }
+            MasterServer.getInstance().createWrapper(result.getUuid(), ctx.channel(), result.getRam());
         } else if (packet instanceof WrapperRegisterFromStandalonePacketWrapper) {
             WrapperRegisterFromStandalonePacketWrapper result = (WrapperRegisterFromStandalonePacketWrapper) packet;
             Logger.log(getClass(), "new WrapperRegisterFromStandalonePacketWrapper (UUID: "+result.getUuid()+", RAM: "+result.getRam()+", SERVERS: "+result.getServers().toString()+")");
@@ -59,31 +53,17 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                 if (s == null) {
                     unknown.add(uuid);
                 } else {
-                    s.setAllowStart(false);
                     s.getInfo().setUuid(uuid);
                     newServer.add(s);
                 }
             }
 
-            Wrapper w = MasterServer.getInstance().getWrapper(result.getUuid());
-            if (w == null) {
-                w = MasterServer.getInstance().createWrapper(result.getUuid()).setOnline(ctx.channel(), result.getRam());
-                MasterServer.getInstance().getMysql().update("INSERT INTO " + MasterServer.getInstance().getMysql().getTablePrefix() + "_wrappers (`uuid`, `adress`) VALUES ('"+result.getUuid()+"', '"+ctx.channel().remoteAddress().toString()+"')");
-            } else {
-                w.setOnline(ctx.channel(), result.getRam());
-            }
-            long ramInUse = 0;
+            Wrapper w = MasterServer.getInstance().createWrapper(result.getUuid(), ctx.channel(), result.getRam());
 
             Logger.log("WrapperRegister", "Found "+newServer.size()+" valid servers!");
             for (Server s : newServer) {
-                ramInUse += s.getInfo().getRam();
-
-                s.setWrapper(w);
-                s.setAllowStart(true);
-                w.send(new ServerInfoPacket(s.getInfo()));
+                w.createServer(s);
             }
-
-            w.setRamInUse(ramInUse);
 
             Logger.log("WrapperRegister", "Found "+unknown.size()+" invalid servers! Deleting from Wrapper...");
             for (UUID uuid : unknown) {
@@ -98,14 +78,14 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
             if (s != null) {
                 s.setChannel(ctx.channel());
+                s.setState(result.getState());
                 s.getInfo().setHostname(result.getHostname());
                 s.getInfo().setPort(result.getPort());
 
                 if (s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
-                    Logger.log(getClass(), "Sending Gameserver data to BungeeCord...");
                     for (Server server : MasterServer.getInstance().getServers()) {
                         if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                            s.send(new ServerListPacketAddPlugin(server.getInfo()));
+                            s.send(new ServerListUpdatePacketPlugin(server.getInfo(), ServerListUpdatePacketPlugin.Scope.ADD));
                         }
                     }
                 }
@@ -142,7 +122,8 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                         case WAITING: {
                             for (Server server : MasterServer.getInstance().getServers()) {
                                 if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                                    server.send(new ServerListPacketAddPlugin(s.getInfo()));
+                                    System.out.println("registering Server "+s.getInfo().getName()+ " @ Bungee "+server.getInfo().getName());
+                                    server.send(new ServerListUpdatePacketPlugin(s.getInfo(), ServerListUpdatePacketPlugin.Scope.ADD));
                                 }
                             }
                             break;
@@ -150,7 +131,8 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                         case OFFLINE: {
                             for (Server server : MasterServer.getInstance().getServers()) {
                                 if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                                    server.send(new ServerListPacketRemovePlugin(s.getInfo()));
+                                    System.out.println("deleting Server "+s.getInfo().getName()+ " @ Bungee "+server.getInfo().getName());
+                                    server.send(new ServerListUpdatePacketPlugin(s.getInfo(), ServerListUpdatePacketPlugin.Scope.REMOVE));
                                 }
                             }
                             break;
@@ -228,8 +210,8 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) {
         Wrapper w = MasterServer.getInstance().getWrapper(ctx.channel());
-        if (w != null && w.isOnline()) {
-            w.setOffline();
+        if (w != null) {
+            w.delete();
         }
     }
 

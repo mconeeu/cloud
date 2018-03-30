@@ -22,9 +22,8 @@ public enum Protocol {
     SERVER_REGISTER(10, ServerRegisterPacketPlugin.class),
     SERVER_RESULT(11, ServerResultPacketWrapper.class),
     SERVER_LOG(12, ServerLogPacketClient.class),
-    PLUGIN_SERVER_LIST_ADD(13, ServerListPacketAddPlugin.class),
-    PLUGIN_SERVER_LIST_REMOVE(14, ServerListPacketRemovePlugin.class),
-    CLIENT_RETURN(15, ClientReturnPacketMaster.class);
+    PLUGIN_SERVER_LIST_UPDATE(13, ServerListUpdatePacketPlugin.class),
+    CLIENT_RETURN(14, ClientReturnPacketMaster.class);
 
     @Getter
     private int id;

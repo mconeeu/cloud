@@ -39,6 +39,7 @@ public class ServerInfoPacket extends Packet {
             out.writeInt(serverInfo.getMaxPlayers());
             out.writeBoolean(serverInfo.isStaticServer());
             out.writeUTF(serverInfo.getVersion().toString());
+            out.writeUTF(serverInfo.getProperties());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -64,8 +65,9 @@ public class ServerInfoPacket extends Packet {
             int maxplayers = input.readInt();
             boolean staticServer = input.readBoolean();
             ServerVersion version = ServerVersion.valueOf(input.readUTF());
+            String properties = input.readUTF();
 
-            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram, staticServer, version);
+            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram, staticServer, version, properties);
             serverInfo.setPort(port);
         } catch (IOException e) {
             e.printStackTrace();

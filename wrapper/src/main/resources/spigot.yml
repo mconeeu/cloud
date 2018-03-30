@@ -36,7 +36,7 @@ settings:
   moved-too-quickly-threshold: 100.0
 messages:
   whitelist: "§7§oDu stehst auf diesem Server nicht in der Whitelist!"
-  unknown-command: "§8[§7§l!§8] §4Dieser Befehl existiert nicht!"
+  unknown-command: "§8[§7§l!§8] §fServer §8» §4Dieser Befehl existiert nicht!"
   server-full: "§7§oDer Server ist voll"
   outdated-client: "§7§oBitte verwende die Minecraft Version {0}"
   outdated-server: "§7§oBitte verwende die Minecraft Version {0}"

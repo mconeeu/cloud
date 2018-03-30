@@ -14,7 +14,6 @@ import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-import org.bukkit.Bukkit;
 
 public class PlayerListener implements Listener {
 
@@ -29,19 +28,22 @@ public class PlayerListener implements Listener {
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), ProxyServer.getInstance().getOnlineCount()));
 
         if (instance.getState().equals(ServerState.WAITING)) {
-            if (ProxyServer.getInstance().getOnlineCount() >= ProxyServer.getInstance().getConfig().getPlayerLimit()) {
+            if (ProxyServer.getInstance().getOnlineCount() >= ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers()) {
                 instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.FULL));
+                instance.setState(ServerState.FULL);
             }
         }
     }
 
     @EventHandler
     public void on(PlayerDisconnectEvent e) {
-        instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), ProxyServer.getInstance().getOnlineCount()));
+        int onlinePlayers = ProxyServer.getInstance().getOnlineCount()-1;
+        instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), onlinePlayers));
 
         if (instance.getState().equals(ServerState.FULL)) {
-            if (ProxyServer.getInstance().getOnlineCount() < ProxyServer.getInstance().getConfig().getPlayerLimit()) {
+            if (onlinePlayers < ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers()) {
                 instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.WAITING));
+                instance.setState(ServerState.WAITING);
             }
         }
     }

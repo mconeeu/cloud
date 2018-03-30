@@ -19,7 +19,7 @@ public class CloudConfig {
     private Configuration config;
     private File file;
 
-    public CloudConfig(File file) {
+    public CloudConfig(File file, String... sections) {
         this.file = file;
 
         try {

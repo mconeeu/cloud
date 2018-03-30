@@ -20,10 +20,7 @@ import io.netty.channel.Channel;
 import lombok.Getter;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class MasterServer {
 
@@ -55,28 +52,17 @@ public class MasterServer {
 
         System.out.println("[Enable progress] Welcome to mc1cloud. Cloud is starting...");
         System.out.println("[Enable progress] Connecting to Database...");
-        mysql = new MySQL("localhost", 3306, "cloud", "root", "", "cloudmaster");
+        mysql = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "mc1cloud", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudmaster");
 
         System.out.println("[Enable progress] Creating necessary tables if not exists...");
         createMySQLTables(mysql);
-
-        System.out.println("[Enable progress] Getting wrappers from database...");
-        mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_wrappers;", rs -> {
-            try {
-                while (rs.next()) {
-                    System.out.println("[Enable progress] Creating Wrapper " + rs.getString("uuid") + " with adress "+rs.getString("adress")+" ...");
-                    createWrapper(UUID.fromString(rs.getString("uuid")));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
 
         System.out.println("[Enable progress] Getting templates from database...");
         mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_templates;", rs -> {
             try {
                 while (rs.next()) {
                     System.out.println("[Enable progress] Creating Template " + rs.getString("name") + " and it's servers ...");
+
                     createTemplate(
                             rs.getString("name"),
                             rs.getInt("ram"),
@@ -85,7 +71,7 @@ public class MasterServer {
                             rs.getInt("max"),
                             rs.getInt("emptyservers"),
                             ServerVersion.valueOf(rs.getString("version")),
-                            rs.getBoolean("startup")
+                            rs.getString("properties")
                     );
                 }
             } catch (SQLException e) {
@@ -103,6 +89,64 @@ public class MasterServer {
         new ServerBootstrap(4567);
 
         System.out.println("\nEnable process finished! Cloud Master seems to be ready! Waiting for connections...");
+    }
+
+    public void reload() {
+        System.out.println("[Reload progress] Reloading MasterServer...");
+        System.out.println("[Reload progress] Reloading Templates...");
+        mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_templates;", rs -> {
+            Map<String, Template> oldTemplates = new HashMap<>();
+            List<String> newTemplates = new ArrayList<>();
+
+            templates.forEach(t -> oldTemplates.put(t.getName(), t));
+
+            try {
+                while (rs.next()) {
+                    if (oldTemplates.containsKey(rs.getString("name"))) {
+                        System.out.println("[Reload progress] Refreshing Template " + rs.getString("name") + "...");
+
+                        oldTemplates.get(rs.getString("name")).recreate(
+                                rs.getInt("ram"),
+                                rs.getInt("max_players"),
+                                rs.getInt("min"),
+                                rs.getInt("max"),
+                                rs.getInt("emptyservers"),
+                                ServerVersion.valueOf(rs.getString("version")),
+                                rs.getString("properties")
+                        );
+                    } else {
+                        System.out.println("[Reload progress] Adding Template " + rs.getString("name") + "...");
+
+                        createTemplate(
+                                rs.getString("name"),
+                                rs.getInt("ram"),
+                                rs.getInt("max_players"),
+                                rs.getInt("min"),
+                                rs.getInt("max"),
+                                rs.getInt("emptyservers"),
+                                ServerVersion.valueOf(rs.getString("version")),
+                                rs.getString("properties")
+                        );
+                    }
+
+                    newTemplates.add(rs.getString("name"));
+                }
+
+                for (Template t : templates) {
+                    if (!newTemplates.contains(t.getName())) {
+                        System.out.println("[Reload progress] Deleting old Template " + t.getName() + "...");
+                        t.delete();
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        System.out.println("[Reload progress] Reloading static Servers...");
+        staticServerManager.reload();
+
+        System.out.println("[Reload progress] MasterServer successfully reloaded!");
     }
 
     public void shutdown() {
@@ -129,9 +173,8 @@ public class MasterServer {
                 "`min` int(5) NOT NULL, " +
                 "`max` int(5) NOT NULL, " +
                 "`version` varchar(10) NOT NULL, " +
-                "`update` int(5) NOT NULL, " +
                 "`emptyservers` int(5) NOT NULL, " +
-                "`startup` boolean NOT NULL" +
+                "`properties` varchar(1000) NOT NULL " +
                 ") " +
                 "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 
@@ -144,25 +187,25 @@ public class MasterServer {
                 "`wrapper` varchar(100)" +
                 ") " +
                 "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-
-        mySQL.update("CREATE TABLE IF NOT EXISTS `" + mySQL.getTablePrefix() + "_wrappers` " +
-                "(" +
-                "`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                "`uuid` varchar(100) NOT NULL, " +
-                "`adress` varchar(100) NOT NULL" +
-                ") " +
-                "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     }
 
-    private void createTemplate(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, boolean startup) {
-        templates.add(new Template(name, ram, maxPlayers, min, max, emptyservers, version, startup));
+    private void createTemplate(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, String properties) {
+        templates.add(new Template(name, ram, maxPlayers, min, max, emptyservers, version, properties));
     }
 
-    public Wrapper createWrapper(UUID uuid) {
-        Wrapper w = new Wrapper(uuid);
+    public void unregisterTemplate(Template t) {
+        templates.remove(t);
+    }
+
+    public Wrapper createWrapper(UUID uuid, Channel channel, long ram) {
+        Wrapper w = new Wrapper(uuid, channel, ram);
 
         wrappers.add(w);
         return w;
+    }
+
+    public void unregisterWrapper(Wrapper w) {
+        wrappers.remove(w);
     }
 
     public Server getServer(UUID uuid) {
@@ -171,6 +214,11 @@ public class MasterServer {
                 if (s.getInfo().getUuid().equals(uuid)) {
                     return s;
                 }
+            }
+        }
+        for (Server s : staticServerManager.getServers()) {
+            if (s.getInfo().getUuid().equals(uuid)) {
+                return s;
             }
         }
         return null;
@@ -182,6 +230,11 @@ public class MasterServer {
                 if (s.getInfo().getName().equals(name)) {
                     return s;
                 }
+            }
+        }
+        for (Server s : staticServerManager.getServers()) {
+            if (s.getInfo().getName().equals(name)) {
+                return s;
             }
         }
         return null;
@@ -207,7 +260,10 @@ public class MasterServer {
 
     public Collection<Server> getServers() {
         List<Server> result = new ArrayList<>();
+
         for (Template t : getTemplates()) result.addAll(t.getServers());
+        result.addAll(staticServerManager.getServers());
+
         return result;
     }
 

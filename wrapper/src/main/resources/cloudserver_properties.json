@@ -1,0 +1,27 @@
+{
+  "plugins":
+  [
+    {
+      "ciServer":"test",
+      "job":"test",
+      "artifact":"test"
+    }
+  ],
+
+  "worlds":
+  [
+    "world1"
+  ],
+
+  "configs":
+  [
+    {
+      "name":"test.yml",
+      "values":
+      {
+        "hi2":"hi2",
+        "hi":"hi"
+      }
+    }
+  ]
+}

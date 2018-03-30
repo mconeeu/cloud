@@ -20,8 +20,6 @@ public class Template {
     int max;
     int emptyservers;
 
-    boolean startup;
-
     List<String> servers;
 
 }

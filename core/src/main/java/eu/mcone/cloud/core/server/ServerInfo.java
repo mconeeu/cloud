@@ -24,16 +24,19 @@ public class ServerInfo {
     private boolean staticServer;
     @Getter @Setter
     private ServerVersion version;
+    @Getter @Setter
+    private String properties;
 
-    public ServerInfo(UUID uuid, String name, String templateName, int maxPlayers, int templateID, long ram, boolean staticServer, ServerVersion version) {
+    public ServerInfo(UUID uuid, String name, String templateName, int maxPlayers, int templateID, long ram, boolean staticServer, ServerVersion version, String properties) {
         this.uuid = uuid;
         this.name = name;
         this.templateName = templateName;
         this.maxPlayers = maxPlayers;
-        this.ram = ram;
         this.templateID = templateID;
+        this.ram = ram;
         this.staticServer = staticServer;
         this.version = version;
+        this.properties = properties;
     }
 
 }

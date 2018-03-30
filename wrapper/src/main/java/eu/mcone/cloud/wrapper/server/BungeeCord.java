@@ -6,7 +6,6 @@
 package eu.mcone.cloud.wrapper.server;
 
 import eu.mcone.cloud.core.console.Logger;
-import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
@@ -53,14 +52,11 @@ public class BungeeCord extends Server {
                 Logger.log(getClass(), "["+info.getName()+"] Stopping server...");
                 this.sendCommand("end");
                 this.setState(ServerState.OFFLINE);
-                this.sendResult("[Server." + this.info.getName() + "] the server was stopped!", ServerResultPacketWrapper.Result.SUCCESSFUL);
             } else {
                 Logger.err(getClass(), "["+info.getName()+"] Could not stop server because the process is dead!");
-                this.sendResult("[Server." + this.info.getName() + "] The server cloud not be stopped because the process is dead...", ServerResultPacketWrapper.Result.COOMMAND_ERROR);
             }
         } else {
             Logger.err(getClass(), "["+info.getName()+"] Could not stop server because it has no process!");
-            this.sendResult("[Server." + this.info.getName() + "] The server could not be stopped because it has no process...", ServerResultPacketWrapper.Result.COOMMAND_ERROR);
         }
     }
 

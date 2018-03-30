@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.core.network.packet;
 
+import eu.mcone.cloud.core.server.ServerState;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 
@@ -19,13 +20,16 @@ public class ServerRegisterPacketPlugin extends Packet {
     private String hostname;
     @Getter
     private int port;
+    @Getter
+    private ServerState state;
 
     public ServerRegisterPacketPlugin() {}
 
-    public ServerRegisterPacketPlugin(UUID serverUuid, String hostname, int port) {
+    public ServerRegisterPacketPlugin(UUID serverUuid, String hostname, int port, ServerState state) {
         this.serverUuid = serverUuid;
         this.hostname = hostname;
         this.port = port;
+        this.state = state;
     }
 
     @Override
@@ -37,6 +41,7 @@ public class ServerRegisterPacketPlugin extends Packet {
             out.writeUTF(serverUuid.toString());
             out.writeUTF(hostname);
             out.writeInt(port);
+            out.writeUTF(state.toString());
 
             byte[] result = stream.toByteArray();
             byteBuf.writeInt(result.length);
@@ -56,6 +61,7 @@ public class ServerRegisterPacketPlugin extends Packet {
             serverUuid = UUID.fromString(input.readUTF());
             hostname = input.readUTF();
             port = input.readInt();
+            state = ServerState.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();
         }

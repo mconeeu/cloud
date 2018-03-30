@@ -3,13 +3,14 @@
  *  You are not allowed to decompile the code.
  */
 
-package eu.mcone.cloud.wrapper.jenkins;
+package eu.mcone.cloud.wrapper.download;
 
 import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Artifact;
 import com.offbytwo.jenkins.model.BuildWithDetails;
 import com.offbytwo.jenkins.model.Job;
 import eu.mcone.cloud.core.console.Logger;
+import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import lombok.Getter;
 
@@ -36,12 +37,10 @@ public class JenkinsDownloader {
         }
     }
 
-    private String jarPath;
+    private final static String jarPath = WrapperServer.getInstance().getFileManager().getHomeDir().getPath() + File.separator + "jars" + File.separator + "jenkins";
     private JenkinsServer jenkinsServer;
 
     public JenkinsDownloader(CiServer server) {
-        this.jarPath = WrapperServer.getInstance().getFileManager().getHomeDir().getPath() + File.separator + "jars" + File.separator + "jenkins";
-
         try {
             jenkinsServer = new JenkinsServer(new URI(server.getUri()), server.getUser(), server.getPassword());
         } catch (URISyntaxException e) {
@@ -50,7 +49,7 @@ public class JenkinsDownloader {
         }
     }
 
-    public File getJenkinsArtifact(String jobName, String artifactName) {
+    public File getJenkinsArtifact(String jobName, String artifactName) throws CloudException {
         String[] nameparts = artifactName.split("-");
 
         try {
@@ -62,9 +61,7 @@ public class JenkinsDownloader {
                 boolean equal = true;
 
                 for (int i = 0; i < nameparts.length; i++) {
-                    if (nameparts[i].equals(parts[i])) {
-                        equal = true;
-                    } else {
+                    if (!nameparts[i].equals(parts[i])) {
                         equal = false;
                         break;
                     }
@@ -72,27 +69,24 @@ public class JenkinsDownloader {
 
                 if (equal) {
                     File jar = new File(jarPath + File.separator + artifact.getFileName());
+                    int oldBuild = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("jenkins").getInt(jobName+"#"+artifactName);
 
-                    if (!jar.exists()) {
-                        String oldBuild = WrapperServer.getInstance().getConfig().getConfig().getSection("jenkins").getString(jobName+":"+artifactName);
+                    if (!jar.exists() || Integer.valueOf(build.getId()) != oldBuild) {
+                        jar.delete();
 
-                        if (!build.getId().equals(oldBuild)) {
-                            jar.delete();
+                        FileOutputStream fos = new FileOutputStream(jar);
+                        Logger.log("JenkinsDownloader", "Downloading job " + jobName + " to " + jar.getPath() + "...");
+                        fos.getChannel().transferFrom(Channels.newChannel(build.downloadArtifact(artifact)), 0, Long.MAX_VALUE);
 
-                            FileOutputStream fos = new FileOutputStream(jar);
-                            Logger.log("JenkinsDownloader", "Downloading job " + jobName + " to " + jar.getPath() + "...");
-                            fos.getChannel().transferFrom(Channels.newChannel(build.downloadArtifact(artifact)), 0, Long.MAX_VALUE);
-
-                            WrapperServer.getInstance().getConfig().getConfig().getSection("jenkins").set(jobName+":"+artifactName, build.getId());
-                        }
+                        WrapperServer.getInstance().getConfig().getConfig().set("builds.jenkins."+jobName+"#"+artifactName, Integer.valueOf(build.getId()));
+                        WrapperServer.getInstance().getConfig().save();
                     }
 
                     return jar;
                 }
             }
         } catch (IOException | URISyntaxException e) {
-            Logger.err(getClass(), "Fehler beim herunterladen von "+jobName+":"+artifactName+":");
-            e.printStackTrace();
+            throw new CloudException(e);
         }
 
         return null;

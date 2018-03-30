@@ -6,7 +6,6 @@
 package eu.mcone.cloud.wrapper.server;
 
 import eu.mcone.cloud.core.console.Logger;
-import eu.mcone.cloud.core.network.packet.ServerResultPacketWrapper;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
@@ -18,9 +17,9 @@ import net.md_5.bungee.config.YamlConfiguration;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -48,8 +47,8 @@ public class Bukkit extends Server {
                         "-Dio.netty.recycler.maxCapacity=0 ",
                         "-Dio.netty.recycler.maxCapacity.default=0",
                         "-Djline.terminal=jline.UnsupportedTerminal",
-                        "-Xmx"+info.getRam()+"M",
-                        serverDir+File.separator+"server.jar"
+                        "-Xmx" + info.getRam() + "M",
+                        serverDir + File.separator + "server.jar"
                 }
         );
     }
@@ -61,14 +60,11 @@ public class Bukkit extends Server {
                 Logger.log(getClass(), "["+info.getName()+"] Stopping server...");
                 this.sendCommand("stop");
                 this.setState(ServerState.OFFLINE);
-                this.sendResult("[Server." + this.info.getName() + "] the server was stopped!", ServerResultPacketWrapper.Result.SUCCESSFUL);
             } else {
                 Logger.err(getClass(), "["+info.getName()+"] Could not stop server because the process is dead!");
-                this.sendResult("[Server." + this.info.getName() + "] The server cloud not be stopped because the process is dead...", ServerResultPacketWrapper.Result.COOMMAND_ERROR);
             }
         } else {
             Logger.err(getClass(), "["+info.getName()+"] Could not stop server because it has no process!");
-            this.sendResult("[Server." + this.info.getName() + "] The server could not be stopped because it has no process...", ServerResultPacketWrapper.Result.COOMMAND_ERROR);
         }
     }
 
@@ -103,9 +99,7 @@ public class Bukkit extends Server {
         ps.setProperty("server-templateID", Integer.toString(info.getTemplateID()));
         ps.setProperty("server-name", info.getName());
 
-        OutputStream outputstream = Files.newOutputStream(Paths.get(propertyFile.getPath()));
-        outputstream.flush();
-        ps.store(outputstream, "MCONE_WRAPPER");
+        ps.store(new FileOutputStream(propertyFile), "MCONE_Wrapper");
 
 
         if (info.getVersion().equals(ServerVersion.SPIGOT)) {

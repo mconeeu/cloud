@@ -30,7 +30,7 @@ public class ServerManager {
 
                 for (Server s : t.getServers()) {
                     //Add to ServerWaitlist if Wrapper == null
-                    if (s.getWrapper() == null && s.isAllowStart()) {
+                    if (s.getWrapper() == null) {
                         serverWaitList.add(s);
                     }
 
@@ -72,8 +72,8 @@ public class ServerManager {
                 }
             }
 
-            for (Server s : MasterServer.getInstance().getStaticServerManager().getStaticServers()) {
-                if (s.getWrapper() == null && s.isAllowStart()) {
+            for (Server s : MasterServer.getInstance().getStaticServerManager().getServers()) {
+                if (s.getWrapper() == null) {
                     serverWaitList.add(s);
                 }
             }
@@ -90,19 +90,19 @@ public class ServerManager {
                     if (bestwrapper != null) {
                         server.setWrapper(bestwrapper);
                         i.remove();
-                        Logger.log(getClass(), "Found wrapper " + bestwrapper.getUuid() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                        Logger.log(getClass(), "Found wrapper " + bestwrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
                         bestwrapper.createServer(server);
                         server.start();
                     } else {
-                        System.out.println("[ServerManager.class] No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
+                        Logger.log(getClass(), "No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
                     }
                 } else {
                     Wrapper wrapper = MasterServer.getInstance().getWrapper(wrapperUuid);
 
-                    if (wrapper != null && wrapper.isOnline() && !wrapper.isBusy()) {
+                    if (wrapper != null && !wrapper.isBusy()) {
                         server.setWrapper(wrapper);
                         i.remove();
-                        Logger.log(getClass(), "Found explicit wrapper " + wrapper.getUuid() + " for server" + server.getInfo().getName() + "! Creating Server!");
+                        Logger.log(getClass(), "Found explicit wrapper " + wrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
                         wrapper.createServer(server);
                         server.start();
                         break;
@@ -119,7 +119,7 @@ public class ServerManager {
         HashMap<Wrapper, Long> wrappers = new HashMap<>();
 
         for (Wrapper w : MasterServer.getInstance().getWrappers()) {
-            if (w.isOnline() && !w.isBusy()) {
+            if (!w.isBusy()) {
                 long difference = w.getRam() - w.getRamInUse();
 
                 //Exclude wrappers which ram is nearly full

@@ -34,7 +34,7 @@ public abstract class ConsoleInputReader {
                 while (sc.hasNext()) {
                     String line = sc.nextLine();
 
-                    if (line != null) {
+                    if (line != null && line.length() > 4) {
                         log.add(line);
                         this.filter(line);
 

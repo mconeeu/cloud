@@ -31,4 +31,9 @@ public class BungeePlugin extends Plugin implements eu.mcone.cloud.plugin.Plugin
         instance.unload();
     }
 
+    @Override
+    public void runAsync(Runnable runnable) {
+        ProxyServer.getInstance().getScheduler().runAsync(this, runnable);
+    }
+
 }

@@ -30,9 +30,7 @@ public class Server {
     @Getter @Setter
     private int playerCount = -1;
     @Getter @Setter
-    private ServerState state = ServerState.OFFLINE;
-    @Getter @Setter
-    private boolean allowStart = true;
+    private ServerState state;
     @Getter @Setter
     private Channel channel;
 
@@ -40,6 +38,9 @@ public class Server {
         this.info = info;
         this.template = template;
         this.wrapperUuid = wrapperUuid;
+        this.state = ServerState.OFFLINE;
+
+        Logger.log(getClass(), "["+info.getName()+"] Initialized Server "+info.getName()+" (UUID: "+info.getUuid().toString()+")");
     }
 
     public void start() {
@@ -86,15 +87,11 @@ public class Server {
         }
     }
 
-    private void destroy() {
-        //Delete Server on Wrapper
+    public void delete() {
         if (wrapper != null) {
             this.wrapper.destroyServer(this);
         }
-    }
 
-    public void delete() {
-        destroy();
         template.deleteServer(this);
     }
 
@@ -104,6 +101,11 @@ public class Server {
         } else {
             Logger.err(getClass(), "["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel == null)");
         }
+    }
+
+    @Override
+    public String toString() {
+        return info.getName()+" (UUID: "+info.getUuid()+", Template: "+template.getName()+", State: "+state+", Connection: "+channel.remoteAddress()+")";
     }
 
 }

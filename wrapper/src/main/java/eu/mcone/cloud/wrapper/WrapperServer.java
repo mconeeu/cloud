@@ -10,6 +10,7 @@ import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.file.CloudConfig;
 import eu.mcone.cloud.core.file.Downloader;
 import eu.mcone.cloud.core.file.FileManager;
+import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.console.CommandExecutor;
@@ -36,6 +37,8 @@ public class WrapperServer {
     @Getter
     private UUID wrapperUuid;
     @Getter
+    private long ram;
+    @Getter
     private ConsoleReader consoleReader;
     @Getter
     private FileManager fileManager;
@@ -43,10 +46,10 @@ public class WrapperServer {
     private CloudConfig config;
     @Getter
     private ClientBootstrap nettyBootstrap;
+    @Getter
+    private MySQL mySQL;
     @Getter @Setter
     private Channel channel;
-    @Getter
-    private long ram;
     @Getter
     private boolean shutdown = false;
     @Getter
@@ -68,9 +71,9 @@ public class WrapperServer {
         fileManager.createHomeDir("templates");
         fileManager.createHomeDir("servers");
         fileManager.createHomeDir("staticservers");
-        fileManager.createHomeDir("config");
         fileManager.createHomeDir("jars");
         fileManager.createHomeDir("jars"+File.separator+"jenkins");
+        fileManager.createHomeDir("worlds");
 
         consoleReader = new ConsoleReader();
         consoleReader.registerCommand(new CommandExecutor());
@@ -79,7 +82,11 @@ public class WrapperServer {
 
         System.out.println("[Enable progress] Welcome to mc1cloud. Wrapper is starting...");
 
-        config = new CloudConfig(new File(fileManager.getHomeDir()+File.separator+"config.yml"));
+        System.out.println("[Enable progress] Connecting to Database...");
+        mySQL = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "mc1cloud", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudwrapper");
+        createMySQLTables(mySQL);
+
+        config = new CloudConfig(new File(fileManager.getHomeDir()+File.separator+"config.yml"), "jenkins", "worlds");
         try {
             wrapperUuid = UUID.fromString(config.getConfig().getString("uuid"));
             System.out.println("[Enable progress] Got wrapper UUID '"+wrapperUuid+"' from config...");
@@ -103,6 +110,25 @@ public class WrapperServer {
 
         System.out.println("[Enable progress] Trying to connect to master...");
         nettyBootstrap = new ClientBootstrap("localhost", 4567);
+    }
+
+    private void createMySQLTables(MySQL mySQL) {
+        mySQL.update(
+                "CREATE TABLE IF NOT EXISTS `"+mySQL.getTablePrefix()+"_worlds`" +
+                    "(" +
+                    "`id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+                    "`build` int(10) NOT NULL," +
+                    "`name` VARCHAR(100) NOT NULL," +
+                    "`world_type` VARCHAR(20) NOT NULL," +
+                    "`environment` VARCHAR(20) NOT NULL," +
+                    "`difficulty` VARCHAR(20) NOT NULL," +
+                    "`spawn_location` VARCHAR(100) NOT NULL," +
+                    "`generator` VARCHAR(50)," +
+                    "`properties` VARCHAR(1000) NOT NULL," +
+                    "`bytes` longblob NOT NULL " +
+                    ")" +
+                    "ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+        );
     }
 
     public void shutdown() {

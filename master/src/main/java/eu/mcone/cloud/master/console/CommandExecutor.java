@@ -9,9 +9,7 @@ import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacketWrapper;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
-import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import sun.rmi.runtime.Log;
 
 public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecutor {
 
@@ -19,23 +17,49 @@ public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecu
     public void onCommand(String cmd, String[] args) {
         if (cmd.equalsIgnoreCase("cmd")) {
             if (args.length >= 2) {
-                for (Template t : MasterServer.getInstance().getTemplates()) {
-                    for (Server s : t.getServers()) {
-                        if (s.getInfo().getName().equalsIgnoreCase(args[0])) {
-                            StringBuilder sb = new StringBuilder();
+                Server s = MasterServer.getInstance().getServer(args[0]);
 
-                            for (int i = 1; i < args.length; i++) {
-                                sb.append(args[i]);
-                                if (i != args.length-1) sb.append(" ");
-                            }
+                if (s != null) {
+                    StringBuilder sb = new StringBuilder();
 
-                            s.getWrapper().getChannel().writeAndFlush(new ServerCommandExecutePacketWrapper(s.getInfo().getUuid(), sb.toString()));
-                            System.out.println("Sent new command '" + sb.toString() + "' to server wrapper...");
-                            return;
-                        }
+                    for (int i = 1; i < args.length; i++) {
+                        sb.append(args[i]);
+                        if (i != args.length - 1) sb.append(" ");
                     }
+
+                    s.getWrapper().getChannel().writeAndFlush(new ServerCommandExecutePacketWrapper(s.getInfo().getUuid(), sb.toString()));
+                    System.out.println("Sent new command '" + sb.toString() + "' to server wrapper...");
+                    return;
                 }
-                Logger.log(getClass(), "no suitable server found for name "+args[0]);
+                Logger.log(getClass(), "no suitable server found for name " + args[0]);
+            }
+        } else if (cmd.equalsIgnoreCase("startserver")) {
+            if (args.length == 1) {
+                Server s = MasterServer.getInstance().getServer(args[0]);
+
+                if (s != null) {
+                    s.start();
+                }
+            }
+        } else if (cmd.equalsIgnoreCase("stopserver")) {
+            if (args.length == 1) {
+                Server s = MasterServer.getInstance().getServer(args[0]);
+
+                if (s != null) {
+                    s.stop();
+                }
+            }
+        } else if (cmd.equalsIgnoreCase("forcestopserver")) {
+            if (args.length == 1) {
+                Server s = MasterServer.getInstance().getServer(args[0]);
+
+                if (s != null) {
+                    s.forcestop();
+                }
+            }
+        } else if (cmd.equalsIgnoreCase("reload")) {
+            if (args.length == 0) {
+                MasterServer.getInstance().reload();
             }
         } else if (cmd.equalsIgnoreCase("stop")) {
             if (args.length == 0) {

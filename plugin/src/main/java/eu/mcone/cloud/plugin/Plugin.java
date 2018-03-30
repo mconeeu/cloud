@@ -7,6 +7,6 @@ package eu.mcone.cloud.plugin;
 
 public interface Plugin {
 
-
+    void runAsync(Runnable runnable);
 
 }

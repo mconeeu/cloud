@@ -10,6 +10,8 @@ import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.network.packet.ServerChangeStatePacketWrapper;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.network.packet.WrapperShutdownPacketWrapper;
+import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import io.netty.channel.Channel;
 import lombok.Getter;
@@ -33,29 +35,22 @@ public class Wrapper {
     private boolean busy = false;
     @Getter
     private Set<Server> servers;
-    @Getter
-    private boolean online;
 
-    public Wrapper(UUID uuid) {
+    public Wrapper(UUID uuid, Channel channel, long ram) {
         this.uuid = uuid;
+        this.channel = channel;
+        this.ram = ram;
         this.servers = new HashSet<>();
 
         Logger.log(getClass(), "["+uuid+"] Registered wrapper");
     }
 
-    public Wrapper setOnline(Channel channel, long ram) {
-        this.online = true;
-        this.ram = ram;
-        this.channel = channel;
-
-        return this;
-    }
-
-    public void setOffline() {
-        this.online = false;
-
+    public void delete() {
         for (Server s : servers) {
+            Logger.log(getClass(), "["+uuid+"] Unregistering server "+s.getInfo().getName());
             s.setWrapper(null);
+            s.setChannel(null);
+            s.setState(ServerState.OFFLINE);
         }
 
         this.ram = -1;
@@ -63,11 +58,13 @@ public class Wrapper {
         this.channel = null;
         this.busy = false;
         this.servers.clear();
+
+        MasterServer.getInstance().unregisterWrapper(this);
     }
 
     public void shutdown() {
         channel.writeAndFlush(new WrapperShutdownPacketWrapper());
-        setOffline();
+        delete();
     }
 
     public void createServer(Server s) {
@@ -90,6 +87,7 @@ public class Wrapper {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.DELETE));
 
         server.setWrapper(null);
+        server.setState(ServerState.OFFLINE);
         Logger.log(getClass(), "["+uuid+"] Deleted server " + server.getInfo().getName() + "!");
     }
 
@@ -119,10 +117,6 @@ public class Wrapper {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.RESTART));
         Logger.log(getClass(), "["+uuid+"] Stopped server " + server.getInfo().getName() + "!");
     }
-    
-    public int getServercount() {
-        return servers.size();
-    }
 
     public void send(Packet packet) {
         channel.writeAndFlush(packet);
@@ -130,6 +124,7 @@ public class Wrapper {
 
     @Override
     public String toString() {
-        return uuid+" (Connection: "+channel.remoteAddress()+", RAM: "+ram+")";
+        return uuid+" (Connection: "+channel.remoteAddress()+", RAM: "+ram+", Servers: "+servers.size()+")";
     }
+
 }
