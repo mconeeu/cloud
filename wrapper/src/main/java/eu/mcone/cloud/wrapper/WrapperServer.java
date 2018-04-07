@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
  *  You are not allowed to decompile the code.
  */
 
@@ -64,7 +64,8 @@ public class WrapperServer {
     private WrapperServer() {
         instance = this;
 
-        this.ram = Runtime.getRuntime().maxMemory() / 1024 / 1024;
+        this.ram = Runtime.getRuntime().maxMemory();
+        this.ram /= (1024 * 1024);
         Logger.log(getClass(), ram+"M RAM");
 
         fileManager = new FileManager();

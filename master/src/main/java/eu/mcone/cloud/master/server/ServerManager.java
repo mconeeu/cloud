@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
  *  You are not allowed to decompile the code.
  */
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
@@ -90,11 +91,11 @@ public class ServerManager {
                     if (bestwrapper != null) {
                         server.setWrapper(bestwrapper);
                         i.remove();
-                        Logger.log(getClass(), "Found wrapper " + bestwrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
+                        Logger.log(getClass(), ConsoleColor.GREEN+"Found wrapper " + bestwrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!"+ConsoleColor.RESET);
                         bestwrapper.createServer(server);
                         server.start();
                     } else {
-                        Logger.log(getClass(), "No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList...");
+                        Logger.log(getClass(), ConsoleColor.BLACK_BRIGHT+"No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList..."+ConsoleColor.RESET);
                     }
                 } else {
                     Wrapper wrapper = MasterServer.getInstance().getWrapper(wrapperUuid);
@@ -107,7 +108,7 @@ public class ServerManager {
                         server.start();
                         break;
                     } else {
-                        Logger.log(getClass(), "Explicit wrapper " + wrapperUuid + " not found for server " + server.getInfo().getName() + "! Staying in WaitList...");
+                        Logger.log(getClass(), ConsoleColor.BLACK_BRIGHT+"Explicit wrapper " + wrapperUuid + " not found for server " + server.getInfo().getName() + "! Staying in WaitList..."+ConsoleColor.RESET);
                     }
                 }
             }

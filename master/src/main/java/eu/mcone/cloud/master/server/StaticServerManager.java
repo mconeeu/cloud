@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
  *  You are not allowed to decompile the code.
  */
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
@@ -64,16 +65,16 @@ public class StaticServerManager {
             try {
                 while (rs.next()) {
                     if (oldServers.containsKey(rs.getString("name"))) {
-                        Logger.log(getClass(), "Recreating static Server " + rs.getString("name") + "...");
+                        Logger.log("Reload progress", ConsoleColor.GREEN+"Recreating static Server " + rs.getString("name") + "...");
 
                         Server s = oldServers.get(rs.getString("name"));
                         s.getInfo().setMaxPlayers(rs.getInt("max"));
                         s.getInfo().setRam(rs.getLong("ram"));
                         s.getInfo().setVersion(ServerVersion.valueOf(rs.getString("version")));
 
-                        s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
+                        if (s.getWrapper() != null) s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
                     } else {
-                        Logger.log(getClass(), "Adding static Server " + rs.getString("name") + "...");
+                        Logger.log("Reload progress", ConsoleColor.GREEN+"Adding static Server " + rs.getString("name") + "...");
 
                         UUID uuid = UUID.randomUUID();
                         servers.add(
@@ -100,7 +101,7 @@ public class StaticServerManager {
 
                 for (Server s : servers) {
                     if (!newServers.contains(s.getInfo().getName())) {
-                        System.out.println("[Reload progress] Deleting old static Server " + s.getInfo().getName() + "...");
+                        Logger.log("Reload progress", ConsoleColor.GREEN+"Deleting old static Server " + s.getInfo().getName() + "...");
                         servers.remove(s);
                         s.delete();
                     }

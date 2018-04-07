@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik L. and the MC ONE Minecraftnetwork. All rights reserved.
+ * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
  *  You are not allowed to decompile the code.
  */
 
@@ -26,7 +26,7 @@ public class Logger {
     }
 
     private static void log(final PrintStream stream, final String msg) {
-        stream.println(msg);
+        stream.println(msg+ConsoleColor.RESET);
     }
 
 }
