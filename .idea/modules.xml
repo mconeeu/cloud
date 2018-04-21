@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/master/master.iml" filepath="$PROJECT_DIR$/master/master.iml" />
       <module fileurl="file://$PROJECT_DIR$/mcone-cloud.iml" filepath="$PROJECT_DIR$/mcone-cloud.iml" />
       <module fileurl="file://$PROJECT_DIR$/plugin/plugin.iml" filepath="$PROJECT_DIR$/plugin/plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugin-api/plugin-api.iml" filepath="$PROJECT_DIR$/plugin-api/plugin-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/wrapper/wrapper.iml" filepath="$PROJECT_DIR$/wrapper/wrapper.iml" />
     </modules>
   </component>

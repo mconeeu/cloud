@@ -59,6 +59,7 @@
         <module>wrapper</module>
         <module>core</module>
         <module>plugin</module>
+        <module>plugin-api</module>
     </modules>
 
     <distributionManagement>

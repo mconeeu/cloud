@@ -27,10 +27,10 @@ public class PlayerListener implements Listener {
     public void on(PostLoginEvent e) {
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), ProxyServer.getInstance().getOnlineCount()));
 
-        if (instance.getState().equals(ServerState.WAITING)) {
+        if (instance.getServerState().equals(ServerState.WAITING)) {
             if (ProxyServer.getInstance().getOnlineCount() >= ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers()) {
                 instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.FULL));
-                instance.setState(ServerState.FULL);
+                instance.setServerState(ServerState.FULL);
             }
         }
     }
@@ -40,10 +40,10 @@ public class PlayerListener implements Listener {
         int onlinePlayers = ProxyServer.getInstance().getOnlineCount()-1;
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), onlinePlayers));
 
-        if (instance.getState().equals(ServerState.FULL)) {
+        if (instance.getServerState().equals(ServerState.FULL)) {
             if (onlinePlayers < ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers()) {
                 instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.WAITING));
-                instance.setState(ServerState.WAITING);
+                instance.setServerState(ServerState.WAITING);
             }
         }
     }

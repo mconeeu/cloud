@@ -10,7 +10,7 @@ import eu.mcone.cloud.plugin.bungee.server.ReconnectHandler;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
-public class BungeePlugin extends Plugin implements eu.mcone.cloud.plugin.Plugin {
+public class BungeePlugin extends Plugin implements eu.mcone.cloud.api.plugin.Plugin {
 
     private CloudPlugin instance;
 

@@ -9,7 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import eu.mcone.cloud.core.server.world.CloudWorld;
 import eu.mcone.cloud.plugin.CloudPlugin;
-import eu.mcone.cloud.plugin.Plugin;
+import eu.mcone.cloud.api.plugin.Plugin;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 

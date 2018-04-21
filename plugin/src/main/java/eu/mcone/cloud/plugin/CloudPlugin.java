@@ -5,6 +5,8 @@
 
 package eu.mcone.cloud.plugin;
 
+import eu.mcone.cloud.api.plugin.CloudAPI;
+import eu.mcone.cloud.api.plugin.Plugin;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.world.CloudWorld;
@@ -22,10 +24,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-public class CloudPlugin {
-
-    @Getter
-    private static CloudPlugin instance;
+public class CloudPlugin extends CloudAPI {
 
     @Getter
     private Plugin plugin;
@@ -36,7 +35,7 @@ public class CloudPlugin {
     @Getter
     private String name, hostname;
     @Getter @Setter
-    private ServerState state = ServerState.WAITING;
+    private ServerState serverState = ServerState.WAITING;
     @Getter
     private List<CloudWorld> loadedWorlds;
     @Getter
@@ -45,7 +44,7 @@ public class CloudPlugin {
     private int port;
 
     public CloudPlugin(Plugin plugin) {
-        instance = this;
+        setInstance(this);
         this.plugin = plugin;
         this.loadedWorlds = new ArrayList<>();
 

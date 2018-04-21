@@ -3,7 +3,7 @@
  *  You are not allowed to decompile the code.
  */
 
-package eu.mcone.cloud.plugin;
+package eu.mcone.cloud.api.plugin;
 
 public interface Plugin {
 
