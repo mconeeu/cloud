@@ -91,10 +91,12 @@ public class WrapperServer {
         config = new CloudConfig(new File(fileManager.getHomeDir()+File.separator+"config.yml"), "jenkins", "worlds");
         try {
             wrapperUuid = UUID.fromString(config.getConfig().getString("uuid"));
-            Logger.log("Enable progress", "Got wrapper UUID '"+wrapperUuid+"' from config...");
+            Logger.log("Enable progress", "Got wrapper UUID '"+wrapperUuid+"' and Master IP from config...");
         } catch (IllegalArgumentException e) {
             UUID wrapperUuid = UUID.randomUUID();
             config.getConfig().set("uuid", wrapperUuid.toString());
+            config.getConfig().set("master-hostname", "localhost");
+            config.getConfig().set("master-port", 4567);
             config.save();
 
             Logger.log("Enable progress", "Initialising new Wrapper with UUID '"+wrapperUuid+"'...");
@@ -111,7 +113,7 @@ public class WrapperServer {
         }
 
         Logger.log("Enable progress", "Trying to connect to master...");
-        nettyBootstrap = new ClientBootstrap("localhost", 4567);
+        nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), config.getConfig().getInt("master-port"));
 
         Logger.log("Enable progress", ConsoleColor.GREEN+"Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
     }

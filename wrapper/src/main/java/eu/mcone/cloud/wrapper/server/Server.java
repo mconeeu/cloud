@@ -123,8 +123,8 @@ public abstract class Server {
 
                 Logger.log(getClass(), "Implementing Cloud-Plugin");
                 FileUtils.copyFile(
-                        //new JenkinsDownloader(JenkinsDownloader.CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "plugin"),
-                        new File("D:\\Rufus Maiwald\\Documents\\Java\\Projekte\\mc1cloud\\plugin\\target\\plugin-1.1.0-SNAPSHOT-shaded.jar"),
+                        new JenkinsDownloader(JenkinsDownloader.CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "plugin"),
+                        //new File("D:\\Rufus Maiwald\\Documents\\Java\\Projekte\\mc1cloud\\plugin\\target\\plugin-1.1.0-SNAPSHOT-shaded.jar"),
                         new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
                 );
 
@@ -156,6 +156,7 @@ public abstract class Server {
                 Logger.log(getClass(), "["+info.getName()+"] Could not start server:");
                 if (e instanceof CloudException) {
                     Logger.err(getClass(), "["+info.getName()+"] "+e.getMessage());
+                    e.printStackTrace();
                     return;
                 }
 
