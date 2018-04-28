@@ -9,4 +9,6 @@ public interface Plugin {
 
     void runAsync(Runnable runnable);
 
+    int getPlayerCount();
+
 }

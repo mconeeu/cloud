@@ -13,7 +13,6 @@
     <artifactId>mcone-cloud</artifactId>
     <packaging>pom</packaging>
     <version>1.1.0-SNAPSHOT</version>
-    <name>mc1cloud</name>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -62,14 +61,6 @@
         <module>plugin-api</module>
     </modules>
 
-    <distributionManagement>
-        <repository>
-            <id>mcone-cloud</id>
-            <name>MC ONE Repo</name>
-            <url>http://repo.mcone.eu/nexus/content/repositories/cloud/</url>
-        </repository>
-    </distributionManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -78,5 +69,13 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>mcone-systems</id>
+            <name>MC ONE Repo</name>
+            <url>http://repo.mcone.eu/nexus/content/repositories/system/</url>
+        </repository>
+    </distributionManagement>
 
 </project>

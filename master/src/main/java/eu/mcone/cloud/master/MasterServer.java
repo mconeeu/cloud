@@ -51,18 +51,18 @@ public class MasterServer {
         consoleReader = new ConsoleReader();
         consoleReader.registerCommand(new CommandExecutor());
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Welcome to mc1cloud. Cloud is starting...");
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Connecting to Database...");
+        Logger.log("Enable progress", ConsoleColor.CYAN+"Welcome to mc1cloud. CloudMaster is starting...");
+        Logger.log("Enable progress", "Connecting to Database...");
         mysql = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "mc1cloud", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudmaster");
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Creating necessary tables if not exists...");
+        Logger.log("Enable progress", "Creating necessary tables if not exists...");
         createMySQLTables(mysql);
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Getting templates from database...");
+        Logger.log("Enable progress", "Getting templates from database...");
         mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_templates;", rs -> {
             try {
                 while (rs.next()) {
-                    Logger.log("Enable progress", ConsoleColor.GREEN+"Creating Template " + rs.getString("name") + " and it's servers ...");
+                    Logger.log("Enable progress", "Creating Template " + rs.getString("name") + " and it's servers ...");
 
                     createTemplate(
                             rs.getString("name"),
@@ -80,21 +80,21 @@ public class MasterServer {
             }
         });
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Starting static server manager...");
+        Logger.log("Enable progress", "Starting static server manager...");
         staticServerManager = new StaticServerManager(mysql);
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Starting ServerManager with TimeTask...");
+        Logger.log("Enable progress", "Starting ServerManager with TimeTask...");
         serverManager = new ServerManager();
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Starting Netty Server...");
-        new Thread(() -> new ServerBootstrap(4567)).start();
+        Logger.log("Enable progress", "Starting Netty Server...");
+        new ServerBootstrap(4567);
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Enable process finished! Cloud Master seems to be ready! Waiting for connections...");
+        Logger.log("Enable progress", ConsoleColor.GREEN+"Enable process finished! Cloud Master seems to be ready! Waiting for connections...\n");
     }
 
     public void reload() {
-        Logger.log("Reload progress", ConsoleColor.GREEN+"Reloading MasterServer...");
-        Logger.log("Reload progress", ConsoleColor.GREEN+"Reloading Templates...");
+        Logger.log("Reload progress", "Reloading MasterServer...");
+        Logger.log("Reload progress", "Reloading Templates...");
         mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_templates;", rs -> {
             Map<String, Template> oldTemplates = new HashMap<>();
             List<String> newTemplates = new ArrayList<>();
@@ -104,7 +104,7 @@ public class MasterServer {
             try {
                 while (rs.next()) {
                     if (oldTemplates.containsKey(rs.getString("name"))) {
-                        Logger.log("Reload progress", ConsoleColor.GREEN+"Refreshing Template " + rs.getString("name") + "...");
+                        Logger.log("Reload progress", "Refreshing Template " + rs.getString("name") + "...");
 
                         oldTemplates.get(rs.getString("name")).recreate(
                                 rs.getInt("ram"),
@@ -116,7 +116,7 @@ public class MasterServer {
                                 rs.getString("properties")
                         );
                     } else {
-                        Logger.log("Reload progress", ConsoleColor.GREEN+"Adding Template " + rs.getString("name") + "...");
+                        Logger.log("Reload progress", "Adding Template " + rs.getString("name") + "...");
 
                         createTemplate(
                                 rs.getString("name"),
@@ -135,7 +135,7 @@ public class MasterServer {
 
                 for (Template t : templates) {
                     if (!newTemplates.contains(t.getName())) {
-                        Logger.log("Reload progress", ConsoleColor.GREEN+"Deleting old Template " + t.getName() + "...");
+                        Logger.log("Reload progress", "Deleting old Template " + t.getName() + "...");
                         t.delete();
                     }
                 }
@@ -144,7 +144,7 @@ public class MasterServer {
             }
         });
 
-        Logger.log("Reload progress", ConsoleColor.GREEN+"Reloading static Servers...");
+        Logger.log("Reload progress", "Reloading static Servers...");
         staticServerManager.reload();
 
         Logger.log("Reload progress", ConsoleColor.GREEN+"MasterServer successfully reloaded!");

@@ -7,8 +7,10 @@ package eu.mcone.cloud.master.network;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.*;
+import eu.mcone.cloud.core.server.PluginRegisterData;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
@@ -17,17 +19,21 @@ import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
-    private Map<UUID, FutureTask<Packet>> tasks;
+    private static Map<UUID, FutureTask<Packet>> tasks = new HashMap<>();
+    @Getter
+    private static Map<UUID, PluginRegisterData> registeringServers = new HashMap<>();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        tasks = new HashMap<>();
         Logger.log(getClass(), "new channel from " + ctx.channel().remoteAddress().toString());
     }
 
@@ -44,7 +50,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             Logger.log("WrapperRegister", "Wrapper registering with still "+result.getServers().size()+" servers running!");
 
             List<UUID> unknown = new ArrayList<>();
-            List<Server> newServer = new ArrayList<>();
+            Map<UUID, Server> newServers = new HashMap<>();
             for (HashMap.Entry<UUID, String> e : result.getServers().entrySet()) {
                 UUID uuid = e.getKey();
                 String name = e.getValue();
@@ -53,41 +59,57 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                 if (s == null) {
                     unknown.add(uuid);
                 } else {
-                    s.getInfo().setUuid(uuid);
-                    newServer.add(s);
+                    s.setPreventStart(true);
+                    newServers.put(uuid, s);
                 }
             }
 
-            Wrapper w = MasterServer.getInstance().createWrapper(result.getUuid(), ctx.channel(), result.getRam());
+            final Wrapper w = MasterServer.getInstance().createWrapper(result.getUuid(), ctx.channel(), result.getRam());
 
-            Logger.log("WrapperRegister", "Found "+newServer.size()+" valid servers!");
-            for (Server s : newServer) {
-                w.createServer(s);
-            }
-
+            Logger.log("WrapperRegister", "Found "+newServers.size()+" valid servers!");
             Logger.log("WrapperRegister", "Found "+unknown.size()+" invalid servers! Deleting from Wrapper...");
             for (UUID uuid : unknown) {
                 w.destroyServer(uuid);
             }
 
-            Logger.log("WrapperRegister", w.getUuid()+" is successfully registered from Standalone Mode!");
+            Logger.log("WrapperRegister", ConsoleColor.YELLOW+"Waiting 5sec for servers to register...");
+            Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                final Map<UUID, PluginRegisterData> waiting = ChannelPacketHandler.getRegisteringServers();
+                for (HashMap.Entry<UUID, Server> e : newServers.entrySet()) {
+                    final UUID uuid = e.getKey();
+                    final Server s = e.getValue();
+
+                    s.getInfo().setUuid(uuid);
+
+                    if (s.getState().equals(ServerState.OFFLINE)) s.setState(ServerState.BROKEN);
+                    if (waiting.containsKey(uuid)) {
+                        Logger.log("WrapperRegister", ConsoleColor.GREEN+"Post-registering Server "+s.getInfo().getName()+"...");
+                        s.registerPluginData(waiting.get(uuid));
+                        ChannelPacketHandler.registeringServers.remove(uuid);
+                        w.createServer(s);
+                    } else {
+                        Logger.log("WrapperRegister", ConsoleColor.YELLOW+"Server "+s.getInfo().getName()+" is broken. Restarting...");
+                        w.createServer(s);
+                        s.restart();
+                    }
+
+                    s.setPreventStart(false);
+                }
+                Logger.log("WrapperRegister", ConsoleColor.GREEN+"Wrapper "+w.getUuid()+" is successfully registered from Standalone Mode!");
+            }, 5000, TimeUnit.MILLISECONDS);
         } else if (packet instanceof ServerRegisterPacketPlugin) {
             ServerRegisterPacketPlugin result = (ServerRegisterPacketPlugin) packet;
             Logger.log(getClass(), "new ServerRegisterPacketPlugin (UUID: "+result.getServerUuid()+", PORT: "+result.getPort()+")");
             Server s = MasterServer.getInstance().getServer(result.getServerUuid());
 
             if (s != null) {
-                s.setChannel(ctx.channel());
-                s.setState(result.getState());
-                s.getInfo().setHostname(result.getHostname());
-                s.getInfo().setPort(result.getPort());
-
-                if (s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
-                    for (Server server : MasterServer.getInstance().getServers()) {
-                        if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                            s.send(new ServerListUpdatePacketPlugin(server.getInfo(), ServerListUpdatePacketPlugin.Scope.ADD));
-                        }
-                    }
+                s.registerPluginData(new PluginRegisterData(ctx.channel(), result));
+            } else {
+                try {
+                    registeringServers.put(result.getServerUuid(), new PluginRegisterData(ctx.channel(), result));
+                    Logger.log(getClass(), "Server with uuid " + result.getServerUuid() + " tried to register itself from " + result.getHostname() + " but the server is not known! Put in waitlist.");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         } else if (packet instanceof ServerPlayerCountUpdatePacketPlugin) {
@@ -122,8 +144,8 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                         case WAITING: {
                             for (Server server : MasterServer.getInstance().getServers()) {
                                 if (server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                                    System.out.println("registering Server "+s.getInfo().getName()+ " @ Bungee "+server.getInfo().getName());
                                     server.send(new ServerListUpdatePacketPlugin(s.getInfo(), ServerListUpdatePacketPlugin.Scope.ADD));
+                                    System.out.println("registered Server "+s.getInfo().getName()+ " @ Bungee "+server.getInfo().getName());
                                 }
                             }
                             break;
@@ -211,6 +233,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     public void channelUnregistered(ChannelHandlerContext ctx) {
         Wrapper w = MasterServer.getInstance().getWrapper(ctx.channel());
         if (w != null) {
+            Logger.log(getClass(), ConsoleColor.RED+"Deleting Wrapper "+w.getUuid());
             w.delete();
         }
     }

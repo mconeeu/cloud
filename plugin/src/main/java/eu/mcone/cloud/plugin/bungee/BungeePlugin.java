@@ -36,4 +36,8 @@ public class BungeePlugin extends Plugin implements eu.mcone.cloud.api.plugin.Pl
         ProxyServer.getInstance().getScheduler().runAsync(this, runnable);
     }
 
+    @Override
+    public int getPlayerCount() {
+        return ProxyServer.getInstance().getOnlineCount();
+    }
 }

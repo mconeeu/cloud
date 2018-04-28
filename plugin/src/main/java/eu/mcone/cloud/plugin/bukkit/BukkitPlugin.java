@@ -60,4 +60,8 @@ public class BukkitPlugin extends JavaPlugin implements Plugin {
         Bukkit.getScheduler().runTaskAsynchronously(this, runnable);
     }
 
+    @Override
+    public int getPlayerCount() {
+        return Bukkit.getOnlinePlayers().size();
+    }
 }

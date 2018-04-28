@@ -15,8 +15,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>wrapper</artifactId>
-    <name>mc1cloud-wrapper</name>
     <packaging>jar</packaging>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <build>
         <plugins>

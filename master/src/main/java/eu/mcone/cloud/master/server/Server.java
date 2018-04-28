@@ -7,8 +7,12 @@ package eu.mcone.cloud.master.server;
 
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.core.network.packet.ServerListUpdatePacketPlugin;
+import eu.mcone.cloud.core.server.PluginRegisterData;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.core.server.ServerVersion;
+import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import io.netty.channel.Channel;
@@ -33,6 +37,8 @@ public class Server {
     private ServerState state;
     @Getter @Setter
     private Channel channel;
+    @Getter @Setter
+    private boolean preventStart = false;
 
     public Server(ServerInfo info, Template template, UUID wrapperUuid) {
         this.info = info;
@@ -92,12 +98,34 @@ public class Server {
             this.wrapper.destroyServer(this);
         }
 
-        template.deleteServer(this);
+        if (template != null) template.deleteServer(this);
+    }
+
+    public void registerPluginData(PluginRegisterData data) {
+        this.channel = data.getChannel();
+        this.state = data.getPacket().getState();
+        this.playerCount = data.getPacket().getPlayercount();
+
+        this.info.setHostname(data.getPacket().getHostname());
+        this.info.setPort(data.getPacket().getPort());
+
+        if (info.getVersion().equals(ServerVersion.BUNGEE)) {
+            for (Server server : MasterServer.getInstance().getServers()) {
+                if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
+                    Logger.log(getClass(), "["+info.getName()+"] Registering Server "+server.getInfo().getName());
+                    send(new ServerListUpdatePacketPlugin(server.getInfo(), ServerListUpdatePacketPlugin.Scope.ADD));
+                }
+            }
+        }
     }
 
     public void send(Packet packet) {
         if (channel != null) {
-            channel.writeAndFlush(packet);
+            if (channel.isOpen() && channel.isActive() && channel.isWritable() && channel.isRegistered()) {
+                channel.writeAndFlush(packet);
+            } else {
+                Logger.err(getClass(), "["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel fail)");
+            }
         } else {
             Logger.err(getClass(), "["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel == null)");
         }

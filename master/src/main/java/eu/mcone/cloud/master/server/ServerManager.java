@@ -31,7 +31,7 @@ public class ServerManager {
 
                 for (Server s : t.getServers()) {
                     //Add to ServerWaitlist if Wrapper == null
-                    if (s.getWrapper() == null) {
+                    if (s.getWrapper() == null && !s.isPreventStart()) {
                         serverWaitList.add(s);
                     }
 
@@ -74,7 +74,7 @@ public class ServerManager {
             }
 
             for (Server s : MasterServer.getInstance().getStaticServerManager().getServers()) {
-                if (s.getWrapper() == null) {
+                if (s.getWrapper() == null && !s.isPreventStart()) {
                     serverWaitList.add(s);
                 }
             }
@@ -103,7 +103,7 @@ public class ServerManager {
                     if (wrapper != null && !wrapper.isBusy()) {
                         server.setWrapper(wrapper);
                         i.remove();
-                        Logger.log(getClass(), "Found explicit wrapper " + wrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
+                        Logger.log(getClass(), ConsoleColor.GREEN+"Found explicit wrapper " + wrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
                         wrapper.createServer(server);
                         server.start();
                         break;

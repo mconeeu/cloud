@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.wrapper;
 
+import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.ConsoleReader;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.file.CloudConfig;
@@ -81,26 +82,26 @@ public class WrapperServer {
 
         threadPool = Executors.newCachedThreadPool();
 
-        System.out.println("[Enable progress] Welcome to mc1cloud. Wrapper is starting...");
+        Logger.log("Enable progress", ConsoleColor.CYAN+"Welcome to mc1cloud. Wrapper is starting...");
 
-        System.out.println("[Enable progress] Connecting to Database...");
+        Logger.log("Enable progress", "Connecting to Database...");
         mySQL = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "mc1cloud", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudwrapper");
         createMySQLTables(mySQL);
 
         config = new CloudConfig(new File(fileManager.getHomeDir()+File.separator+"config.yml"), "jenkins", "worlds");
         try {
             wrapperUuid = UUID.fromString(config.getConfig().getString("uuid"));
-            System.out.println("[Enable progress] Got wrapper UUID '"+wrapperUuid+"' from config...");
+            Logger.log("Enable progress", "Got wrapper UUID '"+wrapperUuid+"' from config...");
         } catch (IllegalArgumentException e) {
             UUID wrapperUuid = UUID.randomUUID();
             config.getConfig().set("uuid", wrapperUuid.toString());
             config.save();
 
-            System.out.println("[Enable progress] Initialising new Wrapper with UUID '"+wrapperUuid+"'...");
+            Logger.log("Enable progress", "Initialising new Wrapper with UUID '"+wrapperUuid+"'...");
             this.wrapperUuid = wrapperUuid;
         }
 
-        System.out.println("[Enable progress] Downloading missing executeables for all ServerVersions:");
+        Logger.log("Enable progress", "Downloading missing executeables for all ServerVersions:");
         try {
             for (ServerVersion v : ServerVersion.values()) {
                 Downloader.download(v.getDownloadLink(), new File(fileManager.getHomeDir()+File.separator+"jars"+File.separator+v.toString()+".jar"));
@@ -109,8 +110,10 @@ public class WrapperServer {
             e.printStackTrace();
         }
 
-        System.out.println("[Enable progress] Trying to connect to master...");
+        Logger.log("Enable progress", "Trying to connect to master...");
         nettyBootstrap = new ClientBootstrap("localhost", 4567);
+
+        Logger.log("Enable progress", ConsoleColor.GREEN+"Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
     }
 
     private void createMySQLTables(MySQL mySQL) {

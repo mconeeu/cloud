@@ -8,6 +8,11 @@
         <outputRelativeToContentRoot value="true" />
         <module name="core" />
         <module name="master" />
+        <module name="mcone-cloud-core" />
+        <module name="mcone-cloud-master" />
+        <module name="mcone-cloud-plugin" />
+        <module name="mcone-cloud-plugin-api" />
+        <module name="mcone-cloud-wrapper" />
         <module name="plugin" />
         <module name="plugin-api" />
         <module name="wrapper" />
@@ -17,6 +22,11 @@
       <module name="core" target="1.8" />
       <module name="master" target="1.8" />
       <module name="mcone-cloud" target="1.8" />
+      <module name="mcone-cloud-core" target="1.8" />
+      <module name="mcone-cloud-master" target="1.8" />
+      <module name="mcone-cloud-plugin" target="1.8" />
+      <module name="mcone-cloud-plugin-api" target="1.8" />
+      <module name="mcone-cloud-wrapper" target="1.8" />
       <module name="plugin" target="1.8" />
       <module name="plugin-api" target="1.8" />
       <module name="wrapper" target="1.8" />

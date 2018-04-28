@@ -50,6 +50,7 @@ public class Wrapper {
             Logger.log(getClass(), "["+uuid+"] Unregistering server "+s.getInfo().getName());
             s.setWrapper(null);
             s.setChannel(null);
+            s.setPlayerCount(-1);
             s.setState(ServerState.OFFLINE);
         }
 

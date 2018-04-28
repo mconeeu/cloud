@@ -19,16 +19,17 @@ public class ServerRegisterPacketPlugin extends Packet {
     @Getter
     private String hostname;
     @Getter
-    private int port;
+    private int port, playercount;
     @Getter
     private ServerState state;
 
     public ServerRegisterPacketPlugin() {}
 
-    public ServerRegisterPacketPlugin(UUID serverUuid, String hostname, int port, ServerState state) {
+    public ServerRegisterPacketPlugin(UUID serverUuid, String hostname, int port, int playercount, ServerState state) {
         this.serverUuid = serverUuid;
         this.hostname = hostname;
         this.port = port;
+        this.playercount = playercount;
         this.state = state;
     }
 
@@ -41,6 +42,7 @@ public class ServerRegisterPacketPlugin extends Packet {
             out.writeUTF(serverUuid.toString());
             out.writeUTF(hostname);
             out.writeInt(port);
+            out.writeInt(playercount);
             out.writeUTF(state.toString());
 
             byte[] result = stream.toByteArray();
@@ -61,6 +63,7 @@ public class ServerRegisterPacketPlugin extends Packet {
             serverUuid = UUID.fromString(input.readUTF());
             hostname = input.readUTF();
             port = input.readInt();
+            playercount = input.readInt();
             state = ServerState.valueOf(input.readUTF());
         } catch (IOException e) {
             e.printStackTrace();

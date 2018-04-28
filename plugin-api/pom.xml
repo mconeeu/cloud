@@ -26,8 +26,8 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
     </repositories>
-    <dependencies>
 
+    <dependencies>
         <dependency>
             <groupId>eu.mcone.cloud</groupId>
             <artifactId>core</artifactId>
@@ -54,4 +54,13 @@
             <type>javadoc</type>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>mcone-systems</id>
+            <name>MC ONE Repo</name>
+            <url>http://repo.mcone.eu/nexus/content/repositories/system/</url>
+        </repository>
+    </distributionManagement>
+
 </project>

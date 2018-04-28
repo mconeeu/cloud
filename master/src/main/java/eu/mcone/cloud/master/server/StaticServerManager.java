@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.master.server;
 
-import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
@@ -58,14 +57,14 @@ public class StaticServerManager {
 
     public void reload() {
         mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_static_servers;", rs -> {
-            Map<String, Server> oldServers = new HashMap<>();
-            List<String> newServers = new ArrayList<>();
+            final Map<String, Server> oldServers = new HashMap<>();
+            final List<String> newServers = new ArrayList<>();
             servers.forEach(s -> oldServers.put(s.getInfo().getName(), s));
 
             try {
                 while (rs.next()) {
                     if (oldServers.containsKey(rs.getString("name"))) {
-                        Logger.log("Reload progress", ConsoleColor.GREEN+"Recreating static Server " + rs.getString("name") + "...");
+                        Logger.log("Reload progress", "Recreating static Server " + rs.getString("name") + "...");
 
                         Server s = oldServers.get(rs.getString("name"));
                         s.getInfo().setMaxPlayers(rs.getInt("max"));
@@ -74,7 +73,7 @@ public class StaticServerManager {
 
                         if (s.getWrapper() != null) s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
                     } else {
-                        Logger.log("Reload progress", ConsoleColor.GREEN+"Adding static Server " + rs.getString("name") + "...");
+                        Logger.log("Reload progress", "Adding static Server " + rs.getString("name") + "...");
 
                         UUID uuid = UUID.randomUUID();
                         servers.add(
@@ -97,14 +96,13 @@ public class StaticServerManager {
                     }
 
                     newServers.add(rs.getString("name"));
+                    oldServers.remove(rs.getString("name"));
                 }
 
-                for (Server s : servers) {
-                    if (!newServers.contains(s.getInfo().getName())) {
-                        Logger.log("Reload progress", ConsoleColor.GREEN+"Deleting old static Server " + s.getInfo().getName() + "...");
-                        servers.remove(s);
-                        s.delete();
-                    }
+                for (Server s : oldServers.values()) {
+                    Logger.log("Reload progress", "Deleting old static Server " + s.getInfo().getName() + "...");
+                    servers.remove(s);
+                    s.delete();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

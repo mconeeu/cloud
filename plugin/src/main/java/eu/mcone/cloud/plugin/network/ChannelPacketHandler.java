@@ -30,7 +30,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     public void channelActive(ChannelHandlerContext ctx) {
         instance.setChannel(ctx.channel());
         newConnection = true;
-        ctx.writeAndFlush(new ServerRegisterPacketPlugin(instance.getServerUuid(), instance.getHostname(), instance.getPort(), instance.getServerState()));
+        ctx.writeAndFlush(new ServerRegisterPacketPlugin(instance.getServerUuid(), instance.getHostname(), instance.getPort(), instance.getPlugin().getPlayerCount(), instance.getServerState()));
         System.out.println("new channel to " + ctx.channel().remoteAddress().toString());
     }
 

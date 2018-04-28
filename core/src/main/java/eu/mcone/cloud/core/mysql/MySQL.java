@@ -7,6 +7,8 @@ package eu.mcone.cloud.core.mysql;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import eu.mcone.cloud.core.console.ConsoleColor;
+import eu.mcone.cloud.core.console.Logger;
 import lombok.Getter;
 
 import java.sql.Connection;
@@ -32,7 +34,7 @@ public class MySQL {
 
         this.ds = new HikariDataSource(config);
         this.tablePrefix = tablePrefix;
-        System.out.println("Verbunden zu Datenbank "+database);
+        Logger.log(getClass(), ConsoleColor.GREEN+"Verbunden zu Datenbank "+database);
 	}
 
 	public void close() {

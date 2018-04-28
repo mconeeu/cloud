@@ -23,41 +23,44 @@ public class ServerBootstrap {
     @Getter
     private int port;
 
+
     public ServerBootstrap(int port) {
         this.port = port;
 
-        EventLoopGroup bossGroup = EPOLL ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
-        EventLoopGroup workerGroup = EPOLL ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
+        new Thread(() -> {
+            EventLoopGroup bossGroup = EPOLL ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
+            EventLoopGroup workerGroup = EPOLL ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
 
-        try {
-            io.netty.bootstrap.ServerBootstrap b = new io.netty.bootstrap.ServerBootstrap();
-            b.group(bossGroup, workerGroup)
-                    .channel(EPOLL ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new Decoder());
-                            ch.pipeline().addLast(new Encoder());
-                            ch.pipeline().addLast(new ChannelPacketHandler());
-                        }
-                    })
-                    .option(ChannelOption.SO_BACKLOG, 128)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
+            try {
+                io.netty.bootstrap.ServerBootstrap b = new io.netty.bootstrap.ServerBootstrap();
+                b.group(bossGroup, workerGroup)
+                        .channel(EPOLL ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
+                        .childHandler(new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            public void initChannel(SocketChannel ch) throws Exception {
+                                ch.pipeline().addLast(new Decoder());
+                                ch.pipeline().addLast(new Encoder());
+                                ch.pipeline().addLast(new ChannelPacketHandler());
+                            }
+                        })
+                        .option(ChannelOption.SO_BACKLOG, 128)
+                        .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-            ChannelFuture f = b.bind(port).sync().addListener((ChannelFutureListener) channelFuture -> {
-                if (channelFuture.isSuccess()) {
-                    Logger.log(getClass(), "Netty is listening @ Port:" + port);
-                } else {
-                    Logger.log(getClass(), "Failed to bind @ Port:" + port);
-                }
-            }).addListener(ChannelFutureListener.CLOSE_ON_FAILURE).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-            f.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-        }
+                ChannelFuture f = b.bind(port).sync().addListener((ChannelFutureListener) channelFuture -> {
+                    if (channelFuture.isSuccess()) {
+                        Logger.log(getClass(), "Netty is listening @ Port:" + port);
+                    } else {
+                        Logger.log(getClass(), "Failed to bind @ Port:" + port);
+                    }
+                }).addListener(ChannelFutureListener.CLOSE_ON_FAILURE).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+                f.channel().closeFuture().sync();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                workerGroup.shutdownGracefully();
+                bossGroup.shutdownGracefully();
+            }
+        }).start();
     }
 
 

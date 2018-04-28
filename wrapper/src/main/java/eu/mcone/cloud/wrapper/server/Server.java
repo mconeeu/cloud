@@ -92,11 +92,15 @@ public abstract class Server {
                     for (ServerProperties.PluginDownload download : properties.getPlugins()) {
                         File plugin = new JenkinsDownloader(JenkinsDownloader.CiServer.valueOf(download.getCiServer())).getJenkinsArtifact(download.getJob(), download.getArtifact());
 
-                        Logger.log(getClass(), "["+info.getName()+"] Implementing Plugin "+download.getJob()+":"+download.getArtifact());
-                        FileUtils.copyFile(
-                                plugin,
-                                new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName())
-                        );
+                        if (plugin != null) {
+                            Logger.log(getClass(), "[" + info.getName() + "] Implementing Plugin " + download.getJob() + ":" + download.getArtifact());
+                            FileUtils.copyFile(
+                                    plugin,
+                                    new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName())
+                            );
+                        } else {
+                            Logger.log(getClass(), "[" + info.getName() + "] Plugin "+download.getJob()+":"+download.getArtifact()+" could not be found. Aborting download...");
+                        }
                     }
 
                     JsonArray worldArray = new JsonArray();
@@ -120,7 +124,7 @@ public abstract class Server {
                 Logger.log(getClass(), "Implementing Cloud-Plugin");
                 FileUtils.copyFile(
                         //new JenkinsDownloader(JenkinsDownloader.CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "plugin"),
-                        new File("D:\\Rufus Maiwald\\Documents\\Java\\Projekte\\mc1cloud\\out\\artifacts\\plugin_jar\\plugin.jar"),
+                        new File("D:\\Rufus Maiwald\\Documents\\Java\\Projekte\\mc1cloud\\plugin\\target\\plugin-1.1.0-SNAPSHOT-shaded.jar"),
                         new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
                 );
 
@@ -143,6 +147,7 @@ public abstract class Server {
 
                 if (state.equals(ServerState.WAITING)) {
                     Logger.log(getClass(), "["+info.getName()+"] Server seems to be crashed! Restarting...");
+                    state = ServerState.OFFLINE;
                     start();
                 } else if (state.equals(ServerState.STARTING)) {
                     Logger.err(getClass(), "["+info.getName()+"] Server crashed while starting! Fix this problem before starting it again!");
