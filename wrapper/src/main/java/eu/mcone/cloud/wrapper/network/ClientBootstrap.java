@@ -12,6 +12,7 @@ import eu.mcone.cloud.wrapper.WrapperServer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -37,7 +38,7 @@ public class ClientBootstrap {
 
     private void tryConnect() {
         WrapperServer.getInstance().getThreadPool().execute(() -> {
-            EventLoopGroup workerGroup = /*EPOLL ? new EpollEventLoopGroup(4) : */new NioEventLoopGroup(4);
+            EventLoopGroup workerGroup = EPOLL ? new EpollEventLoopGroup(4) :new NioEventLoopGroup(4);
 
             try {
                 Bootstrap bootstrap = new Bootstrap();
