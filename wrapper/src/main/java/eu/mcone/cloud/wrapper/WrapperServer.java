@@ -113,8 +113,7 @@ public class WrapperServer {
         }
 
         Logger.log("Enable progress", "Trying to connect to master...");
-        //nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), config.getConfig().getInt("master-port"));
-        nettyBootstrap = new ClientBootstrap("213.202.245.107", 4567);
+        nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), config.getConfig().getInt("master-port"));
 
         Logger.log("Enable progress", ConsoleColor.GREEN+"Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
     }
