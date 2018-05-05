@@ -28,7 +28,7 @@ public abstract class CloudAPI {
         }
     }
 
-    public abstract Plugin getPlugin();
+    public abstract CloudPlugin getPlugin();
 
     public abstract String getHostname();
 

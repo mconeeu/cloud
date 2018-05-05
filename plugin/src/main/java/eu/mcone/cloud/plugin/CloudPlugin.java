@@ -6,7 +6,6 @@
 package eu.mcone.cloud.plugin;
 
 import eu.mcone.cloud.api.plugin.CloudAPI;
-import eu.mcone.cloud.api.plugin.Plugin;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.world.CloudWorld;
@@ -27,7 +26,7 @@ import java.util.UUID;
 public class CloudPlugin extends CloudAPI {
 
     @Getter
-    private Plugin plugin;
+    private eu.mcone.cloud.api.plugin.CloudPlugin plugin;
     @Getter
     private ClientBootstrap nettyBootstrap;
     @Getter @Setter
@@ -43,7 +42,7 @@ public class CloudPlugin extends CloudAPI {
     @Getter
     private int port;
 
-    public CloudPlugin(Plugin plugin) {
+    public CloudPlugin(eu.mcone.cloud.api.plugin.CloudPlugin plugin) {
         setInstance(this);
         this.plugin = plugin;
         this.loadedWorlds = new ArrayList<>();

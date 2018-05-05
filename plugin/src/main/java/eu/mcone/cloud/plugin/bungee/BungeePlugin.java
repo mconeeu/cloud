@@ -5,12 +5,14 @@
 
 package eu.mcone.cloud.plugin.bungee;
 
+import eu.mcone.cloud.api.plugin.bungee.BungeeCloudPlugin;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import eu.mcone.cloud.plugin.bungee.server.ReconnectHandler;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.plugin.Plugin;
 
-public class BungeePlugin extends Plugin implements eu.mcone.cloud.api.plugin.Plugin {
+public class BungeePlugin extends Plugin implements BungeeCloudPlugin {
 
     private CloudPlugin instance;
 
@@ -39,5 +41,10 @@ public class BungeePlugin extends Plugin implements eu.mcone.cloud.api.plugin.Pl
     @Override
     public int getPlayerCount() {
         return ProxyServer.getInstance().getOnlineCount();
+    }
+
+    @Override
+    public ServerInfo getFallbackServer() {
+        return ((ReconnectHandler) ProxyServer.getInstance().getReconnectHandler()).getFallbackServer();
     }
 }

@@ -33,20 +33,8 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>eu.mcone.cloud.master.MasterServer</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.1</version>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -55,6 +43,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>eu.mcone.cloud.master.MasterServer</mainClass>
+                        </transformer>
+                    </transformers>
+                    <shadedArtifactAttached>false</shadedArtifactAttached>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.projectlombok</groupId>

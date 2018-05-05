@@ -37,7 +37,7 @@ public class ReconnectHandler implements net.md_5.bungee.api.ReconnectHandler {
     @Override
     public void close() {}
 
-    private static ServerInfo getFallbackServer() {
+    public ServerInfo getFallbackServer() {
         Map<ServerInfo, Integer> servers = new HashMap<>();
 
         for (ServerInfo s : ProxyServer.getInstance().getServers().values()) {

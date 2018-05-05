@@ -59,6 +59,8 @@
         <module>core</module>
         <module>plugin</module>
         <module>plugin-api</module>
+        <module>plugin-api-bungee</module>
+        <module>plugin-api-bukkit</module>
     </modules>
 
     <dependencies>

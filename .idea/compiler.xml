@@ -15,6 +15,8 @@
         <module name="mcone-cloud-wrapper" />
         <module name="plugin" />
         <module name="plugin-api" />
+        <module name="plugin-api-bukkit" />
+        <module name="plugin-api-bungee" />
         <module name="wrapper" />
       </profile>
     </annotationProcessing>
@@ -29,6 +31,8 @@
       <module name="mcone-cloud-wrapper" target="1.8" />
       <module name="plugin" target="1.8" />
       <module name="plugin-api" target="1.8" />
+      <module name="plugin-api-bukkit" target="1.8" />
+      <module name="plugin-api-bungee" target="1.8" />
       <module name="wrapper" target="1.8" />
     </bytecodeTargetLevel>
   </component>

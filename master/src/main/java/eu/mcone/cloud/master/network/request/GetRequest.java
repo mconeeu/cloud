@@ -7,8 +7,11 @@ package eu.mcone.cloud.master.network.request;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import eu.mcone.cloud.core.api.CloudServer;
+import eu.mcone.cloud.core.api.CloudTemplate;
+import eu.mcone.cloud.core.api.CloudWrapper;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.cloud.master.network.request.pojo.Master;
+import eu.mcone.cloud.core.api.CloudMaster;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
@@ -29,19 +32,19 @@ public class GetRequest {
     }
 
     public String all() {
-        List<eu.mcone.cloud.master.network.request.pojo.Template> templates = new ArrayList<>();
-        List<eu.mcone.cloud.master.network.request.pojo.Server> servers = new ArrayList<>();
-        List<eu.mcone.cloud.master.network.request.pojo.Wrapper> wrappers = new ArrayList<>();
+        List<CloudTemplate> templates = new ArrayList<>();
+        List<CloudServer> servers = new ArrayList<>();
+        List<CloudWrapper> wrappers = new ArrayList<>();
 
         for (Template t : MasterServer.getInstance().getTemplates()) {
             List<String> tServers = new ArrayList<>();
 
             for (Server ser : t.getServers()) {
-                servers.add(new eu.mcone.cloud.master.network.request.pojo.Server(ser.getInfo().getName(), ser.getInfo().getTemplateName(), ser.getWrapper().getUuid().toString(), ser.getChannel().toString(), ser.getState().toString(), ser.getInfo().getVersion().toString(), ser.getInfo().getPort(), ser.getPlayerCount(), ser.getInfo().getMaxPlayers(), ser.getInfo().getRam()));
+                servers.add(new CloudServer(ser.getInfo().getName(), ser.getInfo().getTemplateName(), ser.getWrapper().getUuid().toString(), ser.getChannel().toString(), ser.getState().toString(), ser.getInfo().getVersion().toString(), ser.getInfo().getPort(), ser.getPlayerCount(), ser.getInfo().getMaxPlayers(), ser.getInfo().getRam()));
                 tServers.add(ser.getInfo().getUuid().toString());
             }
 
-            templates.add(new eu.mcone.cloud.master.network.request.pojo.Template(t.getName(), t.getServers().size(), t.getMaxPlayers(), t.getMin(), t.getMax(), t.getEmptyservers(), tServers));
+            templates.add(new CloudTemplate(t.getName(), t.getServers().size(), t.getMaxPlayers(), t.getMin(), t.getMax(), t.getEmptyservers(), tServers));
         }
 
         for (Wrapper w : MasterServer.getInstance().getWrappers()) {
@@ -51,10 +54,10 @@ public class GetRequest {
                 wServers.add(ser.getInfo().getUuid().toString());
             }
 
-            wrappers.add(new eu.mcone.cloud.master.network.request.pojo.Wrapper(w.getUuid().toString(), w.getChannel().toString(), w.getRam(), w.getRamInUse(), w.isBusy(), wServers));
+            wrappers.add(new CloudWrapper(w.getUuid().toString(), w.getChannel().toString(), w.getRam(), w.getRamInUse(), w.isBusy(), wServers));
         }
 
-        return new Gson().toJson(new Master(templates, wrappers, servers));
+        return new Gson().toJson(new CloudMaster(templates, wrappers, servers));
     }
 
     public String log() {

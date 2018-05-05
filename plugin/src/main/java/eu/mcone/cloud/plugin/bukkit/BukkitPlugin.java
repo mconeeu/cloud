@@ -7,13 +7,13 @@ package eu.mcone.cloud.plugin.bukkit;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import eu.mcone.cloud.api.plugin.bukkit.BukkitCloudPlugin;
 import eu.mcone.cloud.core.server.world.CloudWorld;
 import eu.mcone.cloud.plugin.CloudPlugin;
-import eu.mcone.cloud.api.plugin.Plugin;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class BukkitPlugin extends JavaPlugin implements Plugin {
+public class BukkitPlugin extends JavaPlugin implements BukkitCloudPlugin {
 
     private CloudPlugin instance;
 
@@ -64,4 +64,5 @@ public class BukkitPlugin extends JavaPlugin implements Plugin {
     public int getPlayerCount() {
         return Bukkit.getOnlinePlayers().size();
     }
+
 }

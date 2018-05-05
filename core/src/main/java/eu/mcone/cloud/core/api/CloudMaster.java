@@ -3,23 +3,17 @@
  *  You are not allowed to decompile the code.
  */
 
-package eu.mcone.cloud.master.network.request.pojo;
+package eu.mcone.cloud.core.api;
 
 import lombok.AllArgsConstructor;
 
 import java.util.List;
 
 @AllArgsConstructor
-public class Wrapper {
+public class CloudMaster {
 
-    String uuid;
-    String channel;
-
-    long ram;
-    long ramInUse;
-
-    boolean busy;
-
-    List<String> servers;
+    List<CloudTemplate> templates;
+    List<CloudWrapper> wrappers;
+    List<CloudServer> servers;
 
 }

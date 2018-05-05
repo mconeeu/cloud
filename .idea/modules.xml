@@ -7,6 +7,8 @@
       <module fileurl="file://$PROJECT_DIR$/mcone-cloud.iml" filepath="$PROJECT_DIR$/mcone-cloud.iml" />
       <module fileurl="file://$PROJECT_DIR$/plugin/plugin.iml" filepath="$PROJECT_DIR$/plugin/plugin.iml" />
       <module fileurl="file://$PROJECT_DIR$/plugin-api/plugin-api.iml" filepath="$PROJECT_DIR$/plugin-api/plugin-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugin-api-bukkit/plugin-api-bukkit.iml" filepath="$PROJECT_DIR$/plugin-api-bukkit/plugin-api-bukkit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/plugin-api-bungee/plugin-api-bungee.iml" filepath="$PROJECT_DIR$/plugin-api-bungee/plugin-api-bungee.iml" />
       <module fileurl="file://$PROJECT_DIR$/wrapper/wrapper.iml" filepath="$PROJECT_DIR$/wrapper/wrapper.iml" />
     </modules>
   </component>
