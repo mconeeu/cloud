@@ -7,20 +7,19 @@ package eu.mcone.cloud.master.network.request.pojo;
 
 import lombok.AllArgsConstructor;
 
+import java.util.List;
+
 @AllArgsConstructor
-public class Server {
+public class Template {
 
     String name;
-    String template;
-    String wrapper;
-    String hostname;
-    String state;
-    String version;
 
-    int port;
-    int onlinePlayers;
-    int playerCount;
+    int serverCount;
+    int maxPlayers;
+    int min;
+    int max;
+    int emptyservers;
 
-    long ram;
+    List<String> servers;
 
 }

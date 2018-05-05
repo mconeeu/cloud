@@ -3,12 +3,8 @@
  *  You are not allowed to decompile the code.
  */
 
-package eu.mcone.cloud.api.plugin;
+package eu.mcone.cloud.core.mysql;
 
-public interface Plugin {
-
-    void runAsync(Runnable runnable);
-
-    int getPlayerCount();
-
+public interface CallbackResult<rs> {
+    Object run(rs rs);
 }

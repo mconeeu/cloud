@@ -85,18 +85,16 @@ public class WrapperServer {
         Logger.log("Enable progress", ConsoleColor.CYAN+"Welcome to mc1cloud. Wrapper is starting...");
 
         Logger.log("Enable progress", "Connecting to Database...");
-        mySQL = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "cloud-system", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudwrapper");
+        mySQL = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "mc1cloud", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudwrapper");
         createMySQLTables(mySQL);
 
         config = new CloudConfig(new File(fileManager.getHomeDir()+File.separator+"config.yml"), "jenkins", "worlds");
         try {
             wrapperUuid = UUID.fromString(config.getConfig().getString("uuid"));
-            Logger.log("Enable progress", "Got wrapper UUID '"+wrapperUuid+"' and Master IP from config...");
+            Logger.log("Enable progress", "Got wrapper UUID '"+wrapperUuid+"' from config...");
         } catch (IllegalArgumentException e) {
             UUID wrapperUuid = UUID.randomUUID();
             config.getConfig().set("uuid", wrapperUuid.toString());
-            config.getConfig().set("master-hostname", "localhost");
-            config.getConfig().set("master-port", 4567);
             config.save();
 
             Logger.log("Enable progress", "Initialising new Wrapper with UUID '"+wrapperUuid+"'...");
@@ -113,7 +111,7 @@ public class WrapperServer {
         }
 
         Logger.log("Enable progress", "Trying to connect to master...");
-        nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), config.getConfig().getInt("master-port"));
+        nettyBootstrap = new ClientBootstrap("localhost", 4567);
 
         Logger.log("Enable progress", ConsoleColor.GREEN+"Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
     }

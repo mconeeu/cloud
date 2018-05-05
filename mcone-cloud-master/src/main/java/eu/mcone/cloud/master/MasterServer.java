@@ -53,7 +53,7 @@ public class MasterServer {
 
         Logger.log("Enable progress", ConsoleColor.CYAN+"Welcome to mc1cloud. CloudMaster is starting...");
         Logger.log("Enable progress", "Connecting to Database...");
-        mysql = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "cloud-system", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudmaster");
+        mysql = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "mc1cloud", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudmaster");
 
         Logger.log("Enable progress", "Creating necessary tables if not exists...");
         createMySQLTables(mysql);
