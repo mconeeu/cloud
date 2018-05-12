@@ -10,9 +10,9 @@ import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.core.file.UnZip;
 import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacket;
+import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
-import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.download.JenkinsDownloader;
 import eu.mcone.cloud.wrapper.download.WorldDownloader;
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
-import java.sql.Wrapper;
 
 public abstract class Server {
 
@@ -107,15 +106,6 @@ public abstract class Server {
                         worldArray.add(WrapperServer.getInstance().getGson().toJsonTree(world, CloudWorld.class));
 
                         Logger.log(getClass(), "["+info.getName()+"] Implementing World " + w);
-
-                        System.out.println("World-Path: " + world.getFilePath());
-                        System.out.println("World-Difficulty: " + world.getDifficulty());
-                        System.out.println("World-Environmen: " + world.getEnvironment());
-                        System.out.println("World-Generator: " + world.getGenerator());
-                        System.out.println("World-Name: " + world.getName());
-                        System.out.println("World-Properties: " + world.getProperties());
-                        System.out.println("World-SpawnLocation: " + world.getSpawnLocation());
-                        System.out.println("World-WorldType: " + world.getWorldType());
                         new UnZip(
                                 world.getFilePath(),
                                 serverDir.getPath() + File.separator + w
