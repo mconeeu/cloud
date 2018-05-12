@@ -108,14 +108,6 @@ public abstract class Server {
 
                         Logger.log(getClass(), "["+info.getName()+"] Implementing World " + w);
 
-                        System.out.println("World-Path: " + world.getFilePath());
-                        System.out.println("World-Difficulty: " + world.getDifficulty());
-                        System.out.println("World-Environmen: " + world.getEnvironment());
-                        System.out.println("World-Generator: " + world.getGenerator());
-                        System.out.println("World-Name: " + world.getName());
-                        System.out.println("World-Properties: " + world.getProperties());
-                        System.out.println("World-SpawnLocation: " + world.getSpawnLocation());
-                        System.out.println("World-WorldType: " + world.getWorldType());
                         new UnZip(
                                 world.getFilePath(),
                                 serverDir.getPath() + File.separator + w

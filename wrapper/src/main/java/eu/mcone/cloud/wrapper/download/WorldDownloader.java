@@ -27,7 +27,7 @@ public class WorldDownloader {
     }
 
     public CloudWorld downloadWorld() {
-        return (CloudWorld) WrapperServer.getInstance().getMySQL().select("SELECT `build`, `world_type`, `environment`, `difficulty`, `spawn_location`, `generator`, `properties` FROM `"+WrapperServer.getInstance().getMySQL().getTablePrefix()+"_worlds` WHERE `name`='"+ name +"'", rs -> {
+        return (CloudWorld) WrapperServer.getInstance().getMySQL().select("SELECT `build`, `world_type`, `environment`, `generator`, generator_settings, generate_structures FROM `"+WrapperServer.getInstance().getMySQL().getTablePrefix()+"_worlds` WHERE `name`='"+ name +"'", rs -> {
             try {
                 if (rs.next()) {
                     File zipFile = new File(worldPath + File.separator + name + ".zip");
