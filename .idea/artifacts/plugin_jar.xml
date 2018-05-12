@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" build-on-make="true" name="plugin:jar">
-    <output-path />
+    <output-path>$PROJECT_DIR$/../../../servers/test-1/plugins</output-path>
     <root id="archive" name="plugin.jar">
       <element id="module-output" name="plugin" />
       <element id="module-output" name="core" />

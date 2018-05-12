@@ -13,6 +13,6 @@ import lombok.Setter;
 @Getter @Setter
 public class WorldProperties {
 
-    private boolean pvp, generateStructures, allowAnimals, allowMonsters, keepSpawnInMemory;
+    private boolean autoSave, pvp, allowAnimals, allowMonsters, keepSpawnInMemory;
 
 }
