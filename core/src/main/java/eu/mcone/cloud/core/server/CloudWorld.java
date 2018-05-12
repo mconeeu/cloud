@@ -3,7 +3,7 @@
  *  You are not allowed to decompile the code.
  */
 
-package eu.mcone.cloud.core.server.world;
+package eu.mcone.cloud.core.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter @Setter
 public class CloudWorld {
 
-    private String name, worldType, environment, difficulty, spawnLocation, generator, filePath;
-    private WorldProperties properties;
+    private String name, worldType, environment, generator, generatorSettings, filePath;
+    private boolean generateStructures;
 
 }

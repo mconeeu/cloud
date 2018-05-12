@@ -3,7 +3,7 @@
  *  You are not allowed to decompile the code.
  */
 
-import com.google.gson.Gson;
+import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.server.ServerProperties;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 public class ServerPropertiesGsonTest {
 
     public static void main(String[] args) {
-        String json = new Gson().toJson(
+        String json = WrapperServer.getInstance().getGson().toJson(
                 new ServerProperties(
                         new ArrayList<>(Arrays.asList(
                                 new ServerProperties.PluginDownload("test", "test", "test"),
@@ -43,7 +43,7 @@ public class ServerPropertiesGsonTest {
         );
         System.out.println(json);
 
-        ServerProperties properties = new Gson().fromJson(json, ServerProperties.class);
+        ServerProperties properties = WrapperServer.getInstance().getGson().fromJson(json, ServerProperties.class);
         System.out.println(properties.getPlugins() + "\n" +
                 properties.getWorlds() + "\n" +
                 properties.getConfigs()

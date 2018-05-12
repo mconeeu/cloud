@@ -7,7 +7,7 @@ package eu.mcone.cloud.api.plugin;
 
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.server.ServerState;
-import eu.mcone.cloud.core.server.world.CloudWorld;
+import eu.mcone.cloud.core.server.CloudWorld;
 import lombok.Getter;
 
 import java.util.List;

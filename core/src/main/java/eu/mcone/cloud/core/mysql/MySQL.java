@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.core.mysql;
 
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.Logger;
@@ -23,22 +22,22 @@ public class MySQL {
     private String tablePrefix;
 	
 	public MySQL(String host, int port, String database, String username, String password, String tablePrefix) {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://"+host+":"+port+"/"+database);
-        config.setUsername(username);
-        config.setPassword(password);
-        config.setMaximumPoolSize(2);
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        ds = new HikariDataSource();
+        ds.setMaximumPoolSize(2);
+        ds.setDriverClassName("org.mariadb.jdbc.Driver");
+        ds.setJdbcUrl("jdbc:mariadb://"+host+":"+port+"/"+database+"?autoReconnect=true");
+        ds.addDataSourceProperty("user", username);
+        ds.addDataSourceProperty("password", password);
 
-        this.ds = new HikariDataSource(config);
+        //config.addDataSourceProperty("cachePrepStmts", "true");
+        //config.addDataSourceProperty("prepStmtCacheSize", "250");
+        //config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         this.tablePrefix = tablePrefix;
-        Logger.log(getClass(), ConsoleColor.GREEN+"Verbunden zu Datenbank "+database);
+        Logger.log(getClass(), ConsoleColor.GREEN+"Verbunden zu Datenbank "+ds.getJdbcUrl());
 	}
 
-	public void close() {
-	    this.ds.close();
+    public void close() {
+        this.ds.close();
     }
 
     public void update(String qry, Object... parameters) {
@@ -58,7 +57,7 @@ public class MySQL {
         }
     }
 
-    public int updateWithGetID(String qry, Object... parameters){
+    public int updateWithGetId(String qry, Object... parameters){
         int id = -1;
         try{
             Connection con = this.ds.getConnection();
@@ -127,7 +126,7 @@ public class MySQL {
     }
 
     public Object select(String qry, CallbackResult<ResultSet> cb){
-	    Object o = null;
+        Object o = null;
         try {
             final Connection con = this.ds.getConnection();
 
@@ -148,7 +147,7 @@ public class MySQL {
     }
 
     public Connection getConnection() {
-	    Connection result = null;
+        Connection result = null;
         try {
             result = ds.getConnection();
         } catch (SQLException e) {

@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.wrapper;
 
+import com.google.gson.Gson;
 import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.ConsoleReader;
 import eu.mcone.cloud.core.console.Logger;
@@ -49,6 +50,8 @@ public class WrapperServer {
     private ClientBootstrap nettyBootstrap;
     @Getter
     private MySQL mySQL;
+    @Getter
+    private Gson gson;
     @Getter @Setter
     private Channel channel;
     @Getter
@@ -79,6 +82,8 @@ public class WrapperServer {
 
         consoleReader = new ConsoleReader();
         consoleReader.registerCommand(new CommandExecutor());
+
+        gson = new Gson();
 
         threadPool = Executors.newCachedThreadPool();
 

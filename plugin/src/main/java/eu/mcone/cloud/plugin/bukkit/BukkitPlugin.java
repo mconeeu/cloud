@@ -5,12 +5,13 @@
 
 package eu.mcone.cloud.plugin.bukkit;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
 import eu.mcone.cloud.api.plugin.bukkit.BukkitCloudPlugin;
-import eu.mcone.cloud.core.server.world.CloudWorld;
+import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.plugin.CloudPlugin;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BukkitPlugin extends JavaPlugin implements BukkitCloudPlugin {
@@ -26,24 +27,14 @@ public class BukkitPlugin extends JavaPlugin implements BukkitCloudPlugin {
                 WorldCreator wc = new WorldCreator(world.getName())
                         .environment(World.Environment.valueOf(world.getEnvironment()))
                         .type(WorldType.valueOf(world.getWorldType()))
-                        .generateStructures(world.getProperties().isGenerateStructures());
+                        .generateStructures(world.isGenerateStructures());
 
-                if (world.getGenerator() != null) wc.generator(world.getGenerator());
-
-                World w = wc.createWorld();
-                w.setDifficulty(Difficulty.valueOf(world.getDifficulty()));
-                JsonArray loc = new JsonParser().parse(world.getSpawnLocation()).getAsJsonArray();
-                w.setSpawnLocation(loc.get(0).getAsInt(), loc.get(1).getAsInt(), loc.get(2).getAsInt());
-                w.setPVP(world.getProperties().isPvp());
-                w.setKeepSpawnInMemory(world.getProperties().isKeepSpawnInMemory());
-
-                if (!world.getProperties().isAllowAnimals()) {
-                    w.setAnimalSpawnLimit(0);
-                    w.setWaterAnimalSpawnLimit(0);
+                if (world.getGenerator() != null) {
+                    wc.generator(world.getGenerator());
+                    if (world.getGeneratorSettings() != null) wc.generatorSettings(world.getGeneratorSettings());
                 }
-                if (!world.getProperties().isAllowMonsters()) {
-                    w.setMonsterSpawnLimit(0);
-                }
+
+                wc.createWorld();
             }
         }
 

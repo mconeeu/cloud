@@ -1,4 +1,4 @@
-name: MCONE-Cloudplugin
+name: MCONE-CloudPlugin
 authors: [Rufus Maiwald, Dominik Lippl]
 version: 1.2.0-SNAPSHOT
 main: eu.mcone.cloud.plugin.bukkit.BukkitPlugin

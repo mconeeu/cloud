@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.wrapper.server;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
@@ -13,7 +12,7 @@ import eu.mcone.cloud.core.file.UnZip;
 import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
-import eu.mcone.cloud.core.server.world.CloudWorld;
+import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.download.JenkinsDownloader;
 import eu.mcone.cloud.wrapper.download.WorldDownloader;
@@ -32,7 +31,6 @@ import java.net.Socket;
 public abstract class Server {
 
     private static final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
-    protected Gson gson;
 
     @Getter @Setter
     protected ServerInfo info;
@@ -50,9 +48,8 @@ public abstract class Server {
     private ConsoleInputReader reader;
 
     public Server(ServerInfo info) {
-        this.gson = new Gson();
         this.info = info;
-        this.properties = gson.fromJson(info.getProperties(), ServerProperties.class);
+        this.properties = WrapperServer.getInstance().getGson().fromJson(info.getProperties(), ServerProperties.class);
 
         if (info.isStaticServer()) {
             this.serverDir = new File(homeDir + File.separator + "staticservers" + File.separator + info.getName());
@@ -106,7 +103,7 @@ public abstract class Server {
                     JsonArray worldArray = new JsonArray();
                     for (String w : properties.getWorlds()) {
                         CloudWorld world = new WorldDownloader(w).downloadWorld();
-                        worldArray.add(gson.toJsonTree(world, CloudWorld.class));
+                        worldArray.add(WrapperServer.getInstance().getGson().toJsonTree(world, CloudWorld.class));
 
                         Logger.log(getClass(), "["+info.getName()+"] Implementing World "+w);
                         new UnZip(
@@ -116,7 +113,7 @@ public abstract class Server {
                     }
 
                     worldFile.createNewFile();
-                    FileUtils.writeStringToFile(worldFile, gson.toJson(worldArray));
+                    FileUtils.writeStringToFile(worldFile, WrapperServer.getInstance().getGson().toJson(worldArray));
                 } else {
                     if (!serverDir.exists()) serverDir.mkdir();
                 }

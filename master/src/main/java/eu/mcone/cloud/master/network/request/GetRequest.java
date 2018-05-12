@@ -5,13 +5,12 @@
 
 package eu.mcone.cloud.master.network.request;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import eu.mcone.cloud.core.api.CloudMaster;
 import eu.mcone.cloud.core.api.CloudServer;
 import eu.mcone.cloud.core.api.CloudTemplate;
 import eu.mcone.cloud.core.api.CloudWrapper;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.cloud.core.api.CloudMaster;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
@@ -57,7 +56,7 @@ public class GetRequest {
             wrappers.add(new CloudWrapper(w.getUuid().toString(), w.getChannel().toString(), w.getRam(), w.getRamInUse(), w.isBusy(), wServers));
         }
 
-        return new Gson().toJson(new CloudMaster(templates, wrappers, servers));
+        return MasterServer.getInstance().getGson().toJson(new CloudMaster(templates, wrappers, servers));
     }
 
     public String log() {
@@ -65,7 +64,7 @@ public class GetRequest {
         jObject.addProperty("uuid", server.getInfo().getUuid().toString());
         jObject.addProperty("state", server.getState().toString());
 
-        return new Gson().toJson(jObject);
+        return MasterServer.getInstance().getGson().toJson(jObject);
     }
 
 }

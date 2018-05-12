@@ -1,4 +1,4 @@
-name: MCONE-Cloudplugin
+name: MCONE-CloudPlugin
 main: eu.mcone.cloud.plugin.bungee.BungeePlugin
 version: 1.0.0-SNAPSHOT
 authors: [Rufus Maiwald, Dominik Lippl]

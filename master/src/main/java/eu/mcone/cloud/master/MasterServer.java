@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.master;
 
+import com.google.gson.Gson;
 import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.ConsoleReader;
 import eu.mcone.cloud.core.console.Logger;
@@ -37,6 +38,8 @@ public class MasterServer {
     @Getter
     private StaticServerManager staticServerManager;
     @Getter
+    private Gson gson;
+    @Getter
     private List<Template> templates = new ArrayList<>();
     @Getter
     private List<Wrapper> wrappers = new ArrayList<>();
@@ -50,6 +53,7 @@ public class MasterServer {
 
         consoleReader = new ConsoleReader();
         consoleReader.registerCommand(new CommandExecutor());
+        gson = new Gson();
 
         Logger.log("Enable progress", ConsoleColor.CYAN+"Welcome to mc1cloud. CloudMaster is starting...");
         Logger.log("Enable progress", "Connecting to Database...");

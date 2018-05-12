@@ -5,11 +5,9 @@
 
 package eu.mcone.cloud.wrapper.download;
 
-import com.google.gson.Gson;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
-import eu.mcone.cloud.core.server.world.CloudWorld;
-import eu.mcone.cloud.core.server.world.WorldProperties;
+import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import lombok.Getter;
 
@@ -60,11 +58,10 @@ public class WorldDownloader {
                             name,
                             rs.getString("world_type"),
                             rs.getString("environment"),
-                            rs.getString("difficulty"),
-                            rs.getString("spawn_location"),
                             rs.getString("generator"),
+                            rs.getString("generator_settings"),
                             zipFile.getPath(),
-                            new Gson().fromJson(rs.getString("properties"), WorldProperties.class)
+                            rs.getBoolean("generate_structures")
                     );
                 } else {
                     throw new CloudException("World "+name+" could not be found in Database!");
