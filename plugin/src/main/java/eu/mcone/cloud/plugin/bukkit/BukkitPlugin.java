@@ -25,8 +25,7 @@ public class BukkitPlugin extends JavaPlugin implements BukkitCloudPlugin {
             if (Bukkit.getWorld(world.getName()) == null) {
                 WorldCreator wc = new WorldCreator(world.getName())
                         .environment(World.Environment.valueOf(world.getEnvironment()))
-                        .type(WorldType.valueOf(world.getWorldType()))
-                        .generateStructures(world.getProperties().isGenerateStructures());
+                        .type(WorldType.valueOf(world.getWorldType()));
 
                 if (world.getGenerator() != null) wc.generator(world.getGenerator());
 
