@@ -32,7 +32,7 @@ public class CloudPlugin extends CloudAPI {
     @Getter @Setter
     private Channel channel;
     @Getter
-    private String name, hostname;
+    private String serverName, hostname;
     @Getter @Setter
     private ServerState serverState = ServerState.WAITING;
     @Getter
@@ -51,7 +51,7 @@ public class CloudPlugin extends CloudAPI {
             Properties ps = new Properties();
             ps.load(new InputStreamReader(Files.newInputStream(Paths.get("server.properties"))));
 
-            name = ps.getProperty("server-name");
+            serverName = ps.getProperty("server-name");
             serverUuid = UUID.fromString(ps.getProperty("server-uuid"));
             hostname = ps.getProperty("wrapper-ip");
             port = Integer.valueOf(ps.getProperty("server-port"));

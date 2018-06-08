@@ -30,6 +30,8 @@ public abstract class CloudAPI {
 
     public abstract CloudPlugin getPlugin();
 
+    public abstract String getServerName();
+
     public abstract String getHostname();
 
     public abstract ServerState getServerState();

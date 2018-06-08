@@ -10,9 +10,9 @@ import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.core.file.UnZip;
 import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacket;
+import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
-import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.download.JenkinsDownloader;
 import eu.mcone.cloud.wrapper.download.WorldDownloader;
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
-import java.sql.Wrapper;
 
 public abstract class Server {
 
@@ -123,7 +122,6 @@ public abstract class Server {
                 Logger.log(getClass(), "Implementing Cloud-Plugin");
                 FileUtils.copyFile(
                         new JenkinsDownloader(JenkinsDownloader.CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "plugin"),
-                        //new File("D:\\Rufus Maiwald\\Documents\\Java\\Projekte\\mc1cloud\\plugin\\target\\plugin-1.1.0-SNAPSHOT-shaded.jar"),
                         new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
                 );
 

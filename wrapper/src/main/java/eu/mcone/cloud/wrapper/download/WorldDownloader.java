@@ -54,6 +54,7 @@ public class WorldDownloader {
                         });
                     }
 
+                    System.out.println(zipFile.getPath());
                     return new CloudWorld(
                             name,
                             rs.getString("world_type"),

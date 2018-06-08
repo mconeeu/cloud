@@ -48,14 +48,6 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>mcone-cloud</id>
-            <name>MC ONE Repo</name>
-            <url>http://repo.mcone.eu/nexus/content/repositories/cloud/</url>
-        </repository>
-    </distributionManagement>
-
     <repositories>
         <repository>
             <id>spigot-repo</id>
