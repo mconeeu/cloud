@@ -21,23 +21,6 @@ public class BukkitPlugin extends JavaPlugin implements BukkitCloudPlugin {
     @Override
     public void onEnable() {
         instance = new CloudPlugin(this);
-
-        for (CloudWorld world : instance.getLoadedWorlds()) {
-            if (Bukkit.getWorld(world.getName()) == null) {
-                WorldCreator wc = new WorldCreator(world.getName())
-                        .environment(World.Environment.valueOf(world.getEnvironment()))
-                        .type(WorldType.valueOf(world.getWorldType()))
-                        .generateStructures(world.isGenerateStructures());
-
-                if (world.getGenerator() != null) {
-                    wc.generator(world.getGenerator());
-                    if (world.getGeneratorSettings() != null) wc.generatorSettings(world.getGeneratorSettings());
-                }
-
-                wc.createWorld();
-            }
-        }
-
         getServer().getPluginManager().registerEvents(new PlayerListener(this.instance), this);
     }
 
