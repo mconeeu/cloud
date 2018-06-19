@@ -52,7 +52,8 @@ public class WrapperServer {
     private MySQL mySQL;
     @Getter
     private Gson gson;
-    @Getter @Setter
+    @Getter
+    @Setter
     private Channel channel;
     @Getter
     private boolean shutdown = false;
@@ -70,14 +71,14 @@ public class WrapperServer {
 
         this.ram = Runtime.getRuntime().maxMemory();
         this.ram /= (1024 * 1024);
-        Logger.log(getClass(), ram+"M RAM");
+        Logger.log(getClass(), ram + "M RAM");
 
         fileManager = new FileManager();
         fileManager.createHomeDir("templates");
         fileManager.createHomeDir("servers");
         fileManager.createHomeDir("staticservers");
         fileManager.createHomeDir("jars");
-        fileManager.createHomeDir("jars"+File.separator+"jenkins");
+        fileManager.createHomeDir("jars" + File.separator + "jenkins");
         fileManager.createHomeDir("worlds");
 
         consoleReader = new ConsoleReader();
@@ -87,16 +88,16 @@ public class WrapperServer {
 
         threadPool = Executors.newCachedThreadPool();
 
-        Logger.log("Enable progress", ConsoleColor.CYAN+"Welcome to mc1cloud. Wrapper is starting...");
+        Logger.log("Enable progress", ConsoleColor.CYAN + "Welcome to mc1cloud. Wrapper is starting...");
 
         Logger.log("Enable progress", "Connecting to Database...");
         mySQL = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "cloud-system", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudwrapper");
         createMySQLTables(mySQL);
 
-        config = new CloudConfig(new File(fileManager.getHomeDir()+File.separator+"config.yml"), "jenkins", "worlds");
+        config = new CloudConfig(new File(fileManager.getHomeDir() + File.separator + "config.yml"), "jenkins", "worlds");
         try {
             wrapperUuid = UUID.fromString(config.getConfig().getString("uuid"));
-            Logger.log("Enable progress", "Got wrapper UUID '"+wrapperUuid+"' and Master IP from config...");
+            Logger.log("Enable progress", "Got wrapper UUID '" + wrapperUuid + "' and Master IP from config...");
         } catch (IllegalArgumentException e) {
             UUID wrapperUuid = UUID.randomUUID();
             config.getConfig().set("uuid", wrapperUuid.toString());
@@ -104,14 +105,14 @@ public class WrapperServer {
             config.getConfig().set("master-port", 4567);
             config.save();
 
-            Logger.log("Enable progress", "Initialising new Wrapper with UUID '"+wrapperUuid+"'...");
+            Logger.log("Enable progress", "Initialising new Wrapper with UUID '" + wrapperUuid + "'...");
             this.wrapperUuid = wrapperUuid;
         }
 
         Logger.log("Enable progress", "Downloading missing executeables for all ServerVersions:");
         try {
             for (ServerVersion v : ServerVersion.values()) {
-                Downloader.download(v.getDownloadLink(), new File(fileManager.getHomeDir()+File.separator+"jars"+File.separator+v.toString()+".jar"));
+                Downloader.download(v.getDownloadLink(), new File(fileManager.getHomeDir() + File.separator + "jars" + File.separator + v.toString() + ".jar"));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -120,25 +121,26 @@ public class WrapperServer {
         Logger.log("Enable progress", "Trying to connect to master...");
         nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), config.getConfig().getInt("master-port"));
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
+        Logger.log("Enable progress", ConsoleColor.GREEN + "Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
     }
 
     private void createMySQLTables(MySQL mySQL) {
         mySQL.update(
-                "CREATE TABLE IF NOT EXISTS `"+mySQL.getTablePrefix()+"_worlds`" +
-                    "(" +
-                    "`id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                    "`build` int(10) NOT NULL," +
-                    "`name` VARCHAR(100) NOT NULL," +
-                    "`world_type` VARCHAR(20) NOT NULL," +
-                    "`environment` VARCHAR(20) NOT NULL," +
-                    "`difficulty` VARCHAR(20) NOT NULL," +
-                    "`spawn_location` VARCHAR(100) NOT NULL," +
-                    "`generator` VARCHAR(50)," +
-                    "`properties` VARCHAR(1000) NOT NULL," +
-                    "`bytes` longblob NOT NULL " +
-                    ")" +
-                    "ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+                "CREATE TABLE IF NOT EXISTS `" + mySQL.getTablePrefix() + "_worlds`" +
+                        "(" +
+                        "`id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+                        "`build` int(10) NOT NULL," +
+                        "`name` VARCHAR(100) NOT NULL," +
+                        "`world_type` VARCHAR(20) NOT NULL," +
+                        "`environment` VARCHAR(20) NOT NULL," +
+                        "`generator` VARCHAR(20)," +
+                        "`generator_settings` VARCHAR(100)," +
+                        "`generator_structures` VARCHAR(50)," +
+                        "`gamemode` VARCHAR(10)," +
+                        "`mode` VARCHAR(10)," +
+                        "`bytes` longblob NOT NULL " +
+                        ")" +
+                        "ENGINE=InnoDB DEFAULT CHARSET=utf8;"
         );
     }
 
@@ -208,7 +210,7 @@ public class WrapperServer {
         if (channel.isOpen()) {
             channel.writeAndFlush(packet);
         } else {
-            Logger.log(getClass(), "Cannot send packet "+packet.getClass().getSimpleName()+" to Master because channel is closed!");
+            Logger.log(getClass(), "Cannot send packet " + packet.getClass().getSimpleName() + " to Master because channel is closed!");
         }
     }
 

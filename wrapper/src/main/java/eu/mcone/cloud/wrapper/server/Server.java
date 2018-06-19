@@ -32,7 +32,8 @@ public abstract class Server {
 
     private static final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
 
-    @Getter @Setter
+    @Getter
+    @Setter
     protected ServerInfo info;
     @Getter
     protected Runtime runtime;
@@ -46,6 +47,10 @@ public abstract class Server {
     protected ServerProperties properties;
     @Getter
     private ConsoleInputReader reader;
+
+    private boolean hasGamemode;
+    private String gamemode;
+    private String mode;
 
     public Server(ServerInfo info) {
         this.info = info;
@@ -68,18 +73,18 @@ public abstract class Server {
 
     void initialise(final int port, final Class<? extends ConsoleInputReader> reader, final String[] command) {
         if (!state.equals(ServerState.OFFLINE)) {
-            Logger.err(getClass(), "["+info.getName()+"] Cannot start Server if not OFFLINE");
+            Logger.err(getClass(), "[" + info.getName() + "] Cannot start Server if not OFFLINE");
             return;
         }
 
         info.setPort(port);
 
-        Logger.log(getClass(), "["+info.getName()+"] Starting server (Version: '"+info.getVersion()+"', UUID: '" + info.getUuid() + "', Template: '" + info.getTemplateName() + "', RAM: '" + info.getRam() + "M, Port: '" + info.getPort() + "')...");
+        Logger.log(getClass(), "[" + info.getName() + "] Starting server (Version: '" + info.getVersion() + "', UUID: '" + info.getUuid() + "', Template: '" + info.getTemplateName() + "', RAM: '" + info.getRam() + "M, Port: '" + info.getPort() + "')...");
         setState(ServerState.STARTING);
 
         WrapperServer.getInstance().getThreadPool().execute(() -> {
-            final File executable = new File(homeDir+File.separator+"jars"+File.separator+info.getVersion().toString()+".jar");
-            final File worldFile = new File(serverDir+File.separator+"worlds.json");
+            final File executable = new File(homeDir + File.separator + "jars" + File.separator + info.getVersion().toString() + ".jar");
+            final File worldFile = new File(serverDir + File.separator + "worlds.json");
 
             try {
                 if (!info.isStaticServer()) {
@@ -96,25 +101,11 @@ public abstract class Server {
                                     new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName())
                             );
                         } else {
-                            Logger.log(getClass(), "[" + info.getName() + "] Plugin "+download.getJob()+":"+download.getArtifact()+" could not be found. Aborting download...");
+                            Logger.log(getClass(), "[" + info.getName() + "] Plugin " + download.getJob() + ":" + download.getArtifact() + " could not be found. Aborting download...");
                         }
                     }
 
-                    JsonArray worldArray = new JsonArray();
-                    for (String w : properties.getWorlds()) {
-                        CloudWorld world = new WorldDownloader(w).downloadWorld();
-                        worldArray.add(WrapperServer.getInstance().getGson().toJsonTree(world, CloudWorld.class));
-
-                        Logger.log(getClass(), "["+info.getName()+"] Implementing World " + w);
-
-                        new UnZip(
-                                world.getFilePath(),
-                                serverDir.getPath() + File.separator + w
-                        );
-                    }
-
-                    worldFile.createNewFile();
-                    FileUtils.writeStringToFile(worldFile, WrapperServer.getInstance().getGson().toJson(worldArray));
+                    dowloadWorlds();
                 } else {
                     if (!serverDir.exists()) serverDir.mkdir();
                 }
@@ -125,7 +116,7 @@ public abstract class Server {
                         new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
                 );
 
-                FileUtils.copyFile(executable, new File(serverDir+File.separator+"server.jar"));
+                FileUtils.copyFile(executable, new File(serverDir + File.separator + "server.jar"));
 
                 setConfig();
                 for (ServerProperties.Config config : properties.getConfigs()) {
@@ -140,19 +131,19 @@ public abstract class Server {
 
                 this.process.waitFor();
                 this.process.destroy();
-                Logger.log(getClass(), "["+info.getName()+"] Server stopped!");
+                Logger.log(getClass(), "[" + info.getName() + "] Server stopped!");
 
                 if (state.equals(ServerState.WAITING)) {
-                    Logger.log(getClass(), "["+info.getName()+"] Server seems to be crashed! Restarting...");
+                    Logger.log(getClass(), "[" + info.getName() + "] Server seems to be crashed! Restarting...");
                     state = ServerState.OFFLINE;
                     start();
                 } else if (state.equals(ServerState.STARTING)) {
-                    Logger.err(getClass(), "["+info.getName()+"] Server crashed while starting! Fix this problem before starting it again!");
+                    Logger.err(getClass(), "[" + info.getName() + "] Server crashed while starting! Fix this problem before starting it again!");
                 }
             } catch (IOException | InterruptedException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException | CloudException e) {
-                Logger.log(getClass(), "["+info.getName()+"] Could not start server:");
+                Logger.log(getClass(), "[" + info.getName() + "] Could not start server:");
                 if (e instanceof CloudException) {
-                    Logger.err(getClass(), "["+info.getName()+"] "+e.getMessage());
+                    Logger.err(getClass(), "[" + info.getName() + "] " + e.getMessage());
                     e.printStackTrace();
                     return;
                 }
@@ -160,7 +151,7 @@ public abstract class Server {
                 e.printStackTrace();
             }
         });
-        Logger.log(getClass(), "["+info.getName()+"] Server start initialised, method returned");
+        Logger.log(getClass(), "[" + info.getName() + "] Server start initialised, method returned");
     }
 
     public void restart() {
@@ -171,25 +162,25 @@ public abstract class Server {
     public void forcestop() {
         if (process != null) {
             if (process.isAlive()) {
-                Logger.log(getClass(), "["+info.getName()+"] ForceStop server " + info.getName() + "...");
+                Logger.log(getClass(), "[" + info.getName() + "] ForceStop server " + info.getName() + "...");
                 process.destroy();
                 setState(ServerState.OFFLINE);
             } else {
-                Logger.log(getClass(), "["+info.getName()+"] Could not be forcestop server because the process is dead...");
+                Logger.log(getClass(), "[" + info.getName() + "] Could not be forcestop server because the process is dead...");
             }
         } else {
-            Logger.log(getClass(), "["+info.getName()+"] Could not forcestop because server has no process...");
+            Logger.log(getClass(), "[" + info.getName() + "] Could not forcestop because server has no process...");
         }
     }
 
     public void delete() {
-        Logger.log(getClass(), "["+info.getName()+"] Deleting server...");
+        Logger.log(getClass(), "[" + info.getName() + "] Deleting server...");
         if (process.isAlive()) this.forcestop();
 
         String server_name = this.info.getName();
         WrapperServer.getInstance().getServers().remove(this);
 
-        Logger.log(getClass(), "["+info.getName()+"] Server deleted...");
+        Logger.log(getClass(), "[" + info.getName() + "] Server deleted...");
     }
 
     public void sendCommand(String command) {
@@ -197,19 +188,33 @@ public abstract class Server {
             if (process != null) {
                 if (process.isAlive()) {
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                    out.write(command+"\n");
+                    out.write(command + "\n");
                     out.flush();
 
-                    Logger.log(getClass(), "["+info.getName()+"] Sent command '" + command + "'");
+                    Logger.log(getClass(), "[" + info.getName() + "] Sent command '" + command + "'");
                 } else {
-                    Logger.err(getClass(), "["+info.getName()+"] Could not send command '" + command + "' because the process is dead...");
+                    Logger.err(getClass(), "[" + info.getName() + "] Could not send command '" + command + "' because the process is dead...");
                 }
             } else {
-                Logger.err(getClass(), "["+info.getName()+"] Could not send command '" + command + "' because server has no process...");
+                Logger.err(getClass(), "[" + info.getName() + "] Could not send command '" + command + "' because server has no process...");
             }
         } catch (IOException e) {
-            Logger.err(getClass(), "["+info.getName()+"] Could not send command '" + command + "' to the server (IOException)");
+            Logger.err(getClass(), "[" + info.getName() + "] Could not send command '" + command + "' to the server (IOException)");
             e.printStackTrace();
+        }
+    }
+
+    private void dowloadWorlds() throws IOException {
+        WorldDownloader wd = new WorldDownloader(null);
+        for (CloudWorld w : new WorldDownloader(null).downloadTemplateWorlds(info.getTemplateName())) {
+            Logger.log(getClass(), "[" + info.getName() + "] Implementing World " + w.getName());
+            new UnZip(w.getFilePath(), serverDir.getPath() + File.separator + w.getName());
+        }
+
+        for (String w : properties.getWorlds()) {
+            CloudWorld world = new WorldDownloader(w).download();
+            Logger.log(getClass(), "[" + info.getName() + "] Implementing World " + w);
+            new UnZip(world.getFilePath(), serverDir.getPath() + File.separator + w);
         }
     }
 
@@ -228,7 +233,10 @@ public abstract class Server {
         } catch (Exception e) {
             result = false;
         } finally {
-            if(s != null) try {s.close();} catch(Exception ignored){}
+            if (s != null) try {
+                s.close();
+            } catch (Exception ignored) {
+            }
         }
 
         if (result) {

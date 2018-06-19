@@ -13,7 +13,6 @@ import lombok.Setter;
 @Getter @Setter
 public class CloudWorld {
 
-    private String name, worldType, environment, generator, generatorSettings, filePath;
-    private boolean generateStructures;
+    private String name, filePath;
 
 }

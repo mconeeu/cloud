@@ -14,8 +14,11 @@ import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
 
@@ -38,12 +41,12 @@ public class ClientBootstrap {
 
     private void tryConnect() {
         WrapperServer.getInstance().getThreadPool().execute(() -> {
-            EventLoopGroup workerGroup = EPOLL ? new EpollEventLoopGroup(4) :new NioEventLoopGroup(4);
+            EventLoopGroup workerGroup = EPOLL ? new EpollEventLoopGroup(4) : new NioEventLoopGroup(4);
 
             try {
                 Bootstrap bootstrap = new Bootstrap();
                 bootstrap.group(workerGroup)
-                        .channel(EPOLL ? EpollServerSocketChannel.class : NioSocketChannel.class)
+                        .channel(EPOLL ? EpollSocketChannel.class : NioSocketChannel.class)
                         .option(ChannelOption.SO_KEEPALIVE, true)
                         .handler(new ChannelInitializer<SocketChannel>() {
                             @Override
@@ -67,6 +70,7 @@ public class ClientBootstrap {
                 channel = f.channel();
                 f.channel().closeFuture().sync();
             } catch (Exception e) {
+                e.printStackTrace();
                 reconnectTrys++;
 
                 workerGroup.shutdownGracefully();

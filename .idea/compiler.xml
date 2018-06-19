@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="core" />
+        <module name="dsme" />
         <module name="master" />
         <module name="mcone-cloud-core" />
         <module name="mcone-cloud-master" />
@@ -22,6 +23,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="core" target="1.8" />
+      <module name="dsme" target="1.8" />
       <module name="master" target="1.8" />
       <module name="mcone-cloud" target="1.8" />
       <module name="mcone-cloud-core" target="1.8" />

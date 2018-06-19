@@ -19,6 +19,7 @@ public class ServerProperties {
     private List<PluginDownload> plugins;
     private List<String> worlds;
     private List<Config> configs;
+    private String gamemode, mode;
 
     @AllArgsConstructor
     @Getter @Setter

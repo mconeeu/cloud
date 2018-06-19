@@ -14,6 +14,7 @@ import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -44,7 +45,7 @@ public class ClientBootstrap {
             try {
                 Bootstrap bootstrap = new Bootstrap();
                 bootstrap.group(workerGroup)
-                        .channel(EPOLL ? EpollServerSocketChannel.class : NioSocketChannel.class)
+                        .channel(EPOLL ? EpollSocketChannel.class : NioSocketChannel.class)
                         .option(ChannelOption.SO_KEEPALIVE, true)
                         .handler(new ChannelInitializer<SocketChannel>() {
                             @Override

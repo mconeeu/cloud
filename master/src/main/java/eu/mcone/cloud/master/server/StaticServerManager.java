@@ -42,7 +42,7 @@ public class StaticServerManager {
                                             rs.getInt("ram"),
                                             true,
                                             ServerVersion.valueOf(rs.getString("version")),
-                                            "{\"plugins\":[], \"worlds\":[], \"configs\":[]}"
+                                            "{\"plugins\":[], \"worlds\":[], \"gamemodeType\":[], \"configs\":[]}"
                                     ),
                                     null,
                                     UUID.fromString(rs.getString("wrapper"))
@@ -87,7 +87,7 @@ public class StaticServerManager {
                                                 rs.getLong("ram"),
                                                 true,
                                                 ServerVersion.valueOf(rs.getString("version")),
-                                                "{\"plugins\":[], \"worlds\":[], \"configs\":[]}"
+                                                "{\"plugins\":[], \"worlds\":[], \"gamemode\":[], \"mode\":[], \"configs\":[]}"
                                         ),
                                         null,
                                         UUID.fromString(rs.getString("wrapper"))
@@ -126,7 +126,7 @@ public class StaticServerManager {
                                 ram,
                                 true,
                                 version,
-                                "{\"plugins\":[], \"worlds\":[], \"configs\":[]}"
+                                "{\"plugins\":[], \"worlds\":[], \"gamemode\":[], \"mode\":[], \"configs\":[]}"
                         ),
                         null,
                         UUID.fromString(wrappername)

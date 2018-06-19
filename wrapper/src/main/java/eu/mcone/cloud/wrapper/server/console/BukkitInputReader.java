@@ -11,8 +11,8 @@ import eu.mcone.cloud.wrapper.server.Server;
 
 public class BukkitInputReader extends ConsoleInputReader {
 
-    public BukkitInputReader(Server server, Boolean filter) {
-        super(server, filter);
+    public BukkitInputReader(Server server, Boolean outputToConsole) {
+        super(server, outputToConsole);
     }
 
     @Override

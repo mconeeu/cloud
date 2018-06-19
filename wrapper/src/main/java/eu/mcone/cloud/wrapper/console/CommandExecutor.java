@@ -15,18 +15,18 @@ public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecu
         Logger.log(getClass(), "new command: '"+cmd+"'");
         if (cmd.equalsIgnoreCase("help")) {
             Logger.log(getClass(), "------- [HELP] -------\n" +
-                    "help > shows this list\n" +
-                    "info > returns some information about the wrapper\n" +
-                    "stop > stops the wrapper and all its servers");
+                                        "help > shows this list\n" +
+                                        "info > returns some information about the wrapper\n" +
+                                        "stop > stops the wrapper and all its servers");
         } else if (cmd.equalsIgnoreCase("info")) {
             String localChannelAddress = WrapperServer.getInstance().getChannel().remoteAddress().toString();
 
             Logger.log(getClass(), "------- [INFO] -------\n" +
-                    "Wrapper info:\n" +
-                    "local channel address > " + localChannelAddress);
+                                        "Wrapper info:\n" +
+                                        "local channel address > " + localChannelAddress);
         } else if (cmd.equalsIgnoreCase("stop")) {
             Logger.log(getClass(), "------- [STOP] -------\n" +
-                    "Wrapper will shutdown shortly");
+                                        "Wrapper will shutdown shortly");
             WrapperServer.getInstance().shutdown();
         }
     }

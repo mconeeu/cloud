@@ -98,7 +98,7 @@ public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecu
                 Server s = MasterServer.getInstance().getServer(args[0]);
 
                 if (s != null) {
-                    s.start();
+                    s.start(); 
                 } else {
                     Logger.log(getClass(), ConsoleColor.RED+"The server "+args[0]+" does not exist!");
                 }
