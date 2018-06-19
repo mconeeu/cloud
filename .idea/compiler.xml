@@ -7,7 +7,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="core" />
-        <module name="dsme" />
         <module name="master" />
         <module name="mcone-cloud-core" />
         <module name="mcone-cloud-master" />

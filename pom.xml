@@ -61,7 +61,6 @@
         <module>plugin-api</module>
         <module>plugin-api-bungee</module>
         <module>plugin-api-bukkit</module>
-        <module>dsme</module>
     </modules>
 
     <dependencies>
