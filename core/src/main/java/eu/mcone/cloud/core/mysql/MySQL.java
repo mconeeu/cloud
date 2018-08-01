@@ -5,6 +5,7 @@
 
 package eu.mcone.cloud.core.mysql;
 
+import com.google.common.primitives.Primitives;
 import com.zaxxer.hikari.HikariDataSource;
 import eu.mcone.cloud.core.console.ConsoleColor;
 import eu.mcone.cloud.core.console.Logger;
@@ -28,12 +29,10 @@ public class MySQL {
         ds.setJdbcUrl("jdbc:mariadb://"+host+":"+port+"/"+database+"?autoReconnect=true");
         ds.addDataSourceProperty("user", username);
         ds.addDataSourceProperty("password", password);
+        ds.setMaxLifetime(28800000L);
 
-        //config.addDataSourceProperty("cachePrepStmts", "true");
-        //config.addDataSourceProperty("prepStmtCacheSize", "250");
-        //config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         this.tablePrefix = tablePrefix;
-        Logger.log(getClass(), ConsoleColor.GREEN+"Verbunden zu Datenbank "+ds.getJdbcUrl());
+        Logger.log(getClass(), ConsoleColor.GREEN+"Connected to database "+ds.getJdbcUrl());
 	}
 
     public void close() {
@@ -125,7 +124,7 @@ public class MySQL {
         }).start();
     }
 
-    public Object select(String qry, CallbackResult<ResultSet> cb){
+    public <T> T select(String qry, CallbackResult<ResultSet> cb, Class<T> typeClass) {
         Object o = null;
         try {
             final Connection con = this.ds.getConnection();
@@ -138,12 +137,10 @@ public class MySQL {
             result.close();
             preparedStatement.close();
             con.close();
-
-            return o;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return o;
+        return Primitives.wrap(typeClass).cast(o);
     }
 
     public Connection getConnection() {

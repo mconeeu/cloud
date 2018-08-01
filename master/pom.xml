@@ -22,6 +22,7 @@
     </properties>
 
     <build>
+        <finalName>${project.parent.name}-${project.name}-${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

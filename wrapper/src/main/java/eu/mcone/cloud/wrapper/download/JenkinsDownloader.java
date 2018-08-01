@@ -12,7 +12,6 @@ import com.offbytwo.jenkins.model.Job;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.wrapper.WrapperServer;
-import lombok.Getter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,19 +22,6 @@ import java.nio.channels.Channels;
 import java.util.Map;
 
 public class JenkinsDownloader {
-
-    public enum CiServer {
-        MCONE("http://78.46.249.205:8080", "cloudsystem", "UZuV0qgQuIxsgp3W");
-
-        @Getter
-        private String uri, user, password;
-
-        CiServer(String uri, String user, String password) {
-            this.uri = uri;
-            this.user = user;
-            this.password = password;
-        }
-    }
 
     private final static String jarPath = WrapperServer.getInstance().getFileManager().getHomeDir().getPath() + File.separator + "jars" + File.separator + "jenkins";
     private JenkinsServer jenkinsServer;

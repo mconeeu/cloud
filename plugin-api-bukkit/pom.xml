@@ -16,6 +16,10 @@
 
     <artifactId>plugin-api-bukkit</artifactId>
 
+    <build>
+        <finalName>${project.parent.name}-${project.name}-${project.version}</finalName>
+    </build>
+
     <repositories>
         <repository>
             <id>spigot-repo</id>

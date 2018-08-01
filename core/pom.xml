@@ -16,6 +16,10 @@
 
     <artifactId>core</artifactId>
 
+    <build>
+        <finalName>${project.parent.name}-${project.name}-${project.version}</finalName>
+    </build>
+
     <repositories>
         <repository>
             <id>spigot-repo</id>
@@ -39,7 +43,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>2.7.4</version>
+            <version>3.1.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

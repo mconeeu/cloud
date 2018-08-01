@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.wrapper.server;
 
-import com.google.gson.JsonArray;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.core.file.UnZip;
@@ -14,6 +13,7 @@ import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.WrapperServer;
+import eu.mcone.cloud.wrapper.download.CiServer;
 import eu.mcone.cloud.wrapper.download.JenkinsDownloader;
 import eu.mcone.cloud.wrapper.download.WorldDownloader;
 import eu.mcone.cloud.wrapper.server.console.ConsoleInputReader;
@@ -32,8 +32,7 @@ public abstract class Server {
 
     private static final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
 
-    @Getter
-    @Setter
+    @Getter @Setter
     protected ServerInfo info;
     @Getter
     protected Runtime runtime;
@@ -47,10 +46,6 @@ public abstract class Server {
     protected ServerProperties properties;
     @Getter
     private ConsoleInputReader reader;
-
-    private boolean hasGamemode;
-    private String gamemode;
-    private String mode;
 
     public Server(ServerInfo info) {
         this.info = info;
@@ -84,7 +79,6 @@ public abstract class Server {
 
         WrapperServer.getInstance().getThreadPool().execute(() -> {
             final File executable = new File(homeDir + File.separator + "jars" + File.separator + info.getVersion().toString() + ".jar");
-            final File worldFile = new File(serverDir + File.separator + "worlds.json");
 
             try {
                 if (!info.isStaticServer()) {
@@ -92,7 +86,7 @@ public abstract class Server {
                     serverDir.mkdir();
 
                     for (ServerProperties.PluginDownload download : properties.getPlugins()) {
-                        File plugin = new JenkinsDownloader(JenkinsDownloader.CiServer.valueOf(download.getCiServer())).getJenkinsArtifact(download.getJob(), download.getArtifact());
+                        File plugin = new JenkinsDownloader(CiServer.valueOf(download.getCiServer())).getJenkinsArtifact(download.getJob(), download.getArtifact());
 
                         if (plugin != null) {
                             Logger.log(getClass(), "[" + info.getName() + "] Implementing Plugin " + download.getJob() + ":" + download.getArtifact());
@@ -112,7 +106,7 @@ public abstract class Server {
 
                 Logger.log(getClass(), "Implementing Cloud-Plugin");
                 FileUtils.copyFile(
-                        new JenkinsDownloader(JenkinsDownloader.CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "plugin"),
+                        new JenkinsDownloader(CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "plugin"),
                         new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
                 );
 
@@ -177,9 +171,7 @@ public abstract class Server {
         Logger.log(getClass(), "[" + info.getName() + "] Deleting server...");
         if (process.isAlive()) this.forcestop();
 
-        String server_name = this.info.getName();
         WrapperServer.getInstance().getServers().remove(this);
-
         Logger.log(getClass(), "[" + info.getName() + "] Server deleted...");
     }
 
@@ -205,12 +197,6 @@ public abstract class Server {
     }
 
     private void dowloadWorlds() throws IOException {
-        WorldDownloader wd = new WorldDownloader(null);
-        for (CloudWorld w : new WorldDownloader(null).downloadTemplateWorlds(info.getTemplateName())) {
-            Logger.log(getClass(), "[" + info.getName() + "] Implementing World " + w.getName());
-            new UnZip(w.getFilePath(), serverDir.getPath() + File.separator + w.getName());
-        }
-
         for (String w : properties.getWorlds()) {
             CloudWorld world = new WorldDownloader(w).download();
             Logger.log(getClass(), "[" + info.getName() + "] Implementing World " + w);
