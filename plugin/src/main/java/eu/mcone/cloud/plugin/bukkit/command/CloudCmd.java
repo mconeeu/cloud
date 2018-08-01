@@ -12,10 +12,10 @@ import org.bukkit.command.CommandSender;
 public class CloudCmd implements CommandExecutor {
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] ars) {
-        if (ars.length == 0) {
+    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if (args.length == 0) {
 
-        } else if (ars.length == 1) {
+        } else if (args.length == 1) {
             
         }
         return true;

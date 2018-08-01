@@ -42,34 +42,37 @@ public class JenkinsDownloader {
             Map<String, Job> jobs = jenkinsServer.getJobs();
             BuildWithDetails build = jobs.get(jobName).details().getLastSuccessfulBuild().details();
 
+            mainLoop:
             for (Artifact artifact : build.getArtifacts()) {
                 String[] parts = artifact.getFileName().split("-");
-                boolean equal = true;
 
                 for (int i = 0; i < nameparts.length; i++) {
                     if (!nameparts[i].equals(parts[i])) {
-                        equal = false;
-                        break;
+                        continue mainLoop;
+                    } else if (i+1 == nameparts.length) {
+                        try {
+                            Integer.parseInt(String.valueOf(parts[i+1].charAt(0)));
+                        } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {
+                            continue mainLoop;
+                        }
                     }
                 }
 
-                if (equal) {
-                    File jar = new File(jarPath + File.separator + artifact.getFileName());
-                    int oldBuild = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("jenkins").getInt(jobName+"#"+artifactName);
+                File jar = new File(jarPath + File.separator + artifact.getFileName());
+                int oldBuild = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("jenkins").getInt(jobName+"#"+artifactName);
 
-                    if (!jar.exists() || Integer.valueOf(build.getId()) != oldBuild) {
-                        jar.delete();
+                if (!jar.exists() || Integer.valueOf(build.getId()) != oldBuild) {
+                    jar.delete();
 
-                        FileOutputStream fos = new FileOutputStream(jar);
-                        Logger.log("JenkinsDownloader", "Downloading job " + jobName + " to " + jar.getPath() + "...");
-                        fos.getChannel().transferFrom(Channels.newChannel(build.downloadArtifact(artifact)), 0, Long.MAX_VALUE);
+                    FileOutputStream fos = new FileOutputStream(jar);
+                    Logger.log("JenkinsDownloader", "Downloading job " + jobName + " to " + jar.getPath() + "...");
+                    fos.getChannel().transferFrom(Channels.newChannel(build.downloadArtifact(artifact)), 0, Long.MAX_VALUE);
 
-                        WrapperServer.getInstance().getConfig().getConfig().set("builds.jenkins."+jobName+"#"+artifactName, Integer.valueOf(build.getId()));
-                        WrapperServer.getInstance().getConfig().save();
-                    }
-
-                    return jar;
+                    WrapperServer.getInstance().getConfig().getConfig().set("builds.jenkins."+jobName+"#"+artifactName, Integer.valueOf(build.getId()));
+                    WrapperServer.getInstance().getConfig().save();
                 }
+
+                return jar;
             }
         } catch (IOException | URISyntaxException e) {
             throw new CloudException(e);
@@ -77,5 +80,4 @@ public class JenkinsDownloader {
 
         return null;
     }
-
 }

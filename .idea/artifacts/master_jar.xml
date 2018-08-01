@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" build-on-make="true" name="master:jar">
-    <output-path>$PROJECT_DIR$/../../../MCONE CLOUD/Master</output-path>
+    <output-path>$PROJECT_DIR$/../../../Jars</output-path>
     <root id="archive" name="master.jar">
       <element id="module-output" name="master" />
       <element id="module-output" name="core" />

@@ -46,18 +46,24 @@ public class WorldDownloader {
 
                                     WrapperServer.getInstance().getConfig().getConfig().set("builds.worlds." + name, build);
                                     WrapperServer.getInstance().getConfig().save();
+
+                                    return new CloudWorld(
+                                            name,
+                                            zipFile.getPath()
+                                    );
                                 }
                             } catch (SQLException | IOException e) {
                                 e.printStackTrace();
                             }
+
                             return null;
                         }, CloudWorld.class);
+                    } else {
+                        return new CloudWorld(
+                                name,
+                                zipFile.getPath()
+                        );
                     }
-
-                    return new CloudWorld(
-                            name,
-                            zipFile.getPath()
-                    );
                 } else {
                     throw new CloudException("World " + name + " could not be found in Database!");
                 }
@@ -67,5 +73,4 @@ public class WorldDownloader {
             return null;
         }, CloudWorld.class);
     }
-
 }

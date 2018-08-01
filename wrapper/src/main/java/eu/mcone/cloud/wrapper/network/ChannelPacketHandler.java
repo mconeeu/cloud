@@ -62,11 +62,16 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
 
             switch (result.getState()) {
-                case START: s.start(); break;
-                case STOP: s.stop(); break;
-                case FORCESTOP: s.forcestop(); break;
-                case RESTART: s.restart(); break;
-                case DELETE: s.delete(); break;
+                case START: s.start();
+                break;
+                case STOP: s.stop();
+                break;
+                case FORCESTOP: s.forcestop();
+                break;
+                case RESTART: s.restart();
+                break;
+                case DELETE: s.delete();
+                break;
             }
         } else if (packet instanceof ServerCommandExecutePacketWrapper) {
             ServerCommandExecutePacketWrapper result = (ServerCommandExecutePacketWrapper) packet;

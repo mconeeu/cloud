@@ -36,6 +36,7 @@ public class BungeeCord extends Server {
                 BungeeInputReader.class,
                 new String[]{
                         "java",
+                        "-DDisableTsQuery=true",
                         "-Dfile.encoding=UTF-8",
                         "-Djline.terminal=jline.UnsupportedTerminal",
                         "-Xmx"+info.getRam()+"M",

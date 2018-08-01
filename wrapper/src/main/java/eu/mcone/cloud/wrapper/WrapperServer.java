@@ -91,7 +91,7 @@ public class WrapperServer {
         Logger.log("Enable progress", ConsoleColor.CYAN + "Welcome to mc1cloud. Wrapper is starting...");
 
         Logger.log("Enable progress", "Connecting to Database...");
-        mySQL = new MySQL("mysql.mcone.eu", 3306, "mc1cloud", "cloud-system", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudwrapper");
+        mySQL = new MySQL("db.mcone.eu", 3306, "mc1cloud", "cloud-system", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudwrapper");
         createMySQLTables(mySQL);
 
         config = new CloudConfig(new File(fileManager.getHomeDir() + File.separator + "config.yml"), "jenkins", "worlds");

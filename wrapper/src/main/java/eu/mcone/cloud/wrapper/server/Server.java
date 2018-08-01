@@ -56,7 +56,7 @@ public abstract class Server {
         } else {
             this.serverDir = new File(homeDir + File.separator + "servers" + File.separator + info.getName());
         }
-
+        System.out.println();
         WrapperServer.getInstance().getServers().add(this);
     }
 
@@ -106,7 +106,7 @@ public abstract class Server {
 
                 Logger.log(getClass(), "Implementing Cloud-Plugin");
                 FileUtils.copyFile(
-                        new JenkinsDownloader(CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "plugin"),
+                        new JenkinsDownloader(CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "mcone-cloud-plugin"),
                         new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
                 );
 
