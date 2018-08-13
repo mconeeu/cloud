@@ -9,9 +9,9 @@ import com.offbytwo.jenkins.JenkinsServer;
 import com.offbytwo.jenkins.model.Artifact;
 import com.offbytwo.jenkins.model.BuildWithDetails;
 import com.offbytwo.jenkins.model.Job;
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.wrapper.WrapperServer;
+import lombok.extern.java.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 import java.util.Map;
 
+@Log
 public class JenkinsDownloader {
 
     private final static String jarPath = WrapperServer.getInstance().getFileManager().getHomeDir().getPath() + File.separator + "jars" + File.separator + "jenkins";
@@ -30,8 +31,8 @@ public class JenkinsDownloader {
         try {
             jenkinsServer = new JenkinsServer(new URI(server.getUri()), server.getUser(), server.getPassword());
         } catch (URISyntaxException e) {
-            Logger.err(getClass(), "Der JenkinsServer "+server.toString()+" ist nicht erreichbar:");
-            Logger.err(getClass(), e.getMessage());
+            log.severe("Der JenkinsServer "+server.toString()+" ist nicht erreichbar:");
+            log.severe(e.getMessage());
         }
     }
 
@@ -65,7 +66,7 @@ public class JenkinsDownloader {
                     jar.delete();
 
                     FileOutputStream fos = new FileOutputStream(jar);
-                    Logger.log("JenkinsDownloader", "Downloading job " + jobName + " to " + jar.getPath() + "...");
+                    log.info("JenkinsDownloader - Downloading job " + jobName + " to " + jar.getPath() + "...");
                     fos.getChannel().transferFrom(Channels.newChannel(build.downloadArtifact(artifact)), 0, Long.MAX_VALUE);
 
                     WrapperServer.getInstance().getConfig().getConfig().set("builds.jenkins."+jobName+"#"+artifactName, Integer.valueOf(build.getId()));

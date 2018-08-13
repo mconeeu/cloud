@@ -5,10 +5,11 @@
 
 package eu.mcone.cloud.wrapper.server.console;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.server.Server;
+import lombok.extern.java.Log;
 
+@Log
 public class BukkitInputReader extends ConsoleInputReader {
 
     public BukkitInputReader(Server server, Boolean outputToConsole) {
@@ -22,7 +23,7 @@ public class BukkitInputReader extends ConsoleInputReader {
         if (lineArray.length >= 3 && lineArray[2].equalsIgnoreCase("Done")) {
             //Server started
             this.server.setState(ServerState.WAITING);
-            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] Server successfully started");
+            log.info("[" + this.server.getInfo().getName() + "] Server successfully started");
         }
     }
 

@@ -8,14 +8,15 @@ package eu.mcone.cloud.master.server;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.core.console.ConsoleColor;
-import eu.mcone.networkmanager.core.console.Logger;
+import eu.mcone.networkmanager.core.api.console.ConsoleColor;
+import lombok.extern.java.Log;
 
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+@Log
 public class ServerManager {
 
     private ScheduledExecutorService es;
@@ -91,11 +92,11 @@ public class ServerManager {
                     if (bestwrapper != null) {
                         server.setWrapper(bestwrapper);
                         i.remove();
-                        Logger.log(getClass(), ConsoleColor.GREEN+"Found wrapper " + bestwrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!"+ConsoleColor.RESET);
+                        log.info(ConsoleColor.GREEN+"Found wrapper " + bestwrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!"+ConsoleColor.RESET);
                         bestwrapper.createServer(server);
                         server.start();
                     } else {
-                        Logger.log(getClass(), ConsoleColor.BLACK_BRIGHT+"No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList..."+ConsoleColor.RESET);
+                        log.info(ConsoleColor.DARK_GRAY+"No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList..."+ConsoleColor.RESET);
                     }
                 } else {
                     Wrapper wrapper = MasterServer.getInstance().getWrapper(wrapperUuid);
@@ -103,12 +104,12 @@ public class ServerManager {
                     if (wrapper != null && !wrapper.isBusy()) {
                         server.setWrapper(wrapper);
                         i.remove();
-                        Logger.log(getClass(), ConsoleColor.GREEN+"Found explicit wrapper " + wrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
+                        log.info(ConsoleColor.GREEN+"Found explicit wrapper " + wrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
                         wrapper.createServer(server);
                         server.start();
                         break;
                     } else {
-                        Logger.log(getClass(), ConsoleColor.BLACK_BRIGHT+"Explicit wrapper " + wrapperUuid + " not found for server " + server.getInfo().getName() + "! Staying in WaitList..."+ConsoleColor.RESET);
+                        log.info(ConsoleColor.DARK_GRAY+"Explicit wrapper " + wrapperUuid + " not found for server " + server.getInfo().getName() + "! Staying in WaitList..."+ConsoleColor.RESET);
                     }
                 }
             }

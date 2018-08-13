@@ -63,15 +63,6 @@
         <module>plugin-api-bukkit</module>
     </modules>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.6</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
-
     <distributionManagement>
         <repository>
             <id>mcone-systems</id>
@@ -79,5 +70,14 @@
             <url>http://repo.mcone.eu/nexus/content/repositories/system/</url>
         </repository>
     </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.6</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
 </project>

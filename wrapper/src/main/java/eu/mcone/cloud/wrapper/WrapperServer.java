@@ -6,7 +6,6 @@
 package eu.mcone.cloud.wrapper;
 
 import com.google.gson.Gson;
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.file.CloudConfig;
 import eu.mcone.cloud.core.file.Downloader;
 import eu.mcone.cloud.core.file.FileManager;
@@ -17,12 +16,14 @@ import eu.mcone.cloud.wrapper.network.ClientBootstrap;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 import eu.mcone.networkmanager.core.api.database.Database;
-import eu.mcone.networkmanager.core.api.database.MongoDBManager;
+import eu.mcone.networkmanager.core.api.database.MongoDatabase;
 import eu.mcone.networkmanager.core.console.ConsoleReader;
+import eu.mcone.networkmanager.core.console.log.MconeLogger;
 import eu.mcone.networkmanager.core.database.MongoConnection;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.java.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,10 +35,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+@Log
 public class WrapperServer {
 
     private static WrapperServer instance;
 
+    @Getter
+    private MconeLogger mconeLogger;
     @Getter
     private UUID wrapperUuid;
     @Getter
@@ -53,7 +57,7 @@ public class WrapperServer {
     @Getter
     private MongoConnection mongoConnection;
     @Getter
-    private MongoDBManager mongoDB;
+    private MongoDatabase mongoDB;
     @Getter
     private Gson gson;
     @Getter
@@ -72,10 +76,11 @@ public class WrapperServer {
 
     private WrapperServer() {
         instance = this;
+        mconeLogger = new MconeLogger();
 
         this.ram = Runtime.getRuntime().maxMemory();
         this.ram /= (1024 * 1024);
-        Logger.log(getClass(), ram + "M RAM");
+        log.info(ram + "M RAM");
 
         fileManager = new FileManager();
         fileManager.createHomeDir("templates");
@@ -92,9 +97,9 @@ public class WrapperServer {
 
         threadPool = Executors.newCachedThreadPool();
 
-        Logger.log("Enable progress", ConsoleColor.CYAN + "Welcome to mc1cloud. Wrapper is starting...");
+        log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. Wrapper is starting...");
 
-        Logger.log("Enable progress", "Connecting to Database...");
+        log.info("Enable progress - Connecting to Database...");
         mongoConnection = new MongoConnection("db.mcone.eu", "cloud-wrapper", "", "networkmanager", 27017);
         mongoConnection.connect();
 
@@ -103,7 +108,7 @@ public class WrapperServer {
         config = new CloudConfig(new File(fileManager.getHomeDir() + File.separator + "config.yml"), "jenkins", "worlds");
         try {
             wrapperUuid = UUID.fromString(config.getConfig().getString("uuid"));
-            Logger.log("Enable progress", "Got wrapper UUID '" + wrapperUuid + "' and Master IP from config...");
+            log.info("Enable progress - Got wrapper UUID '" + wrapperUuid + "' and Master IP from config...");
         } catch (IllegalArgumentException e) {
             UUID wrapperUuid = UUID.randomUUID();
             config.getConfig().set("uuid", wrapperUuid.toString());
@@ -111,11 +116,11 @@ public class WrapperServer {
             config.getConfig().set("master-port", 4567);
             config.save();
 
-            Logger.log("Enable progress", "Initialising new Wrapper with UUID '" + wrapperUuid + "'...");
+            log.info("Enable progress - Initialising new Wrapper with UUID '" + wrapperUuid + "'...");
             this.wrapperUuid = wrapperUuid;
         }
 
-        Logger.log("Enable progress", "Downloading missing executeables for all ServerVersions:");
+        log.info("Enable progress - Downloading missing executeables for all ServerVersions:");
         try {
             for (ServerVersion v : ServerVersion.values()) {
                 Downloader.download(v.getDownloadLink(), new File(fileManager.getHomeDir() + File.separator + "jars" + File.separator + v.toString() + ".jar"));
@@ -124,32 +129,32 @@ public class WrapperServer {
             e.printStackTrace();
         }
 
-        Logger.log("Enable progress", "Trying to connect to master...");
+        log.info("Enable progress - Trying to connect to master...");
         nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), config.getConfig().getInt("master-port"));
 
-        Logger.log("Enable progress", ConsoleColor.GREEN + "Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
+        log.info("Enable progress - "+ConsoleColor.GREEN + "Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
     }
 
     public void shutdown() {
         shutdown = true;
 
-        System.out.println("[Shutdowm progress] Closing channel to Master...");
+        log.info("Shutdowm progress - Closing channel to Master...");
         channel.close();
 
-        System.out.println("[Shutdowm progress] Stopping running servers...");
+        log.info("Shutdowm progress - Stopping running servers...");
         for (Server s : servers) {
             s.stop();
         }
 
         try {
-            System.out.println("[Shutdowm progress] Waiting for servers to stop...");
+            log.info("Shutdowm progress - Waiting for servers to stop...");
             TimeUnit.SECONDS.sleep(10);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        System.out.println("[Shutdowm progress] Stopping instance...");
-        System.out.println("[Shutdowm progress] Good bye!");
+        log.info("Shutdowm progress - Stopping instance...");
+        log.info("Shutdowm progress - Good bye!");
         System.exit(0);
     }
 
@@ -196,7 +201,7 @@ public class WrapperServer {
         if (channel.isOpen()) {
             channel.writeAndFlush(packet);
         } else {
-            Logger.log(getClass(), "Cannot send packet " + packet.getClass().getSimpleName() + " to Master because channel is closed!");
+            log.info("Cannot send packet " + packet.getClass().getSimpleName() + " to Master because channel is closed!");
         }
     }
 

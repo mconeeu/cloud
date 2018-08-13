@@ -11,10 +11,12 @@ import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.networkmanager.api.ModuleHost;
 import eu.mcone.networkmanager.core.api.database.Database;
 import lombok.Getter;
+import lombok.extern.java.Log;
 import org.bson.Document;
 
 import java.util.*;
 
+@Log
 public class StaticServerManager {
 
     @Getter
@@ -22,7 +24,7 @@ public class StaticServerManager {
 
     public StaticServerManager() {
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
-            Logger.log(getClass(), "Creating Static Server " + entry.getString("name") + "...");
+            log.info("Creating Static Server " + entry.getString("name") + "...");
 
             //Create Server and store in HashMap
             UUID uuid = UUID.randomUUID();
@@ -52,7 +54,7 @@ public class StaticServerManager {
 
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
             if (oldServers.containsKey(entry.getString("name"))) {
-                Logger.log("Reload progress", "Recreating static Server " + entry.getString("name") + "...");
+                log.info("Reload progress - Recreating static Server " + entry.getString("name") + "...");
 
                 Server s = oldServers.get(entry.getString("name"));
                 s.getInfo().setMaxPlayers(entry.getInteger("max"));
@@ -61,7 +63,7 @@ public class StaticServerManager {
 
                 if (s.getWrapper() != null) s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
             } else {
-                Logger.log("Reload progress", "Adding static Server " + entry.getString("name") + "...");
+                log.info("Reload progress - Adding static Server " + entry.getString("name") + "...");
 
                 UUID uuid = UUID.randomUUID();
                 servers.add(
@@ -87,14 +89,14 @@ public class StaticServerManager {
         }
 
         for (Server s : oldServers.values()) {
-            Logger.log("Reload progress", "Deleting old static Server " + s.getInfo().getName() + "...");
+            log.info("Reload progress - Deleting old static Server " + s.getInfo().getName() + "...");
             servers.remove(s);
             s.delete();
         }
     }
 
     public void addStaticServer(String name, int maxPlayers, long ram, ServerVersion version, String wrappername) {
-        Logger.log(getClass(), "Creating Static Server " + name + "...");
+        log.info("Creating Static Server " + name + "...");
 
         ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").insertOne(
                 new Document("name", name)

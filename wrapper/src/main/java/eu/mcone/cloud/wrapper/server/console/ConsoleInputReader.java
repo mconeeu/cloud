@@ -5,14 +5,15 @@
 
 package eu.mcone.cloud.wrapper.server.console;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.wrapper.server.Server;
 import lombok.Getter;
+import lombok.extern.java.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+@Log
 public abstract class ConsoleInputReader {
 
     @Getter
@@ -20,12 +21,12 @@ public abstract class ConsoleInputReader {
     @Getter
     protected boolean outputToConsole;
     @Getter
-    private List<String> log;
+    private List<String> logList;
 
     ConsoleInputReader(Server server, boolean outputToConsole) {
         this.server = server;
         this.outputToConsole = outputToConsole;
-        this.log = new ArrayList<>();
+        this.logList = new ArrayList<>();
 
         new Thread(() -> {
             try {
@@ -35,11 +36,11 @@ public abstract class ConsoleInputReader {
                     String line = sc.nextLine();
 
                     if (line != null && line.length() > 4) {
-                        log.add(line);
+                        logList.add(line);
                         this.filter(line);
 
                         if (this.outputToConsole) {
-                            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] >> " + line);
+                            log.info("[" + this.server.getInfo().getName() + "] >> " + line);
                         }
                     }
                 }

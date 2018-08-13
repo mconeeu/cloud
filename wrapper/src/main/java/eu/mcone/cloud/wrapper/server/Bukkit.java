@@ -5,12 +5,12 @@
 
 package eu.mcone.cloud.wrapper.server;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.server.console.BukkitInputReader;
+import lombok.extern.java.Log;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+@Log
 public class Bukkit extends Server {
 
     public Bukkit(ServerInfo info) {
@@ -57,14 +58,14 @@ public class Bukkit extends Server {
     public void stop() {
         if (process != null) {
             if (process.isAlive()) {
-                Logger.log(getClass(), "["+info.getName()+"] Stopping server...");
+                log.info("["+info.getName()+"] Stopping server...");
                 this.sendCommand("stop");
                 this.setState(ServerState.OFFLINE);
             } else {
-                Logger.err(getClass(), "["+info.getName()+"] Could not stop server because the process is dead!");
+                log.warning("["+info.getName()+"] Could not stop server because the process is dead!");
             }
         } else {
-            Logger.err(getClass(), "["+info.getName()+"] Could not stop server because it has no process!");
+            log.severe("["+info.getName()+"] Could not stop server because it has no process!");
         }
     }
 
@@ -81,7 +82,7 @@ public class Bukkit extends Server {
             URL fileUrl = getClass().getResource("/server.properties");
             FileUtils.copyURLToFile(fileUrl, propertyFile);
         }
-        Logger.log(getClass(), "["+info.getName()+"] Setting all server properties...");
+        log.info("["+info.getName()+"] Setting all server properties...");
         Properties ps = new Properties();
         final InputStreamReader isrProperties = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
         ps.load(isrProperties);
@@ -111,7 +112,7 @@ public class Bukkit extends Server {
                 FileUtils.copyURLToFile(fileUrl, spigotFile);
             }
 
-            Logger.log(getClass(), "["+info.getName()+"] Setting all spigot.yml settings...");
+            log.info("["+info.getName()+"] Setting all spigot.yml settings...");
             final Configuration spigotConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(spigotFile);
 
             Configuration sectionSettings = spigotConf.getSection("settings");
@@ -136,7 +137,7 @@ public class Bukkit extends Server {
             FileUtils.copyURLToFile(fileUrl, bukkitFile);
         }
 
-        Logger.log(getClass(), "["+info.getName()+"] Setting all bukkit.yml settings...");
+        log.info("["+info.getName()+"] Setting all bukkit.yml settings...");
         final Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(bukkitFile);
 
         Configuration sectionBukkitSettings = bukkitConf.getSection("settings");

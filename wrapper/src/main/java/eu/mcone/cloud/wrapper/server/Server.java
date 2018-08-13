@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.wrapper.server;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.core.file.UnZip;
 import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacket;
@@ -19,6 +18,7 @@ import eu.mcone.cloud.wrapper.download.WorldDownloader;
 import eu.mcone.cloud.wrapper.server.console.ConsoleInputReader;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedWriter;
@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 
+@Log
 public abstract class Server {
 
     private static final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
@@ -68,13 +69,13 @@ public abstract class Server {
 
     void initialise(final int port, final Class<? extends ConsoleInputReader> reader, final String[] command) {
         if (!state.equals(ServerState.OFFLINE)) {
-            Logger.err(getClass(), "[" + info.getName() + "] Cannot start Server if not OFFLINE");
+            log.severe("[" + info.getName() + "] Cannot start Server if not OFFLINE");
             return;
         }
 
         info.setPort(port);
 
-        Logger.log(getClass(), "[" + info.getName() + "] Starting server (Version: '" + info.getVersion() + "', UUID: '" + info.getUuid() + "', Template: '" + info.getTemplateName() + "', RAM: '" + info.getRam() + "M, Port: '" + info.getPort() + "')...");
+        log.info("[" + info.getName() + "] Starting server (Version: '" + info.getVersion() + "', UUID: '" + info.getUuid() + "', Template: '" + info.getTemplateName() + "', RAM: '" + info.getRam() + "M, Port: '" + info.getPort() + "')...");
         setState(ServerState.STARTING);
 
         WrapperServer.getInstance().getThreadPool().execute(() -> {
@@ -89,13 +90,13 @@ public abstract class Server {
                         File plugin = new JenkinsDownloader(CiServer.valueOf(download.getCiServer())).getJenkinsArtifact(download.getJob(), download.getArtifact());
 
                         if (plugin != null) {
-                            Logger.log(getClass(), "[" + info.getName() + "] Implementing Plugin " + download.getJob() + ":" + download.getArtifact());
+                            log.info("[" + info.getName() + "] Implementing Plugin " + download.getJob() + ":" + download.getArtifact());
                             FileUtils.copyFile(
                                     plugin,
                                     new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName())
                             );
                         } else {
-                            Logger.log(getClass(), "[" + info.getName() + "] Plugin " + download.getJob() + ":" + download.getArtifact() + " could not be found. Aborting download...");
+                            log.info("[" + info.getName() + "] Plugin " + download.getJob() + ":" + download.getArtifact() + " could not be found. Aborting download...");
                         }
                     }
 
@@ -104,7 +105,7 @@ public abstract class Server {
                     if (!serverDir.exists()) serverDir.mkdir();
                 }
 
-                Logger.log(getClass(), "Implementing Cloud-Plugin");
+                log.info("Implementing Cloud-Plugin");
                 FileUtils.copyFile(
                         new JenkinsDownloader(CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "mcone-cloud-plugin"),
                         new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
@@ -125,19 +126,19 @@ public abstract class Server {
 
                 this.process.waitFor();
                 this.process.destroy();
-                Logger.log(getClass(), "[" + info.getName() + "] Server stopped!");
+                log.info("[" + info.getName() + "] Server stopped!");
 
                 if (state.equals(ServerState.WAITING)) {
-                    Logger.log(getClass(), "[" + info.getName() + "] Server seems to be crashed! Restarting...");
+                    log.info("[" + info.getName() + "] Server seems to be crashed! Restarting...");
                     state = ServerState.OFFLINE;
                     start();
                 } else if (state.equals(ServerState.STARTING)) {
-                    Logger.err(getClass(), "[" + info.getName() + "] Server crashed while starting! Fix this problem before starting it again!");
+                    log.info("[" + info.getName() + "] Server crashed while starting! Fix this problem before starting it again!");
                 }
             } catch (IOException | InterruptedException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException | CloudException e) {
-                Logger.log(getClass(), "[" + info.getName() + "] Could not start server:");
+                log.info("[" + info.getName() + "] Could not start server:");
                 if (e instanceof CloudException) {
-                    Logger.err(getClass(), "[" + info.getName() + "] " + e.getMessage());
+                    log.severe("[" + info.getName() + "] " + e.getMessage());
                     e.printStackTrace();
                     return;
                 }
@@ -145,7 +146,7 @@ public abstract class Server {
                 e.printStackTrace();
             }
         });
-        Logger.log(getClass(), "[" + info.getName() + "] Server start initialised, method returned");
+        log.info("[" + info.getName() + "] Server start initialised, method returned");
     }
 
     public void restart() {
@@ -156,23 +157,23 @@ public abstract class Server {
     public void forcestop() {
         if (process != null) {
             if (process.isAlive()) {
-                Logger.log(getClass(), "[" + info.getName() + "] ForceStop server " + info.getName() + "...");
+                log.info("[" + info.getName() + "] ForceStop server " + info.getName() + "...");
                 process.destroy();
                 setState(ServerState.OFFLINE);
             } else {
-                Logger.log(getClass(), "[" + info.getName() + "] Could not be forcestop server because the process is dead...");
+                log.info("[" + info.getName() + "] Could not be forcestop server because the process is dead...");
             }
         } else {
-            Logger.log(getClass(), "[" + info.getName() + "] Could not forcestop because server has no process...");
+            log.info("[" + info.getName() + "] Could not forcestop because server has no process...");
         }
     }
 
     public void delete() {
-        Logger.log(getClass(), "[" + info.getName() + "] Deleting server...");
+        log.info("[" + info.getName() + "] Deleting server...");
         if (process.isAlive()) this.forcestop();
 
         WrapperServer.getInstance().getServers().remove(this);
-        Logger.log(getClass(), "[" + info.getName() + "] Server deleted...");
+        log.info("[" + info.getName() + "] Server deleted...");
     }
 
     public void sendCommand(String command) {
@@ -183,15 +184,15 @@ public abstract class Server {
                     out.write(command + "\n");
                     out.flush();
 
-                    Logger.log(getClass(), "[" + info.getName() + "] Sent command '" + command + "'");
+                    log.info("[" + info.getName() + "] Sent command '" + command + "'");
                 } else {
-                    Logger.err(getClass(), "[" + info.getName() + "] Could not send command '" + command + "' because the process is dead...");
+                    log.severe("[" + info.getName() + "] Could not send command '" + command + "' because the process is dead...");
                 }
             } else {
-                Logger.err(getClass(), "[" + info.getName() + "] Could not send command '" + command + "' because server has no process...");
+                log.severe("[" + info.getName() + "] Could not send command '" + command + "' because server has no process...");
             }
         } catch (IOException e) {
-            Logger.err(getClass(), "[" + info.getName() + "] Could not send command '" + command + "' to the server (IOException)");
+            log.severe("[" + info.getName() + "] Could not send command '" + command + "' to the server (IOException)");
             e.printStackTrace();
         }
     }
@@ -199,7 +200,7 @@ public abstract class Server {
     private void dowloadWorlds() throws IOException {
         for (String w : properties.getWorlds()) {
             CloudWorld world = new WorldDownloader(w).download();
-            Logger.log(getClass(), "[" + info.getName() + "] Implementing World " + w);
+            log.info("[" + info.getName() + "] Implementing World " + w);
             new UnZip(world.getFilePath(), serverDir.getPath() + File.separator + w);
         }
     }

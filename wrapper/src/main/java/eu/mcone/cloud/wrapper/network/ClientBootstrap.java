@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.wrapper.network;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.pipeline.Decoder;
 import eu.mcone.cloud.core.network.pipeline.Encoder;
 import eu.mcone.cloud.wrapper.WrapperServer;
@@ -13,15 +12,14 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
+import lombok.extern.java.Log;
 
+@Log
 public class ClientBootstrap {
 
     private static final boolean EPOLL = Epoll.isAvailable();
@@ -60,10 +58,10 @@ public class ClientBootstrap {
                 ChannelFuture f = bootstrap.connect(host, port).sync();
                 f.addListener((ChannelFutureListener) channelFuture -> {
                     if (channelFuture.isSuccess()) {
-                        Logger.log(getClass(), "Netty is connected @ Port:" + port);
+                        log.info("Netty is connected @ Port:" + port);
                         reconnectTrys = 0;
                     } else {
-                        Logger.log(getClass(), "Failed to connect to @ Port:" + port);
+                        log.info("Failed to connect to @ Port:" + port);
                     }
                 });
 
@@ -75,8 +73,8 @@ public class ClientBootstrap {
 
                 workerGroup.shutdownGracefully();
 
-                Logger.err(getClass(), "Could not connect to Master. Reconnecting... ["+reconnectTrys+"]");
-                Logger.err(getClass(), e.getMessage());
+                log.severe("Could not connect to Master. Reconnecting... ["+reconnectTrys+"]");
+                log.severe(e.getMessage());
             } finally {
                 workerGroup.shutdownGracefully();
             }

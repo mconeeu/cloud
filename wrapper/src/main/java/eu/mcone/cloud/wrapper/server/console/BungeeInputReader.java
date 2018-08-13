@@ -5,10 +5,11 @@
 
 package eu.mcone.cloud.wrapper.server.console;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.server.Server;
+import lombok.extern.java.Log;
 
+@Log
 public class BungeeInputReader extends ConsoleInputReader {
 
     public BungeeInputReader(Server server, Boolean outputToConsole) {
@@ -20,7 +21,7 @@ public class BungeeInputReader extends ConsoleInputReader {
         if (line.contains("Listening on ") || line.contains(" Could not bind to host /")) {
             //Server started
             this.server.setState(ServerState.WAITING);
-            Logger.log(getClass(), "[" + this.server.getInfo().getName() + "] Server successfully started!");
+            log.info("[" + this.server.getInfo().getName() + "] Server successfully started!");
         }
     }
 }

@@ -18,13 +18,14 @@ import eu.mcone.networkmanager.api.ModuleHost;
 import eu.mcone.networkmanager.api.NetworkModule;
 import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 import eu.mcone.networkmanager.core.api.database.Database;
-import eu.mcone.networkmanager.core.console.Logger;
 import io.netty.channel.Channel;
 import lombok.Getter;
+import lombok.extern.java.Log;
 import org.bson.Document;
 
 import java.util.*;
 
+@Log
 public class MasterServer extends NetworkModule {
 
     @Getter
@@ -47,11 +48,11 @@ public class MasterServer extends NetworkModule {
         ModuleHost.getInstance().getConsoleReader().registerCommand(new ConsoleCommandExecutor());
         gson = new Gson();
 
-        Logger.log("Enable progress", ConsoleColor.CYAN+"Welcome to mc1cloud. CloudMaster is starting...");
+        log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. CloudMaster is starting...");
 
-        Logger.log("Enable progress", "Getting templates from database...");
+        log.info("Enable progress - Getting templates from database...");
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_templates").find()) {
-            Logger.log("Enable progress", "Creating Template " + entry.getString("name") + " and it's servers ...");
+            log.info("Enable progress - Creating Template " + entry.getString("name") + " and it's servers ...");
 
             createTemplate(
                     entry.getString("name"),
@@ -65,21 +66,21 @@ public class MasterServer extends NetworkModule {
             );
         }
 
-        Logger.log("Enable progress", "Starting static server manager...");
+        log.info("Enable progress - Starting static server manager...");
         staticServerManager = new StaticServerManager();
 
-        Logger.log("Enable progress", "Starting ServerManager with TimeTask...");
+        log.info("Enable progress - Starting ServerManager with TimeTask...");
         serverManager = new ServerManager();
 
-        Logger.log("Enable progress", "Starting Netty Server...");
+        log.info("Enable progress - Starting Netty Server...");
         new ServerBootstrap(4567);
 
-        Logger.log("Enable progress", ConsoleColor.GREEN+"Enable process finished! Cloud Master seems to be ready! Waiting for connections...\n");
+        log.info("Enable progress - "+ConsoleColor.GREEN + "Enable process finished! Cloud Master seems to be ready! Waiting for connections...\n");
     }
 
     public void reload() {
-        Logger.log("Reload progress", "Reloading MasterServer...");
-        Logger.log("Reload progress", "Reloading Templates...");
+        log.info("Reload progress - Reloading MasterServer...");
+        log.info("Reload progress - Reloading Templates...");
 
         Map<String, Template> oldTemplates = new HashMap<>();
         List<String> newTemplates = new ArrayList<>();
@@ -88,7 +89,7 @@ public class MasterServer extends NetworkModule {
 
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_templates").find()) {
             if (oldTemplates.containsKey(entry.getString("name"))) {
-                Logger.log("Reload progress", "Refreshing Template " + entry.getString("name") + "...");
+                log.info("Reload progress - Refreshing Template " + entry.getString("name") + "...");
 
                 oldTemplates.get(entry.getString("name")).recreate(
                         entry.getInteger("ram"),
@@ -100,7 +101,7 @@ public class MasterServer extends NetworkModule {
                         entry.get("properties", Document.class).toJson()
                 );
             } else {
-                Logger.log("Reload progress", "Adding Template " + entry.getString("name") + "...");
+                log.info("Reload progress - Adding Template " + entry.getString("name") + "...");
 
                 createTemplate(
                         entry.getString("name"),
@@ -119,29 +120,28 @@ public class MasterServer extends NetworkModule {
 
         for (Template t : templates) {
             if (!newTemplates.contains(t.getName())) {
-                Logger.log("Reload progress", "Deleting old Template " + t.getName() + "...");
+                log.info("Reload progress - Deleting old Template " + t.getName() + "...");
                 t.delete();
             }
         }
 
-        Logger.log("Reload progress", "Reloading static Servers...");
+        log.info("Reload progress - Reloading static Servers...");
         staticServerManager.reload();
 
-        Logger.log("Reload progress", ConsoleColor.GREEN+"MasterServer successfully reloaded!");
+        log.info("Reload progress - "+ConsoleColor.GREEN + "MasterServer successfully reloaded!");
     }
 
     public void onDisable() {
-        Logger.log("Shutdown progress", "Shutting down ServerManager");
+        log.info("Shutdown progress - Shutting down ServerManager");
         serverManager.shutdown();
 
-        Logger.log("Shutdown progress", "The following Wrappers will stay online: "+getWrappers().size());
+        log.info("Shutdown progress - The following Wrappers will stay online: " + getWrappers().size());
         for (Wrapper w : getWrappers()) {
-            Logger.log("Shutdown progress", " -"+w.getUuid());
+            log.info("Shutdown progress - " + w.getUuid());
         }
 
-        System.out.println("[Shutdowm progress] Stopping instance...");
-        System.out.println("[Shutdowm progress] Good bye!");
-        System.exit(0);
+        log.info("Shutdown progress - Stopping instance...");
+        log.info("Shutdown progress - Good bye!");
     }
 
     private void createTemplate(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, String properties) {

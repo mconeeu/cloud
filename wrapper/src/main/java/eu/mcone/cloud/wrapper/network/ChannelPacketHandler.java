@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.wrapper.network;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.*;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.wrapper.WrapperServer;
@@ -14,12 +13,14 @@ import eu.mcone.cloud.wrapper.server.BungeeCord;
 import eu.mcone.cloud.wrapper.server.Server;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Log
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
@@ -34,7 +35,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
             ctx.writeAndFlush(new WrapperRegisterFromStandalonePacketWrapper(servers, WrapperServer.getInstance().getRam(), WrapperServer.getInstance().getWrapperUuid()));
         }
-        Logger.log(getClass(), "new channel to " + ctx.channel().remoteAddress().toString());
+        log.info("new channel to " + ctx.channel().remoteAddress().toString());
     }
 
     @Override
@@ -42,7 +43,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
         if (packet instanceof ServerInfoPacket) {
             ServerInfoPacket result = (ServerInfoPacket) packet;
             ServerInfo info = result.getServerInfo();
-            Logger.log(getClass(), "new ServerInfoPacket (UUID: "+result.getServerInfo().getUuid()+", NAME: "+result.getServerInfo().getName()+")");
+            log.fine("new ServerInfoPacket (UUID: "+result.getServerInfo().getUuid()+", NAME: "+result.getServerInfo().getName()+")");
 
             for (Server s : WrapperServer.getInstance().getServers()) {
                 if (s.getInfo().getUuid().equals(info.getUuid())) {
@@ -57,7 +58,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             }
         } else if (packet instanceof ServerChangeStatePacketWrapper) {
             ServerChangeStatePacketWrapper result = (ServerChangeStatePacketWrapper) packet;
-            Logger.log(getClass(), "new ServerChangeStatePacketWrapper (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
+            log.fine("new ServerChangeStatePacketWrapper (UUID: "+result.getServerUuid()+", STATE: "+result.getState().toString()+")");
 
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
 
@@ -75,31 +76,31 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             }
         } else if (packet instanceof ServerCommandExecutePacketWrapper) {
             ServerCommandExecutePacketWrapper result = (ServerCommandExecutePacketWrapper) packet;
-            Logger.log(getClass(), "new ServerCommandExecutePacketWrapper (UUID: "+result.getServerUuid()+", COMMAND: "+result.getCmd()+")");
+            log.fine("new ServerCommandExecutePacketWrapper (UUID: "+result.getServerUuid()+", COMMAND: "+result.getCmd()+")");
 
             Server s = WrapperServer.getInstance().getServer(result.getServerUuid());
             if (s != null) {
                 s.sendCommand(result.getCmd());
             } else {
-                Logger.log(getClass(), "s == null");
+                log.info("s == null");
             }
         } else if (packet instanceof WrapperShutdownPacketWrapper) {
-            Logger.log(getClass(), "[ChannelPacketHandler] Received WrapperShutdownPacketWrapper from master. Shutting down...");
+            log.info("[ChannelPacketHandler] Received WrapperShutdownPacketWrapper from master. Shutting down...");
             WrapperServer.getInstance().shutdown();
         } else if (packet instanceof WrapperRequestPacketMaster) {
             WrapperRequestPacketMaster result = (WrapperRequestPacketMaster) packet;
-            Logger.log(getClass(), "new WrapperRequestPacketMaster (OBJECT: "+result.getObject()+", VALUE: "+result.getValue()+")");
+            log.fine("new WrapperRequestPacketMaster (OBJECT: "+result.getObject()+", VALUE: "+result.getValue()+")");
             Server s = WrapperServer.getInstance().getServer(UUID.fromString(result.getValue()));
 
             if (s != null) {
                 switch (result.getObject()) {
                     case LOG: {
-                        ctx.writeAndFlush(new ServerLogPacketClient(result.getRequest(), s.getInfo().getUuid(), s.getReader().getLog()));
+                        ctx.writeAndFlush(new ServerLogPacketClient(result.getRequest(), s.getInfo().getUuid(), s.getReader().getLogList()));
                         break;
                     }
                 }
             } else {
-                Logger.err(getClass(), "server does not exist!");
+                log.severe("server does not exist!");
             }
         }
     }
@@ -112,12 +113,12 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (cause instanceof IOException) {
-            Logger.err(getClass(), cause.getMessage());
-            Logger.err(getClass(), "Reconnecting...");
+            log.severe(cause.getMessage());
+            log.severe("Reconnecting...");
             return;
         }
 
-        Logger.err(getClass(), "Netty Exception:");
+        log.severe("Netty Exception:");
         cause.printStackTrace();
     }
 

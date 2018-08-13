@@ -10,13 +10,14 @@ import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
-import eu.mcone.networkmanager.core.console.Logger;
 import lombok.Getter;
+import lombok.extern.java.Log;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@Log
 public class Template {
 
     @Getter
@@ -95,9 +96,9 @@ public class Template {
 
                 //Put Server Object in HashMap
                 this.servers.add(server);
-                Logger.log(getClass(), "["+name+"] Creating Server \"" + name + "-" + (actualservers + serverid) + "\"!");
+                log.info("["+name+"] Creating Server \"" + name + "-" + (actualservers + serverid) + "\"!");
             } else {
-                Logger.err(getClass(), "["+name+"] Cannot create more Servers than maximum of group " + name + "!");
+                log.info("["+name+"] Cannot create more Servers than maximum of group " + name + "!");
             }
         }
     }
@@ -110,12 +111,12 @@ public class Template {
     public void deleteServer(Server server) {
         //If Server is part of this template
         if (servers.contains(server)) {
-            Logger.log(getClass(), "["+name+"] Deleting Server " + server.getInfo().getName() + "!");
+            log.info("["+name+"] Deleting Server " + server.getInfo().getName() + "!");
 
             //Remove Server from HashMap and delete it from Wrapper
             this.servers.remove(server);
         } else {
-            Logger.err(getClass(), "["+name+"] Server " + server.getInfo().getName() + " is not part of Template " + this.name + "!");
+            log.info("["+name+"] Server " + server.getInfo().getName() + " is not part of Template " + this.name + "!");
         }
     }
 

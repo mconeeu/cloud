@@ -14,13 +14,14 @@ import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.core.console.Logger;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.java.Log;
 
 import java.util.UUID;
 
+@Log
 public class Server {
 
     @Getter
@@ -46,16 +47,16 @@ public class Server {
         this.wrapperUuid = wrapperUuid;
         this.state = ServerState.OFFLINE;
 
-        Logger.log(getClass(), "["+info.getName()+"] Initialized Server "+info.getName()+" (UUID: "+info.getUuid().toString()+")");
+        log.info("["+info.getName()+"] Initialized Server "+info.getName()+" (UUID: "+info.getUuid().toString()+")");
     }
 
     public void start() {
         //Check if Wrapper is set
         if (wrapper == null) {
-            Logger.err(getClass(), "["+info.getName()+"] No wrapper set for server!");
+            log.info("["+info.getName()+"] No wrapper set for server!");
         } else {
             //Start server on Wrapper
-            Logger.log(getClass(), "["+info.getName()+"] Starting server...");
+            log.info("["+info.getName()+"] Starting server...");
             this.wrapper.startServer(this);
         }
     }
@@ -63,10 +64,10 @@ public class Server {
     public void stop() {
         //Check if Wrapper is set
         if (wrapper == null) {
-            Logger.err(getClass(), "["+info.getName()+"] No wrapper set for server!");
+            log.info("["+info.getName()+"] No wrapper set for server!");
         } else {
             //Stop server on Wrapper
-            Logger.log(getClass(), "["+info.getName()+"] Stopping server...");
+            log.info("["+info.getName()+"] Stopping server...");
             this.wrapper.stopServer(this);
         }
     }
@@ -74,10 +75,10 @@ public class Server {
     public void forcestop() {
         //Check if Wrapper is set
         if (wrapper == null) {
-            Logger.err(getClass(), "["+info.getName()+"] No wrapper set for server!");
+            log.warning("["+info.getName()+"] No wrapper set for server!");
         } else {
             //Stop server on Wrapper
-            Logger.log(getClass(), "["+info.getName()+"] Forcestopping server...");
+            log.warning("["+info.getName()+"] Forcestopping server...");
             this.wrapper.forcestopServer(this);
         }
     }
@@ -85,10 +86,10 @@ public class Server {
     public void restart() {
         //Check if Wrapper is set
         if (wrapper == null) {
-            Logger.err(getClass(), "["+info.getName()+"] No wrapper set for server!");
+            log.warning("["+info.getName()+"] No wrapper set for server!");
         } else {
             //Stop server on Wrapper
-            Logger.log(getClass(), "["+info.getName()+"] Restarting server...");
+            log.warning("["+info.getName()+"] Restarting server...");
             this.wrapper.restartServer(this);
         }
     }
@@ -112,7 +113,7 @@ public class Server {
         if (info.getVersion().equals(ServerVersion.BUNGEE)) {
             for (Server server : MasterServer.getInstance().getServers()) {
                 if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                    Logger.log(getClass(), "["+info.getName()+"] Registering Server "+server.getInfo().getName());
+                    log.info("["+info.getName()+"] Registering Server "+server.getInfo().getName());
                     send(new ServerListUpdatePacketPlugin(server.getInfo(), ServerListUpdatePacketPlugin.Scope.ADD));
                 }
             }
@@ -124,10 +125,10 @@ public class Server {
             if (channel.isOpen() && channel.isActive() && channel.isWritable() && channel.isRegistered()) {
                 channel.writeAndFlush(packet);
             } else {
-                Logger.err(getClass(), "["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel fail)");
+                log.severe("["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel fail)");
             }
         } else {
-            Logger.err(getClass(), "["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel == null)");
+            log.severe("["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel == null)");
         }
     }
 

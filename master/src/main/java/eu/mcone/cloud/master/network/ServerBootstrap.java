@@ -7,7 +7,6 @@ package eu.mcone.cloud.master.network;
 
 import eu.mcone.cloud.core.network.pipeline.Decoder;
 import eu.mcone.cloud.core.network.pipeline.Encoder;
-import eu.mcone.networkmanager.core.console.Logger;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -16,7 +15,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.Getter;
+import lombok.extern.java.Log;
 
+@Log
 public class ServerBootstrap {
 
     private static final boolean EPOLL = Epoll.isAvailable();
@@ -48,9 +49,9 @@ public class ServerBootstrap {
 
                 ChannelFuture f = b.bind(port).sync().addListener((ChannelFutureListener) channelFuture -> {
                     if (channelFuture.isSuccess()) {
-                        Logger.log(getClass(), "Netty is listening @ Port:" + port);
+                        log.info("Netty is listening @ Port:" + port);
                     } else {
-                        Logger.log(getClass(), "Failed to bind @ Port:" + port);
+                        log.info("Failed to bind @ Port:" + port);
                     }
                 }).addListener(ChannelFutureListener.CLOSE_ON_FAILURE).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
                 f.channel().closeFuture().sync();

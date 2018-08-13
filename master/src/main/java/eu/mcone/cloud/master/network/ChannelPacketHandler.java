@@ -15,17 +15,18 @@ import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.network.request.GetRequest;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.core.console.ConsoleColor;
-import eu.mcone.networkmanager.core.console.Logger;
+import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.Getter;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+@Log
 public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     private static Map<UUID, FutureTask<Packet>> tasks = new HashMap<>();
@@ -34,20 +35,20 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        Logger.log(getClass(), "new channel from " + ctx.channel().remoteAddress().toString());
+        log.info("new channel from " + ctx.channel().remoteAddress().toString());
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
         if (packet instanceof WrapperRegisterPacketWrapper) {
             WrapperRegisterPacketWrapper result = (WrapperRegisterPacketWrapper) packet;
-            Logger.log(getClass(), "new WrapperRegisterPacketWrapper (UUID: "+result.getUuid()+", RAM: "+result.getRam()+")");
+            log.fine("new WrapperRegisterPacketWrapper (UUID: "+result.getUuid()+", RAM: "+result.getRam()+")");
 
             MasterServer.getInstance().createWrapper(result.getUuid(), ctx.channel(), result.getRam());
         } else if (packet instanceof WrapperRegisterFromStandalonePacketWrapper) {
             WrapperRegisterFromStandalonePacketWrapper result = (WrapperRegisterFromStandalonePacketWrapper) packet;
-            Logger.log(getClass(), "new WrapperRegisterFromStandalonePacketWrapper (UUID: "+result.getUuid()+", RAM: "+result.getRam()+", SERVERS: "+result.getServers().toString()+")");
-            Logger.log("WrapperRegister", "Wrapper registering with still "+result.getServers().size()+" servers running!");
+            log.fine("new WrapperRegisterFromStandalonePacketWrapper (UUID: "+result.getUuid()+", RAM: "+result.getRam()+", SERVERS: "+result.getServers().toString()+")");
+            log.info("WrapperRegister - Wrapper registering with still "+result.getServers().size()+" servers running!");
 
             List<UUID> unknown = new ArrayList<>();
             Map<UUID, Server> newServers = new HashMap<>();
@@ -66,13 +67,13 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
             final Wrapper w = MasterServer.getInstance().createWrapper(result.getUuid(), ctx.channel(), result.getRam());
 
-            Logger.log("WrapperRegister", "Found "+newServers.size()+" valid servers!");
-            Logger.log("WrapperRegister", "Found "+unknown.size()+" invalid servers! Deleting from Wrapper...");
+            log.info("WrapperRegister - Found "+newServers.size()+" valid servers!");
+            log.info("WrapperRegister - Found "+unknown.size()+" invalid servers! Deleting from Wrapper...");
             for (UUID uuid : unknown) {
                 w.destroyServer(uuid);
             }
 
-            Logger.log("WrapperRegister", ConsoleColor.YELLOW+"Waiting 5sec for servers to register...");
+            log.info("WrapperRegister - "+ConsoleColor.YELLOW+"Waiting 5sec for servers to register...");
             Executors.newSingleThreadScheduledExecutor().schedule(() -> {
                 final Map<UUID, PluginRegisterData> waiting = ChannelPacketHandler.getRegisteringServers();
                 for (HashMap.Entry<UUID, Server> e : newServers.entrySet()) {
@@ -83,23 +84,23 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
 
                     if (s.getState().equals(ServerState.OFFLINE)) s.setState(ServerState.BROKEN);
                     if (waiting.containsKey(uuid)) {
-                        Logger.log("WrapperRegister", ConsoleColor.GREEN+"Post-registering Server "+s.getInfo().getName()+"...");
+                        log.info("WrapperRegister - "+ConsoleColor.GREEN+"Post-registering Server "+s.getInfo().getName()+"...");
                         s.registerPluginData(waiting.get(uuid));
                         ChannelPacketHandler.registeringServers.remove(uuid);
                         w.createServer(s);
                     } else {
-                        Logger.log("WrapperRegister", ConsoleColor.YELLOW+"Server "+s.getInfo().getName()+" is broken. Restarting...");
+                        log.info("WrapperRegister - "+ConsoleColor.YELLOW+"Server "+s.getInfo().getName()+" is broken. Restarting...");
                         w.createServer(s);
                         s.restart();
                     }
 
                     s.setPreventStart(false);
                 }
-                Logger.log("WrapperRegister", ConsoleColor.GREEN+"Wrapper "+w.getUuid()+" is successfully registered from Standalone Mode!");
+                log.info("WrapperRegister - "+ConsoleColor.GREEN+"Wrapper "+w.getUuid()+" is successfully registered from Standalone Mode!");
             }, 5000, TimeUnit.MILLISECONDS);
         } else if (packet instanceof ServerRegisterPacketPlugin) {
             ServerRegisterPacketPlugin result = (ServerRegisterPacketPlugin) packet;
-            Logger.log(getClass(), "new ServerRegisterPacketPlugin (UUID: "+result.getServerUuid()+", PORT: "+result.getPort()+")");
+            log.fine("new ServerRegisterPacketPlugin (UUID: "+result.getServerUuid()+", PORT: "+result.getPort()+")");
             Server s = MasterServer.getInstance().getServer(result.getServerUuid());
 
             if (s != null) {
@@ -107,24 +108,24 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             } else {
                 try {
                     registeringServers.put(result.getServerUuid(), new PluginRegisterData(ctx.channel(), result));
-                    Logger.log(getClass(), "Server with uuid " + result.getServerUuid() + " tried to register itself from " + result.getHostname() + " but the server is not known! Put in waitlist.");
+                    log.info("Server with uuid " + result.getServerUuid() + " tried to register itself from " + result.getHostname() + " but the server is not known! Put in waitlist.");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         } else if (packet instanceof ServerPlayerCountUpdatePacketPlugin) {
             ServerPlayerCountUpdatePacketPlugin result = (ServerPlayerCountUpdatePacketPlugin) packet;
-            Logger.log(getClass(), "new ServerPlayerCountUpdatePacketPlugin (UUID: "+result.getUuid()+", COUNT: "+result.getPlayerCount()+")");
+            log.fine("new ServerPlayerCountUpdatePacketPlugin (UUID: "+result.getUuid()+", COUNT: "+result.getPlayerCount()+")");
             Server s = MasterServer.getInstance().getServer(result.getUuid());
 
             if (s != null) {
                 s.setPlayerCount(result.getPlayerCount());
             } else {
-                Logger.err(getClass(), "Playercount for Server with UUID "+result.getUuid()+" could not be changed! (Server does not exist)");
+                log.warning("Playercount for Server with UUID "+result.getUuid()+" could not be changed! (Server does not exist)");
             }
         } else if (packet instanceof ServerUpdateStatePacket) {
             ServerUpdateStatePacket result = (ServerUpdateStatePacket) packet;
-            Logger.log(getClass(), "new ServerUpdateStatePacketPlugin (UUID: "+result.getUuid()+", STATE: "+result.getState().toString()+")");
+            log.fine("new ServerUpdateStatePacketPlugin (UUID: "+result.getUuid()+", STATE: "+result.getState().toString()+")");
             ServerState state = result.getState();
             Server s = MasterServer.getInstance().getServer(result.getUuid());
 
@@ -136,7 +137,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
                     if (busy) break;
                     busy = ser.getState().equals(ServerState.STARTING);
                 }
-                Logger.log(getClass(), "["+s.getWrapper().getUuid()+"] Wrapper is busy? "+busy);
+                log.info("["+s.getWrapper().getUuid()+"] Wrapper is busy? "+busy);
                 s.getWrapper().setBusy(busy);
 
                 if (!s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
@@ -164,7 +165,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
             }
         } else if (packet instanceof ServerResultPacketWrapper) {
             ServerResultPacketWrapper result = (ServerResultPacketWrapper) packet;
-            Logger.log(getClass(), "[" + result.getResultClass() + "] " + result.getMessage() + " ResultType: " + result.getResult());
+            log.fine("[" + result.getResultClass() + "] " + result.getMessage() + " ResultType: " + result.getResult());
         } else if (packet instanceof MasterRequestPacketClient) {
             MasterRequestPacketClient result = (MasterRequestPacketClient) packet;
             JsonObject jObject = new JsonParser().parse(result.getJson()).getAsJsonObject();
@@ -233,7 +234,7 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     public void channelUnregistered(ChannelHandlerContext ctx) {
         Wrapper w = MasterServer.getInstance().getWrapper(ctx.channel());
         if (w != null) {
-            Logger.log(getClass(), ConsoleColor.RED+"Deleting Wrapper "+w.getUuid());
+            log.info(ConsoleColor.RED+"Deleting Wrapper "+w.getUuid());
             w.delete();
         }
     }
@@ -243,12 +244,12 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
         if (cause instanceof IOException) {
             ctx.channel().close();
 
-            Logger.err(getClass(), "Lost Connection to Client: "+ctx.channel().remoteAddress().toString()+".");
-            Logger.err(getClass(), cause.getMessage());
+            log.warning("Lost Connection to Client: "+ctx.channel().remoteAddress().toString()+".");
+            log.warning(cause.getMessage());
             return;
         }
 
-        Logger.err(getClass(), "Netty Exception:");
+        log.severe("Netty Exception:");
         cause.printStackTrace();
     }
 

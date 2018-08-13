@@ -5,26 +5,23 @@
 
 package eu.mcone.cloud.wrapper.download;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
-import eu.mcone.cloud.core.console.Logger;
-import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import lombok.Getter;
+import lombok.extern.java.Log;
 import org.bson.Document;
 import org.bson.types.Binary;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.include;
 import static com.mongodb.client.model.Updates.combine;
 
+@Log
 public class WorldDownloader {
 
     @Getter
@@ -47,7 +44,7 @@ public class WorldDownloader {
             Document worldEntry = WrapperServer.getInstance().getMongoDB().getCollection("cloudwrapper_worlds").find(eq("name", name)).first();
 
             try {
-                Logger.log(getClass(), "Downloading World " + name + "...");
+                log.info("Downloading World " + name + "...");
                 FileOutputStream fos = new FileOutputStream(zipFile);
                 fos.write(worldEntry.get("bytes", Binary.class).getData());
                 fos.close();
@@ -62,6 +59,8 @@ public class WorldDownloader {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            return null;
         } else {
             return new CloudWorld(
                     name,
