@@ -3,7 +3,7 @@
     <output-path>$PROJECT_DIR$/../../../Jars</output-path>
     <root id="archive" name="wrapper.jar">
       <element id="module-output" name="wrapper" />
-      <element id="module-output" name="core" />
+      <element id="module-output" name="core-api" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/guava/guava/17.0/guava-17.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/mariadb/jdbc/mariadb-java-client/2.2.3/mariadb-java-client-2.2.3.jar" path-in-jar="/" />

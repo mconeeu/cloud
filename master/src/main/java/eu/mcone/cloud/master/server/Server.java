@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.master.server;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.network.packet.ServerListUpdatePacketPlugin;
 import eu.mcone.cloud.core.server.PluginRegisterData;
@@ -15,6 +14,7 @@ import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
+import eu.mcone.networkmanager.core.console.Logger;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;

@@ -5,114 +5,104 @@
 
 package eu.mcone.cloud.master.server;
 
-import eu.mcone.cloud.core.console.Logger;
-import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
+import eu.mcone.networkmanager.api.ModuleHost;
+import eu.mcone.networkmanager.core.api.database.Database;
 import lombok.Getter;
+import org.bson.Document;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public class StaticServerManager {
 
     @Getter
     private List<Server> servers = new ArrayList<>();
-    private MySQL mysql;
 
-    public StaticServerManager(MySQL mysql) {
-        this.mysql = mysql;
+    public StaticServerManager() {
+        for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
+            Logger.log(getClass(), "Creating Static Server " + entry.getString("name") + "...");
 
-        mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_static_servers;", rs -> {
-            try {
-                while (rs.next()) {
-                    Logger.log(getClass(), "Creating Static Server " + rs.getString("name") + "...");
-
-                    //Create Server and store in HashMap
-                    UUID uuid = UUID.randomUUID();
-                    servers.add(
-                            new Server(
-                                    new ServerInfo(
-                                            uuid,
-                                            rs.getString("name"),
-                                            "",
-                                            rs.getInt("max"),
-                                            0,
-                                            rs.getInt("ram"),
-                                            true,
-                                            ServerVersion.valueOf(rs.getString("version")),
-                                            "{\"plugins\":[], \"worlds\":[], \"gamemodeType\":[], \"configs\":[]}"
-                                    ),
-                                    null,
-                                    UUID.fromString(rs.getString("wrapper"))
-                            )
-                    );
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+            //Create Server and store in HashMap
+            UUID uuid = UUID.randomUUID();
+            servers.add(
+                    new Server(
+                            new ServerInfo(
+                                    uuid,
+                                    entry.getString("name"),
+                                    "",
+                                    entry.getInteger("max"),
+                                    0,
+                                    entry.getInteger("ram"),
+                                    true,
+                                    ServerVersion.valueOf(entry.getString("version")),
+                                    "{\"plugins\":[], \"worlds\":[], \"gamemodeType\":[], \"configs\":[]}"
+                            ),
+                            null,
+                            UUID.fromString(entry.getString("wrapper"))
+                    )
+            );
+        }
     }
 
     public void reload() {
-        mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_static_servers;", rs -> {
-            final Map<String, Server> oldServers = new HashMap<>();
-            final List<String> newServers = new ArrayList<>();
-            servers.forEach(s -> oldServers.put(s.getInfo().getName(), s));
+        final Map<String, Server> oldServers = new HashMap<>();
+        servers.forEach(s -> oldServers.put(s.getInfo().getName(), s));
 
-            try {
-                while (rs.next()) {
-                    if (oldServers.containsKey(rs.getString("name"))) {
-                        Logger.log("Reload progress", "Recreating static Server " + rs.getString("name") + "...");
+        for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
+            if (oldServers.containsKey(entry.getString("name"))) {
+                Logger.log("Reload progress", "Recreating static Server " + entry.getString("name") + "...");
 
-                        Server s = oldServers.get(rs.getString("name"));
-                        s.getInfo().setMaxPlayers(rs.getInt("max"));
-                        s.getInfo().setRam(rs.getLong("ram"));
-                        s.getInfo().setVersion(ServerVersion.valueOf(rs.getString("version")));
+                Server s = oldServers.get(entry.getString("name"));
+                s.getInfo().setMaxPlayers(entry.getInteger("max"));
+                s.getInfo().setRam(entry.getLong("ram"));
+                s.getInfo().setVersion(ServerVersion.valueOf(entry.getString("version")));
 
-                        if (s.getWrapper() != null) s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
-                    } else {
-                        Logger.log("Reload progress", "Adding static Server " + rs.getString("name") + "...");
+                if (s.getWrapper() != null) s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
+            } else {
+                Logger.log("Reload progress", "Adding static Server " + entry.getString("name") + "...");
 
-                        UUID uuid = UUID.randomUUID();
-                        servers.add(
-                                new Server(
-                                        new ServerInfo(
-                                                uuid,
-                                                rs.getString("name"),
-                                                "",
-                                                rs.getInt("max"),
-                                                0,
-                                                rs.getLong("ram"),
-                                                true,
-                                                ServerVersion.valueOf(rs.getString("version")),
-                                                "{\"plugins\":[], \"worlds\":[], \"gamemode\":[], \"mode\":[], \"configs\":[]}"
-                                        ),
-                                        null,
-                                        UUID.fromString(rs.getString("wrapper"))
-                                )
-                        );
-                    }
-
-                    newServers.add(rs.getString("name"));
-                    oldServers.remove(rs.getString("name"));
-                }
-
-                for (Server s : oldServers.values()) {
-                    Logger.log("Reload progress", "Deleting old static Server " + s.getInfo().getName() + "...");
-                    servers.remove(s);
-                    s.delete();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+                UUID uuid = UUID.randomUUID();
+                servers.add(
+                        new Server(
+                                new ServerInfo(
+                                        uuid,
+                                        entry.getString("name"),
+                                        "",
+                                        entry.getInteger("max"),
+                                        0,
+                                        entry.getLong("ram"),
+                                        true,
+                                        ServerVersion.valueOf(entry.getString("version")),
+                                        "{\"plugins\":[], \"worlds\":[], \"gamemode\":[], \"mode\":[], \"configs\":[]}"
+                                ),
+                                null,
+                                UUID.fromString(entry.getString("wrapper"))
+                        )
+                );
             }
-        });
+
+            oldServers.remove(entry.getString("name"));
+        }
+
+        for (Server s : oldServers.values()) {
+            Logger.log("Reload progress", "Deleting old static Server " + s.getInfo().getName() + "...");
+            servers.remove(s);
+            s.delete();
+        }
     }
 
     public void addStaticServer(String name, int maxPlayers, long ram, ServerVersion version, String wrappername) {
         Logger.log(getClass(), "Creating Static Server " + name + "...");
-        mysql.update("INSERT INTO " + mysql.getTablePrefix() + "_static_servers (name, ram, wrapper) VALUES ('" + name + "'," + ram + " , '" + wrappername + "');");
+
+        ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").insertOne(
+                new Document("name", name)
+                        .append("max", maxPlayers)
+                        .append("ram", ram)
+                        .append("version", version.toString())
+                        .append("wrapper", wrappername)
+        );
 
         UUID uuid = UUID.randomUUID();
         servers.add(

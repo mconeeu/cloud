@@ -5,16 +5,25 @@
 
 package eu.mcone.cloud.wrapper.download;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoException;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import lombok.Getter;
+import org.bson.Document;
+import org.bson.types.Binary;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Projections.include;
+import static com.mongodb.client.model.Updates.combine;
 
 public class WorldDownloader {
 
@@ -26,51 +35,38 @@ public class WorldDownloader {
         this.name = name;
     }
 
-    public CloudWorld download() {
-        return WrapperServer.getInstance().getMySQL().select("SELECT `build` FROM `" + WrapperServer.getInstance().getMySQL().getTablePrefix() + "_worlds` WHERE `name`='" + name + "'", rs -> {
+    public CloudWorld download() throws MongoException {
+        Document buildEntry = WrapperServer.getInstance().getMongoDB().getCollection("cloudwrapper_worlds").find(combine(eq("name", name), include("build"))).first();
+
+        File zipFile = new File(worldPath + File.separator + name + ".zip");
+
+        int oldBuild = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("worlds").getInt(name);
+        int build = buildEntry.getInteger("build");
+
+        if (build != oldBuild) {
+            Document worldEntry = WrapperServer.getInstance().getMongoDB().getCollection("cloudwrapper_worlds").find(eq("name", name)).first();
+
             try {
-                if (rs.next()) {
-                    File zipFile = new File(worldPath + File.separator + name + ".zip");
+                Logger.log(getClass(), "Downloading World " + name + "...");
+                FileOutputStream fos = new FileOutputStream(zipFile);
+                fos.write(worldEntry.get("bytes", Binary.class).getData());
+                fos.close();
 
-                    int oldBuild = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("worlds").getInt(name);
-                    int build = rs.getInt("build");
+                WrapperServer.getInstance().getConfig().getConfig().set("builds.worlds." + name, build);
+                WrapperServer.getInstance().getConfig().save();
 
-                    if (build != oldBuild) {
-                        return WrapperServer.getInstance().getMySQL().select("SELECT * FROM `" + WrapperServer.getInstance().getMySQL().getTablePrefix() + "_worlds` WHERE `name`='" + name + "'", rs1 -> {
-                            try {
-                                if (rs1.next()) {
-                                    Logger.log(getClass(), "Downloading World " + name + "...");
-                                    FileOutputStream fos = new FileOutputStream(zipFile);
-                                    fos.write(rs1.getBytes("bytes"));
-                                    fos.close();
-
-                                    WrapperServer.getInstance().getConfig().getConfig().set("builds.worlds." + name, build);
-                                    WrapperServer.getInstance().getConfig().save();
-
-                                    return new CloudWorld(
-                                            name,
-                                            zipFile.getPath()
-                                    );
-                                }
-                            } catch (SQLException | IOException e) {
-                                e.printStackTrace();
-                            }
-
-                            return null;
-                        }, CloudWorld.class);
-                    } else {
-                        return new CloudWorld(
-                                name,
-                                zipFile.getPath()
-                        );
-                    }
-                } else {
-                    throw new CloudException("World " + name + " could not be found in Database!");
-                }
-            } catch (SQLException | CloudException e) {
+                return new CloudWorld(
+                        name,
+                        zipFile.getPath()
+                );
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-            return null;
-        }, CloudWorld.class);
+        } else {
+            return new CloudWorld(
+                    name,
+                    zipFile.getPath()
+            );
+        }
     }
 }

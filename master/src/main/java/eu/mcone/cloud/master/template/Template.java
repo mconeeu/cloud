@@ -5,12 +5,12 @@
 
 package eu.mcone.cloud.master.template;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
+import eu.mcone.networkmanager.core.console.Logger;
 import lombok.Getter;
 
 import java.util.HashSet;

@@ -3,7 +3,7 @@
     <output-path>$PROJECT_DIR$/../../../Jars</output-path>
     <root id="archive" name="master.jar">
       <element id="module-output" name="master" />
-      <element id="module-output" name="core" />
+      <element id="module-output" name="core-api" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/net/md-5/bungeecord-config/1.12-SNAPSHOT/bungeecord-config-1.12-20180420.081416-78.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/code/gson/gson/2.8.2/gson-2.8.2.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/slf4j/slf4j-simple/1.7.9/slf4j-simple-1.7.9.jar" path-in-jar="/" />

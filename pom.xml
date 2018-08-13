@@ -56,7 +56,7 @@
     <modules>
         <module>master</module>
         <module>wrapper</module>
-        <module>core</module>
+        <module>cloud-api</module>
         <module>plugin</module>
         <module>plugin-api</module>
         <module>plugin-api-bungee</module>

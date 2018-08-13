@@ -62,12 +62,6 @@
     <dependencies>
         <dependency>
             <groupId>eu.mcone.cloud</groupId>
-            <artifactId>core</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>eu.mcone.cloud</groupId>
             <artifactId>plugin-api-bungee</artifactId>
             <version>1.1.0-SNAPSHOT</version>
             <scope>compile</scope>

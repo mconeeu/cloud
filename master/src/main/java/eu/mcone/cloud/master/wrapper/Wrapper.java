@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.master.wrapper;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.network.packet.ServerChangeStatePacketWrapper;
 import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
@@ -13,6 +12,7 @@ import eu.mcone.cloud.core.network.packet.WrapperShutdownPacketWrapper;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
+import eu.mcone.networkmanager.core.console.Logger;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;

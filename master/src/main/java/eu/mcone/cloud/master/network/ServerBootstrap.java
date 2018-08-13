@@ -5,9 +5,9 @@
 
 package eu.mcone.cloud.master.network;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.pipeline.Decoder;
 import eu.mcone.cloud.core.network.pipeline.Encoder;
+import eu.mcone.networkmanager.core.console.Logger;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;

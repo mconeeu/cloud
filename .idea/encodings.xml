@@ -2,8 +2,7 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/core" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/dsme" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cloud-api" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/master" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/plugin" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/plugin-api" charset="UTF-8" />

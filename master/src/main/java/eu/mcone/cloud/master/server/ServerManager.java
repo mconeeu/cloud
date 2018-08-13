@@ -5,11 +5,11 @@
 
 package eu.mcone.cloud.master.server;
 
-import eu.mcone.cloud.core.console.ConsoleColor;
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
+import eu.mcone.networkmanager.core.console.ConsoleColor;
+import eu.mcone.networkmanager.core.console.Logger;
 
 import java.util.*;
 import java.util.concurrent.Executors;

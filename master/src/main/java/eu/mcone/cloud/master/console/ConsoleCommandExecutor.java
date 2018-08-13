@@ -5,8 +5,6 @@
 
 package eu.mcone.cloud.master.console;
 
-import eu.mcone.cloud.core.console.ConsoleColor;
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacketWrapper;
 import eu.mcone.cloud.core.server.PluginRegisterData;
 import eu.mcone.cloud.master.MasterServer;
@@ -14,11 +12,14 @@ import eu.mcone.cloud.master.network.ChannelPacketHandler;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
+import eu.mcone.networkmanager.core.api.console.CommandExecutor;
+import eu.mcone.networkmanager.core.api.console.ConsoleColor;
+import eu.mcone.networkmanager.core.console.Logger;
 
 import java.util.Map;
 import java.util.UUID;
 
-public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecutor {
+public class ConsoleCommandExecutor implements CommandExecutor {
 
     @Override
     public void onCommand(String cmd, String[] args) {
@@ -129,24 +130,6 @@ public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecu
         } else if (cmd.equalsIgnoreCase("reload")) {
             if (args.length == 0) {
                 MasterServer.getInstance().reload();
-                return;
-            }
-        } else if (cmd.equalsIgnoreCase("stop")) {
-            if (args.length == 0) {
-                Logger.log(getClass(), "------- [STOP] -------\n" +
-                        "MasterServer will shutdown shortly");
-                MasterServer.getInstance().shutdown();
-                return;
-            } else if (args.length == 1 && args[0].equalsIgnoreCase("all")) {
-                Logger.log(getClass(), "------- [STOP] -------\n" +
-                        "MasterServer and all Wrappers will shutdown shortly");
-
-                Logger.log("Shutdown progress", "Shutting down Wrappers");
-                for (Wrapper w : MasterServer.getInstance().getWrappers()) {
-                    w.shutdown();
-                }
-
-                MasterServer.getInstance().shutdown();
                 return;
             }
         }

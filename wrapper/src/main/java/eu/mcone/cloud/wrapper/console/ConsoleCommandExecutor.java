@@ -7,8 +7,9 @@ package eu.mcone.cloud.wrapper.console;
 
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.wrapper.WrapperServer;
+import eu.mcone.networkmanager.core.api.console.CommandExecutor;
 
-public class CommandExecutor implements eu.mcone.cloud.core.console.CommandExecutor {
+public class ConsoleCommandExecutor implements CommandExecutor {
 
     @Override
     public void onCommand(String cmd, String[] args) {

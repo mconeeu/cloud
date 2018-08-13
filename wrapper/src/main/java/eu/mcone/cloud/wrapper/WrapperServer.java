@@ -6,18 +6,20 @@
 package eu.mcone.cloud.wrapper;
 
 import com.google.gson.Gson;
-import eu.mcone.cloud.core.console.ConsoleColor;
-import eu.mcone.cloud.core.console.ConsoleReader;
 import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.file.CloudConfig;
 import eu.mcone.cloud.core.file.Downloader;
 import eu.mcone.cloud.core.file.FileManager;
-import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.server.ServerVersion;
-import eu.mcone.cloud.wrapper.console.CommandExecutor;
+import eu.mcone.cloud.wrapper.console.ConsoleCommandExecutor;
 import eu.mcone.cloud.wrapper.network.ClientBootstrap;
 import eu.mcone.cloud.wrapper.server.Server;
+import eu.mcone.networkmanager.core.api.console.ConsoleColor;
+import eu.mcone.networkmanager.core.api.database.Database;
+import eu.mcone.networkmanager.core.api.database.MongoDBManager;
+import eu.mcone.networkmanager.core.console.ConsoleReader;
+import eu.mcone.networkmanager.core.database.MongoConnection;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,7 +51,9 @@ public class WrapperServer {
     @Getter
     private ClientBootstrap nettyBootstrap;
     @Getter
-    private MySQL mySQL;
+    private MongoConnection mongoConnection;
+    @Getter
+    private MongoDBManager mongoDB;
     @Getter
     private Gson gson;
     @Getter
@@ -82,7 +86,7 @@ public class WrapperServer {
         fileManager.createHomeDir("worlds");
 
         consoleReader = new ConsoleReader();
-        consoleReader.registerCommand(new CommandExecutor());
+        consoleReader.registerCommand(new ConsoleCommandExecutor());
 
         gson = new Gson();
 
@@ -91,8 +95,10 @@ public class WrapperServer {
         Logger.log("Enable progress", ConsoleColor.CYAN + "Welcome to mc1cloud. Wrapper is starting...");
 
         Logger.log("Enable progress", "Connecting to Database...");
-        mySQL = new MySQL("db.mcone.eu", 3306, "mc1cloud", "cloud-system", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudwrapper");
-        createMySQLTables(mySQL);
+        mongoConnection = new MongoConnection("db.mcone.eu", "cloud-wrapper", "", "networkmanager", 27017);
+        mongoConnection.connect();
+
+        mongoDB = mongoConnection.getDatabase(Database.CLOUD);
 
         config = new CloudConfig(new File(fileManager.getHomeDir() + File.separator + "config.yml"), "jenkins", "worlds");
         try {
@@ -122,26 +128,6 @@ public class WrapperServer {
         nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), config.getConfig().getInt("master-port"));
 
         Logger.log("Enable progress", ConsoleColor.GREEN + "Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
-    }
-
-    private void createMySQLTables(MySQL mySQL) {
-        mySQL.update(
-                "CREATE TABLE IF NOT EXISTS `" + mySQL.getTablePrefix() + "_worlds`" +
-                        "(" +
-                        "`id` INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                        "`build` int(10) NOT NULL," +
-                        "`name` VARCHAR(100) NOT NULL," +
-                        "`world_type` VARCHAR(20) NOT NULL," +
-                        "`environment` VARCHAR(20) NOT NULL," +
-                        "`generator` VARCHAR(20)," +
-                        "`generator_settings` VARCHAR(100)," +
-                        "`generator_structures` VARCHAR(50)," +
-                        "`gamemode` VARCHAR(10)," +
-                        "`mode` VARCHAR(10)," +
-                        "`bytes` longblob NOT NULL " +
-                        ")" +
-                        "ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-        );
     }
 
     public void shutdown() {

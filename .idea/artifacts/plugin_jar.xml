@@ -3,7 +3,7 @@
     <output-path>$PROJECT_DIR$/../../../Jars</output-path>
     <root id="archive" name="plugin.jar">
       <element id="module-output" name="plugin" />
-      <element id="module-output" name="core" />
+      <element id="module-output" name="core-api" />
       <element id="module-output" name="plugin-api" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/io/netty/netty-buffer/4.1.24.Final/netty-buffer-4.1.24.Final.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/net/md-5/bungeecord-protocol/1.12-SNAPSHOT/bungeecord-protocol-1.12-20180420.081429-78.jar" path-in-jar="/" />

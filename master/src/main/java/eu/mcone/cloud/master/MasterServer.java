@@ -6,33 +6,30 @@
 package eu.mcone.cloud.master;
 
 import com.google.gson.Gson;
-import eu.mcone.cloud.core.console.ConsoleColor;
-import eu.mcone.cloud.core.console.ConsoleReader;
-import eu.mcone.cloud.core.console.Logger;
-import eu.mcone.cloud.core.mysql.MySQL;
 import eu.mcone.cloud.core.server.ServerVersion;
-import eu.mcone.cloud.master.console.CommandExecutor;
+import eu.mcone.cloud.master.console.ConsoleCommandExecutor;
 import eu.mcone.cloud.master.network.ServerBootstrap;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
+import eu.mcone.networkmanager.api.ModuleHost;
+import eu.mcone.networkmanager.api.NetworkModule;
+import eu.mcone.networkmanager.core.api.console.ConsoleColor;
+import eu.mcone.networkmanager.core.api.database.Database;
+import eu.mcone.networkmanager.core.console.Logger;
 import io.netty.channel.Channel;
 import lombok.Getter;
+import org.bson.Document;
 
-import java.sql.SQLException;
 import java.util.*;
 
-public class MasterServer {
+public class MasterServer extends NetworkModule {
 
     @Getter
     private static MasterServer instance;
-    @Getter
-    private MySQL mysql;
 
-    @Getter
-    private ConsoleReader consoleReader;
     @Getter
     private ServerManager serverManager;
     @Getter
@@ -44,48 +41,32 @@ public class MasterServer {
     @Getter
     private List<Wrapper> wrappers = new ArrayList<>();
 
-    public static void main(String args[]) {
-        new MasterServer();
-    }
-
-    private MasterServer() {
+    public void onEnable() {
         instance = this;
 
-        consoleReader = new ConsoleReader();
-        consoleReader.registerCommand(new CommandExecutor());
+        ModuleHost.getInstance().getConsoleReader().registerCommand(new ConsoleCommandExecutor());
         gson = new Gson();
 
         Logger.log("Enable progress", ConsoleColor.CYAN+"Welcome to mc1cloud. CloudMaster is starting...");
-        Logger.log("Enable progress", "Connecting to Database...");
-        mysql = new MySQL("db.mcone.eu", 3306, "mc1cloud", "cloud-system", "5CjLP5dHYXQPX85zPizx5hayz0AYNOuNmzcegO0Id0AXnp3w1OJ3fkEQxbGJZAuJ", "cloudmaster");
-
-        Logger.log("Enable progress", "Creating necessary tables if not exists...");
-        createMySQLTables(mysql);
 
         Logger.log("Enable progress", "Getting templates from database...");
-        mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_templates;", rs -> {
-            try {
-                while (rs.next()) {
-                    Logger.log("Enable progress", "Creating Template " + rs.getString("name") + " and it's servers ...");
+        for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_templates").find()) {
+            Logger.log("Enable progress", "Creating Template " + entry.getString("name") + " and it's servers ...");
 
-                    createTemplate(
-                            rs.getString("name"),
-                            rs.getInt("ram"),
-                            rs.getInt("max_players"),
-                            rs.getInt("min"),
-                            rs.getInt("max"),
-                            rs.getInt("emptyservers"),
-                            ServerVersion.valueOf(rs.getString("version")),
-                            rs.getString("properties")
-                    );
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+            createTemplate(
+                    entry.getString("name"),
+                    entry.getInteger("ram"),
+                    entry.getInteger("max_players"),
+                    entry.getInteger("min"),
+                    entry.getInteger("max"),
+                    entry.getInteger("emptyservers"),
+                    ServerVersion.valueOf(entry.getString("version")),
+                    entry.get("properties", Document.class).toJson()
+            );
+        }
 
         Logger.log("Enable progress", "Starting static server manager...");
-        staticServerManager = new StaticServerManager(mysql);
+        staticServerManager = new StaticServerManager();
 
         Logger.log("Enable progress", "Starting ServerManager with TimeTask...");
         serverManager = new ServerManager();
@@ -99,54 +80,49 @@ public class MasterServer {
     public void reload() {
         Logger.log("Reload progress", "Reloading MasterServer...");
         Logger.log("Reload progress", "Reloading Templates...");
-        mysql.select("SELECT * FROM " + mysql.getTablePrefix() + "_templates;", rs -> {
-            Map<String, Template> oldTemplates = new HashMap<>();
-            List<String> newTemplates = new ArrayList<>();
 
-            templates.forEach(t -> oldTemplates.put(t.getName(), t));
+        Map<String, Template> oldTemplates = new HashMap<>();
+        List<String> newTemplates = new ArrayList<>();
 
-            try {
-                while (rs.next()) {
-                    if (oldTemplates.containsKey(rs.getString("name"))) {
-                        Logger.log("Reload progress", "Refreshing Template " + rs.getString("name") + "...");
+        templates.forEach(t -> oldTemplates.put(t.getName(), t));
 
-                        oldTemplates.get(rs.getString("name")).recreate(
-                                rs.getInt("ram"),
-                                rs.getInt("max_players"),
-                                rs.getInt("min"),
-                                rs.getInt("max"),
-                                rs.getInt("emptyservers"),
-                                ServerVersion.valueOf(rs.getString("version")),
-                                rs.getString("properties")
-                        );
-                    } else {
-                        Logger.log("Reload progress", "Adding Template " + rs.getString("name") + "...");
+        for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_templates").find()) {
+            if (oldTemplates.containsKey(entry.getString("name"))) {
+                Logger.log("Reload progress", "Refreshing Template " + entry.getString("name") + "...");
 
-                        createTemplate(
-                                rs.getString("name"),
-                                rs.getInt("ram"),
-                                rs.getInt("max_players"),
-                                rs.getInt("min"),
-                                rs.getInt("max"),
-                                rs.getInt("emptyservers"),
-                                ServerVersion.valueOf(rs.getString("version")),
-                                rs.getString("properties")
-                        );
-                    }
+                oldTemplates.get(entry.getString("name")).recreate(
+                        entry.getInteger("ram"),
+                        entry.getInteger("max_players"),
+                        entry.getInteger("min"),
+                        entry.getInteger("max"),
+                        entry.getInteger("emptyservers"),
+                        ServerVersion.valueOf(entry.getString("version")),
+                        entry.get("properties", Document.class).toJson()
+                );
+            } else {
+                Logger.log("Reload progress", "Adding Template " + entry.getString("name") + "...");
 
-                    newTemplates.add(rs.getString("name"));
-                }
-
-                for (Template t : templates) {
-                    if (!newTemplates.contains(t.getName())) {
-                        Logger.log("Reload progress", "Deleting old Template " + t.getName() + "...");
-                        t.delete();
-                    }
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+                createTemplate(
+                        entry.getString("name"),
+                        entry.getInteger("ram"),
+                        entry.getInteger("max_players"),
+                        entry.getInteger("min"),
+                        entry.getInteger("max"),
+                        entry.getInteger("emptyservers"),
+                        ServerVersion.valueOf(entry.getString("version")),
+                        entry.get("properties", Document.class).toJson()
+                );
             }
-        });
+
+            newTemplates.add(entry.getString("name"));
+        }
+
+        for (Template t : templates) {
+            if (!newTemplates.contains(t.getName())) {
+                Logger.log("Reload progress", "Deleting old Template " + t.getName() + "...");
+                t.delete();
+            }
+        }
 
         Logger.log("Reload progress", "Reloading static Servers...");
         staticServerManager.reload();
@@ -154,7 +130,7 @@ public class MasterServer {
         Logger.log("Reload progress", ConsoleColor.GREEN+"MasterServer successfully reloaded!");
     }
 
-    public void shutdown() {
+    public void onDisable() {
         Logger.log("Shutdown progress", "Shutting down ServerManager");
         serverManager.shutdown();
 
@@ -166,32 +142,6 @@ public class MasterServer {
         System.out.println("[Shutdowm progress] Stopping instance...");
         System.out.println("[Shutdowm progress] Good bye!");
         System.exit(0);
-    }
-
-    private void createMySQLTables(MySQL mySQL) {
-        mySQL.update("CREATE TABLE IF NOT EXISTS `" + mySQL.getTablePrefix() + "_templates` " +
-                "(" +
-                "`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                "`name` varchar(100) NOT NULL UNIQUE KEY, " +
-                "`max_players` int(5) NOT NULL, " +
-                "`ram` int(8) NOT NULL, " +
-                "`min` int(5) NOT NULL, " +
-                "`max` int(5) NOT NULL, " +
-                "`version` varchar(10) NOT NULL, " +
-                "`emptyservers` int(5) NOT NULL, " +
-                "`properties` varchar(1000) NOT NULL " +
-                ") " +
-                "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-
-        mySQL.update("CREATE TABLE IF NOT EXISTS `" + mySQL.getTablePrefix() + "_static_servers` " +
-                "(" +
-                "`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                "`name` varchar(100) NOT NULL, `max` int(5) NOT NULL, " +
-                "`ram` int(8) NOT NULL, " +
-                "`version` varchar(10) NOT NULL, " +
-                "`wrapper` varchar(100)" +
-                ") " +
-                "ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     }
 
     private void createTemplate(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, String properties) {
@@ -271,4 +221,5 @@ public class MasterServer {
 
         return result;
     }
+
 }

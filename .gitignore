@@ -1,0 +1,8 @@
+.idea/
+cloud-api/target/
+master/target/
+plugin-api-bukkit/target/
+plugin-api-bungee/target/
+plugin-api/target/
+plugin/target/
+wrapper/target/
