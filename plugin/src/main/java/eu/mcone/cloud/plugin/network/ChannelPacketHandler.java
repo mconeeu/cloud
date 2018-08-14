@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.plugin.network;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.packet.Packet;
 import eu.mcone.cloud.core.network.packet.ServerListUpdatePacketPlugin;
 import eu.mcone.cloud.core.network.packet.ServerRegisterPacketPlugin;
@@ -70,12 +69,12 @@ public class ChannelPacketHandler extends SimpleChannelInboundHandler<Packet> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (cause instanceof IOException) {
-            Logger.err(getClass(), cause.getMessage());
-            Logger.err(getClass(), "Reconnecting...");
+            System.err.println(cause.getMessage());
+            System.err.println("Reconnecting...");
             return;
         }
 
-        Logger.err(getClass(), "Netty Exception:");
+        System.err.println("Netty Exception:");
         cause.printStackTrace();
     }
 

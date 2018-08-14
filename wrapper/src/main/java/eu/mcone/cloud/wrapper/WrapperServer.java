@@ -83,7 +83,6 @@ public class WrapperServer {
         log.info(ram + "M RAM");
 
         fileManager = new FileManager();
-        fileManager.createHomeDir("templates");
         fileManager.createHomeDir("servers");
         fileManager.createHomeDir("staticservers");
         fileManager.createHomeDir("jars");
@@ -100,7 +99,7 @@ public class WrapperServer {
         log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. Wrapper is starting...");
 
         log.info("Enable progress - Connecting to Database...");
-        mongoConnection = new MongoConnection("db.mcone.eu", "cloud-wrapper", "", "networkmanager", 27017);
+        mongoConnection = new MongoConnection("db.mcone.eu", "admin", "T6KIq8gjmmF1k7futx0cJiJinQXgfguYXruds1dFx1LF5IsVPQjuDTnlI1zltpD9", "admin", 27017);
         mongoConnection.connect();
 
         mongoDB = mongoConnection.getDatabase(Database.CLOUD);

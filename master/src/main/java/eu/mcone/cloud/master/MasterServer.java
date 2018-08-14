@@ -15,7 +15,7 @@ import eu.mcone.cloud.master.server.StaticServerManager;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import eu.mcone.networkmanager.api.ModuleHost;
-import eu.mcone.networkmanager.api.NetworkModule;
+import eu.mcone.networkmanager.api.module.NetworkModule;
 import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 import eu.mcone.networkmanager.core.api.database.Database;
 import io.netty.channel.Channel;
@@ -56,11 +56,11 @@ public class MasterServer extends NetworkModule {
 
             createTemplate(
                     entry.getString("name"),
-                    entry.getInteger("ram"),
+                    entry.getLong("ram"),
                     entry.getInteger("max_players"),
                     entry.getInteger("min"),
                     entry.getInteger("max"),
-                    entry.getInteger("emptyservers"),
+                    entry.getInteger("empty_servers"),
                     ServerVersion.valueOf(entry.getString("version")),
                     entry.get("properties", Document.class).toJson()
             );

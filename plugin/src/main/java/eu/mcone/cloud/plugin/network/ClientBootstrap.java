@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.plugin.network;
 
-import eu.mcone.cloud.core.console.Logger;
 import eu.mcone.cloud.core.network.pipeline.Decoder;
 import eu.mcone.cloud.core.network.pipeline.Encoder;
 import eu.mcone.cloud.plugin.CloudPlugin;
@@ -13,7 +12,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -59,10 +57,10 @@ public class ClientBootstrap {
                 ChannelFuture f = bootstrap.connect(host, port).sync();
                 f.addListener((ChannelFutureListener) channelFuture -> {
                     if (channelFuture.isSuccess()) {
-                        Logger.log(getClass(), "Netty is connected @ Port:" + port);
+                        System.out.println("Netty is connected @ Port:" + port);
                         reconnectTrys = 0;
                     } else {
-                        Logger.log(getClass(), "Failed to connect to @ Port:" + port);
+                        System.out.println("Failed to connect to @ Port:" + port);
                     }
                 });
 
@@ -72,8 +70,8 @@ public class ClientBootstrap {
 
                 workerGroup.shutdownGracefully();
 
-                Logger.err(getClass(), "Could not connect to Master. Reconnecting... ["+reconnectTrys+"]");
-                Logger.err(getClass(), e.getMessage());
+                System.err.println("Could not connect to Master. Reconnecting... ["+reconnectTrys+"]");
+                System.err.println(e.getMessage());
             } finally {
                 System.out.println("shutdown workergroup");
                 workerGroup.shutdownGracefully();

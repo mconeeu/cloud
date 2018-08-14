@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.include;
-import static com.mongodb.client.model.Updates.combine;
 
 @Log
 public class WorldDownloader {
@@ -33,7 +32,8 @@ public class WorldDownloader {
     }
 
     public CloudWorld download() throws MongoException {
-        Document buildEntry = WrapperServer.getInstance().getMongoDB().getCollection("cloudwrapper_worlds").find(combine(eq("name", name), include("build"))).first();
+        log.fine("Collecting database information about world " + name + "...");
+        Document buildEntry = WrapperServer.getInstance().getMongoDB().getCollection("cloudwrapper_worlds").find(eq("name", name)).projection(include("build")).first();
 
         File zipFile = new File(worldPath + File.separator + name + ".zip");
 

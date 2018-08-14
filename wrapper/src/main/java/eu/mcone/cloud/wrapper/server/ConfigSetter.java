@@ -6,9 +6,11 @@
 package eu.mcone.cloud.wrapper.server;
 
 import com.google.common.io.Files;
+import eu.mcone.cloud.core.exception.CloudRuntimeException;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,16 +19,17 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-public class ConfigSetter {
+class ConfigSetter {
 
     private File file;
 
-    public ConfigSetter(Server server, ServerProperties.Config config) throws IOException {
+    ConfigSetter(Server server, ServerProperties.Config config) throws IOException {
         this.file = new File(server.getServerDir() + File.separator + config.getName());
 
         switch (Files.getFileExtension(config.getName())) {
             case "yml": setYamlValues(config.getValues()); break;
             case "properties": setPropertiesValues(config.getValues()); break;
+            case "json": setJsonValues(config.getValues());
         }
     }
 
@@ -41,6 +44,20 @@ public class ConfigSetter {
         properties.load(new FileInputStream(file));
         values.forEach((key, value) -> properties.setProperty(key, (String) value));
         properties.store(new FileOutputStream(file), "MCONE-Wrapper");
+    }
+
+    private void setJsonValues(Map<String, Object> values) {
+        try {
+            if (values.get("json") != null) {
+                FileUtils.writeStringToFile(file, (String) values.get("json"));
+            } else {
+                throw new CloudRuntimeException("Cannot set json to Config. Config-Value-Map does not contain key json!");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassCastException e) {
+            throw new CloudRuntimeException("Cannot set json to Config. Json value is not a String!", e);
+        }
     }
 
 }

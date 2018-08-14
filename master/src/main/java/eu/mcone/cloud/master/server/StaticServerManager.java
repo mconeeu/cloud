@@ -36,7 +36,7 @@ public class StaticServerManager {
                                     "",
                                     entry.getInteger("max"),
                                     0,
-                                    entry.getInteger("ram"),
+                                    entry.getLong("ram"),
                                     true,
                                     ServerVersion.valueOf(entry.getString("version")),
                                     "{\"plugins\":[], \"worlds\":[], \"gamemodeType\":[], \"configs\":[]}"

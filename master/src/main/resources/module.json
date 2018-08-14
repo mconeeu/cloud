@@ -1,0 +1,5 @@
+{
+  "name": "mcone-cloud-master",
+  "author": "Rufus Maiwald, Dominik Lippl",
+  "main": "eu.mcone.cloud.master.MasterServer"
+}
