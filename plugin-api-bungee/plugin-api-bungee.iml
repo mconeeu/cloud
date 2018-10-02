@@ -12,6 +12,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="plugin-api" />
+    <orderEntry type="module" module-name="cloud-api" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: net.md-5:bungeecord-api:1.13-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: net.md-5:bungeecord-chat:1.13-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.0" level="project" />

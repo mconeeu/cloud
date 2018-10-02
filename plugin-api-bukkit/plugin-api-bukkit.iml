@@ -11,8 +11,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: eu.mcone.cloud:plugin-api:1.1.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: eu.mcone.cloud:cloud-api:1.1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="plugin-api" />
+    <orderEntry type="module" module-name="cloud-api" />
     <orderEntry type="library" name="Maven: net.md-5:bungeecord-config:1.13-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.21" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:20.0" level="project" />

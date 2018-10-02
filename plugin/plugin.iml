@@ -11,10 +11,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: eu.mcone.cloud:plugin-api-bungee:1.1.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: eu.mcone.cloud:plugin-api:1.1.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: eu.mcone.cloud:cloud-api:1.1.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: eu.mcone.cloud:plugin-api-bukkit:1.1.0-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="plugin-api-bungee" />
+    <orderEntry type="module" module-name="plugin-api" />
+    <orderEntry type="module" module-name="cloud-api" />
+    <orderEntry type="module" module-name="plugin-api-bukkit" />
     <orderEntry type="library" name="Maven: eu.mcone.networkmanager:network-api:0.1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-all:4.1.19.Final" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.spigotmc:spigot:1.8.8-R0.1-SNAPSHOT" level="project" />
