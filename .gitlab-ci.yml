@@ -1,6 +1,7 @@
 build:
   script:
   - mvn --settings /home/gitlab-runner/settings.xml clean install
+  - mvn --settings /home/gitlab-runner/settings.xml deploy
   - ls
   artifacts:
     paths:
