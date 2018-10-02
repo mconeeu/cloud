@@ -5,9 +5,9 @@
 
 package eu.mcone.cloud.api.plugin;
 
-import eu.mcone.cloud.core.network.packet.Packet;
-import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.CloudWorld;
+import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.networkmanager.api.network.packet.Packet;
 import lombok.Getter;
 
 import java.util.List;

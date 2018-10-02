@@ -6,9 +6,11 @@
 package eu.mcone.cloud.master;
 
 import com.google.gson.Gson;
+import eu.mcone.cloud.core.packet.*;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.console.ConsoleCommandExecutor;
-import eu.mcone.cloud.master.network.ServerBootstrap;
+import eu.mcone.cloud.master.handler.*;
+import eu.mcone.cloud.master.network.WebRequestGetHandler;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
@@ -42,6 +44,29 @@ public class MasterServer extends NetworkModule {
     @Getter
     private List<Wrapper> wrappers = new ArrayList<>();
 
+    public void onLoad() {
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerChangeStatePacketWrapper.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerCommandExecutePacketWrapper.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerInfoPacket.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerListUpdatePacketPlugin.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerPlayerCountUpdatePacketPlugin.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerRegisterPacketPlugin.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerUpdateStatePacket.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(WrapperRegisterFromStandalonePacketWrapper.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(WrapperRegisterPacketWrapper.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(WrapperRequestPacketMaster.class);
+        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(WrapperShutdownPacketWrapper.class);
+
+        ServerPlayerCountUpdatePacketPlugin.addHandler(new ServerPlayerCountUpdateHandler());
+        ServerRegisterPacketPlugin.addHandler(new ServerRegisterHandler());
+        ServerUpdateStatePacket.addHandler(new ServerUpdateStateHandler());
+        WrapperRegisterFromStandalonePacketWrapper.addHandler(new WrapperRegisterFromStandaloneHandler());
+        WrapperRegisterPacketWrapper.addHandler(new WrapperRegisterHandler());
+        WrapperRequestPacketMaster.addHandler(new WrapperRequestHandler());
+
+        ModuleHost.getInstance().getChannelPacketHandler().registerWebRequestHandler("cloud", new WebRequestGetHandler());
+    }
+
     public void onEnable() {
         instance = this;
 
@@ -71,9 +96,6 @@ public class MasterServer extends NetworkModule {
 
         log.info("Enable progress - Starting ServerManager with TimeTask...");
         serverManager = new ServerManager();
-
-        log.info("Enable progress - Starting Netty Server...");
-        new ServerBootstrap(4567);
 
         log.info("Enable progress - "+ConsoleColor.GREEN + "Enable process finished! Cloud Master seems to be ready! Waiting for connections...\n");
     }

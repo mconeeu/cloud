@@ -5,7 +5,7 @@
 
 package eu.mcone.cloud.core.server;
 
-import eu.mcone.cloud.core.network.packet.ServerRegisterPacketPlugin;
+import eu.mcone.cloud.core.packet.ServerRegisterPacketPlugin;
 import io.netty.channel.Channel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

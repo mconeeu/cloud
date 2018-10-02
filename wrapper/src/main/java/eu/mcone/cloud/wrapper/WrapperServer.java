@@ -9,11 +9,14 @@ import com.google.gson.Gson;
 import eu.mcone.cloud.core.file.CloudConfig;
 import eu.mcone.cloud.core.file.Downloader;
 import eu.mcone.cloud.core.file.FileManager;
-import eu.mcone.cloud.core.network.packet.Packet;
+import eu.mcone.cloud.core.packet.*;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.console.ConsoleCommandExecutor;
-import eu.mcone.cloud.wrapper.network.ClientBootstrap;
+import eu.mcone.cloud.wrapper.handler.*;
 import eu.mcone.cloud.wrapper.server.Server;
+import eu.mcone.networkmanager.api.network.client.ClientBootstrap;
+import eu.mcone.networkmanager.api.network.client.NetworkmanagerClient;
+import eu.mcone.networkmanager.api.network.packet.Packet;
 import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 import eu.mcone.networkmanager.core.api.database.Database;
 import eu.mcone.networkmanager.core.api.database.MongoDatabase;
@@ -21,6 +24,7 @@ import eu.mcone.networkmanager.core.console.ConsoleReader;
 import eu.mcone.networkmanager.core.console.log.MconeLogger;
 import eu.mcone.networkmanager.core.database.MongoConnection;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -29,7 +33,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 @Log
 public class WrapperServer {
 
+    @Getter
     private static WrapperServer instance;
 
     @Getter
@@ -96,6 +103,8 @@ public class WrapperServer {
 
         threadPool = Executors.newCachedThreadPool();
 
+        registerPacketHandlers();
+
         log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. Wrapper is starting...");
 
         log.info("Enable progress - Connecting to Database...");
@@ -112,7 +121,6 @@ public class WrapperServer {
             UUID wrapperUuid = UUID.randomUUID();
             config.getConfig().set("uuid", wrapperUuid.toString());
             config.getConfig().set("master-hostname", "localhost");
-            config.getConfig().set("master-port", 4567);
             config.save();
 
             log.info("Enable progress - Initialising new Wrapper with UUID '" + wrapperUuid + "'...");
@@ -129,7 +137,27 @@ public class WrapperServer {
         }
 
         log.info("Enable progress - Trying to connect to master...");
-        nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), config.getConfig().getInt("master-port"));
+        nettyBootstrap = new ClientBootstrap(config.getConfig().getString("master-hostname"), "eu.mcone.cloud.wrapper", new NetworkmanagerClient() {
+            @Override
+            public void runAsync(Runnable runnable) {
+                threadPool.execute(runnable);
+            }
+            @Override
+            public void onChannelActive(ChannelHandlerContext chc) {
+                channel = chc.channel();
+
+                if (WrapperServer.getInstance().getServers().size() < 1) {
+                    chc.writeAndFlush(new WrapperRegisterPacketWrapper(WrapperServer.getInstance().getRam(), WrapperServer.getInstance().getWrapperUuid()));
+                } else {
+                    Map<UUID, String> serverMap = new HashMap<>();
+                    servers.forEach(server -> serverMap.put(server.getInfo().getUuid(), server.getInfo().getName()));
+
+                    chc.writeAndFlush(new WrapperRegisterFromStandalonePacketWrapper(WrapperServer.getInstance().getRam(), WrapperServer.getInstance().getWrapperUuid(), serverMap));
+                }
+            }
+            @Override
+            public void onChannelUnregistered(ChannelHandlerContext chc) {}
+        });
 
         log.info("Enable progress - "+ConsoleColor.GREEN + "Enable process finished! CloudWrapper seems to be ready! Waiting for connections...\n");
     }
@@ -157,8 +185,12 @@ public class WrapperServer {
         System.exit(0);
     }
 
-    public static WrapperServer getInstance() {
-        return instance;
+    private void registerPacketHandlers() {
+        ServerChangeStatePacketWrapper.addHandler(new ServerChangeStateHandler());
+        ServerCommandExecutePacketWrapper.addHandler(new ServerCommandExecuteHandler());
+        ServerInfoPacket.addHandler(new ServerInfoHandler());
+        WrapperRequestPacketMaster.addHandler(new WrapperRequestHandler());
+        WrapperShutdownPacketWrapper.addHandler(new WrapperShutdownHandler());
     }
 
     public Server getServer(UUID uuid) {

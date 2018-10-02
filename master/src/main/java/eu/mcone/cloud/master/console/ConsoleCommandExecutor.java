@@ -5,10 +5,10 @@
 
 package eu.mcone.cloud.master.console;
 
-import eu.mcone.cloud.core.network.packet.ServerCommandExecutePacketWrapper;
+import eu.mcone.cloud.core.packet.ServerCommandExecutePacketWrapper;
 import eu.mcone.cloud.core.server.PluginRegisterData;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.cloud.master.network.ChannelPacketHandler;
+import eu.mcone.cloud.master.handler.WrapperRegisterFromStandaloneHandler;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
@@ -66,15 +66,15 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 }
 
                 log.info("\n");
-                if (ChannelPacketHandler.getRegisteringServers() != null) {
-                    final Map<UUID, PluginRegisterData> registeringServers = ChannelPacketHandler.getRegisteringServers();
+                if (WrapperRegisterFromStandaloneHandler.getRegisteringServers() != null) {
+                    final Map<UUID, PluginRegisterData> registeringServers = WrapperRegisterFromStandaloneHandler.getRegisteringServers();
 
                     log.info("List"+ConsoleColor.RED + "[!] Current registering servers with which are not known: " + registeringServers.size());
                     log.info("List"+ConsoleColor.RED + registeringServers);
                 }
 
                 log.info("\n");
-                log.info("List - -- end");
+                log.info("List - end");
                 return;
             }
         } else if (cmd.equalsIgnoreCase("cmd")) {

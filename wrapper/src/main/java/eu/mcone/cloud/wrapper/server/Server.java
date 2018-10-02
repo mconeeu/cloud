@@ -7,7 +7,7 @@ package eu.mcone.cloud.wrapper.server;
 
 import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.core.file.UnZip;
-import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacket;
+import eu.mcone.cloud.core.packet.ServerUpdateStatePacket;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;

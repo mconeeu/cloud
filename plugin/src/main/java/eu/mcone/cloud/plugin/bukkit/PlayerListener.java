@@ -5,8 +5,8 @@
 
 package eu.mcone.cloud.plugin.bukkit;
 
-import eu.mcone.cloud.core.network.packet.ServerPlayerCountUpdatePacketPlugin;
-import eu.mcone.cloud.core.network.packet.ServerUpdateStatePacket;
+import eu.mcone.cloud.core.packet.ServerPlayerCountUpdatePacketPlugin;
+import eu.mcone.cloud.core.packet.ServerUpdateStatePacket;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import org.bukkit.Bukkit;

@@ -5,13 +5,13 @@
 
 package eu.mcone.cloud.master.wrapper;
 
-import eu.mcone.cloud.core.network.packet.Packet;
-import eu.mcone.cloud.core.network.packet.ServerChangeStatePacketWrapper;
-import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
-import eu.mcone.cloud.core.network.packet.WrapperShutdownPacketWrapper;
+import eu.mcone.cloud.core.packet.ServerChangeStatePacketWrapper;
+import eu.mcone.cloud.core.packet.ServerInfoPacket;
+import eu.mcone.cloud.core.packet.WrapperShutdownPacketWrapper;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
+import eu.mcone.networkmanager.api.network.packet.Packet;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.Setter;

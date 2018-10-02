@@ -5,7 +5,7 @@
 
 package eu.mcone.cloud.master.template;
 
-import eu.mcone.cloud.core.network.packet.ServerInfoPacket;
+import eu.mcone.cloud.core.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;

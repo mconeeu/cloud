@@ -57,7 +57,7 @@
     <dependency>
       <groupId>eu.mcone.networkmanager</groupId>
       <artifactId>host-api</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.1.0-SNAPSHOT</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -65,8 +65,8 @@
           <groupId>eu.mcone.networkmanager</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>netty-all</artifactId>
-          <groupId>io.netty</groupId>
+          <artifactId>network-api</artifactId>
+          <groupId>eu.mcone.networkmanager</groupId>
         </exclusion>
       </exclusions>
     </dependency>
