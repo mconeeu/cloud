@@ -6,7 +6,7 @@
 package eu.mcone.cloud.master.wrapper;
 
 import eu.mcone.cloud.core.packet.WrapperRequestPacketMaster;
-import eu.mcone.networkmanager.api.network.client.PacketHandler;
+import eu.mcone.networkmanager.api.network.client.handler.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.HashMap;
