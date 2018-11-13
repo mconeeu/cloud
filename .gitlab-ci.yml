@@ -17,7 +17,7 @@ deploy:
 
 pages:
   script:
-  - mvn javadoc:aggregate -pl :mcone-cloud,:core,:core-api,:host-api,:network-api
+  - mvn javadoc:aggregate -pl :mcone-cloud,:cloud-api,:plugin-api,:plugin-api-bukkit,:plugin-api-bungee
   - mkdir .public
   - cp -r $CI_PROJECT_DIR/target/site/apidocs/* .public
   - mv .public public
