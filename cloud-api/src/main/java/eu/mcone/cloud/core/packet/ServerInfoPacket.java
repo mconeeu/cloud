@@ -25,12 +25,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ServerInfoPacket extends Packet {
 
-    private static List<PacketHandler> handlerList = new ArrayList<>();
-    @Override
-    public List<PacketHandler> getHandlerList() {
-        return handlerList;
-    }
-
     private ServerInfo serverInfo;
 
     @Override

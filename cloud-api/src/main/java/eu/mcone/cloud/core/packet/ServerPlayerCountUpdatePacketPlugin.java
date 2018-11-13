@@ -23,12 +23,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ServerPlayerCountUpdatePacketPlugin extends Packet {
 
-    private static List<PacketHandler> handlerList = new ArrayList<>();
-    @Override
-    public List<PacketHandler> getHandlerList() {
-        return handlerList;
-    }
-
     private UUID uuid;
     private int playerCount;
 

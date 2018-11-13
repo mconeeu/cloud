@@ -21,12 +21,6 @@ import java.util.*;
 @NoArgsConstructor
 public class WrapperRegisterFromStandalonePacketWrapper extends Packet {
 
-    private static List<PacketHandler> handlerList = new ArrayList<>();
-    @Override
-    public List<PacketHandler> getHandlerList() {
-        return handlerList;
-    }
-
     private Long ram;
     private UUID uuid;
     private Map<UUID, String> servers;

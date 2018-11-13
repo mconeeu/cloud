@@ -17,12 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 public class WrapperShutdownPacketWrapper extends Packet {
 
-    private static List<PacketHandler> handlerList = new ArrayList<>();
-    @Override
-    public List<PacketHandler> getHandlerList() {
-        return handlerList;
-    }
-
     @Override
     public void onWrite(DataOutputStream out) {}
 

@@ -24,12 +24,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ServerRegisterPacketPlugin extends Packet {
 
-    private static List<PacketHandler> handlerList = new ArrayList<>();
-    @Override
-    public List<PacketHandler> getHandlerList() {
-        return handlerList;
-    }
-
     private UUID serverUuid;
     private String hostname;
     private int port, playercount;

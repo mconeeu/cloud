@@ -23,25 +23,19 @@ import java.util.UUID;
 @NoArgsConstructor
 public class WrapperRegisterPacketWrapper extends Packet {
 
-    private static List<PacketHandler> handlerList = new ArrayList<>();
-    @Override
-    public List<PacketHandler> getHandlerList() {
-        return handlerList;
-    }
-
     private long ram;
     private UUID uuid;
 
     @Override
     public void onWrite(DataOutputStream out) throws IOException {
-            out.writeLong(ram);
-            out.writeUTF(uuid.toString());
+        out.writeLong(ram);
+        out.writeUTF(uuid.toString());
     }
 
     @Override
     public void onRead(DataInputStream in) throws IOException {
-            ram = in.readLong();
-            uuid = UUID.fromString(in.readUTF());
+        ram = in.readLong();
+        uuid = UUID.fromString(in.readUTF());
     }
 
 }

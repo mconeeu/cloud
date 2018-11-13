@@ -45,31 +45,24 @@ public class MasterServer extends NetworkModule {
     private List<Wrapper> wrappers = new ArrayList<>();
 
     public void onLoad() {
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerChangeStatePacketWrapper.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerCommandExecutePacketWrapper.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerInfoPacket.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerListUpdatePacketPlugin.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerPlayerCountUpdatePacketPlugin.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerRegisterPacketPlugin.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(ServerUpdateStatePacket.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(WrapperRegisterFromStandalonePacketWrapper.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(WrapperRegisterPacketWrapper.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(WrapperRequestPacketMaster.class);
-        ModuleHost.getInstance().getChannelPacketHandler().registerPacket(WrapperShutdownPacketWrapper.class);
+        instance = this;
 
-        ServerPlayerCountUpdatePacketPlugin.addHandler(new ServerPlayerCountUpdateHandler());
-        ServerRegisterPacketPlugin.addHandler(new ServerRegisterHandler());
-        ServerUpdateStatePacket.addHandler(new ServerUpdateStateHandler());
-        WrapperRegisterFromStandalonePacketWrapper.addHandler(new WrapperRegisterFromStandaloneHandler());
-        WrapperRegisterPacketWrapper.addHandler(new WrapperRegisterHandler());
-        WrapperRequestPacketMaster.addHandler(new WrapperRequestHandler());
+        registerPacket(ServerChangeStatePacketWrapper.class);
+        registerPacket(ServerCommandExecutePacketWrapper.class);
+        registerPacket(ServerInfoPacket.class);
+        registerPacket(ServerListUpdatePacketPlugin.class);
+        registerPacket(ServerPlayerCountUpdatePacketPlugin.class, new ServerPlayerCountUpdateHandler());
+        registerPacket(ServerRegisterPacketPlugin.class, new ServerRegisterHandler());
+        registerPacket(ServerUpdateStatePacket.class, new ServerUpdateStateHandler());
+        registerPacket(WrapperRegisterFromStandalonePacketWrapper.class, new WrapperRegisterFromStandaloneHandler());
+        registerPacket(WrapperRegisterPacketWrapper.class, new WrapperRegisterHandler());
+        registerPacket(WrapperRequestPacketMaster.class, new WrapperRequestHandler());
+        registerPacket(WrapperShutdownPacketWrapper.class);
 
-        ModuleHost.getInstance().getChannelPacketHandler().registerWebRequestHandler("cloud", new WebRequestGetHandler());
+        //registerWebRequestHandler("cloud", new WebRequestGetHandler());
     }
 
     public void onEnable() {
-        instance = this;
-
         ModuleHost.getInstance().getConsoleReader().registerCommand(new ConsoleCommandExecutor());
         gson = new Gson();
 

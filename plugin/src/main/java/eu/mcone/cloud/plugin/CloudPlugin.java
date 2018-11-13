@@ -65,8 +65,6 @@ public class CloudPlugin extends CloudAPI {
             e.printStackTrace();
         }
 
-        ServerListUpdatePacketPlugin.addHandler(new ServerListUpdateHandler());
-
         nettyBootstrap = new ClientBootstrap("localhost", "", new NetworkmanagerClient() {
             @Override
             public void runAsync(Runnable runnable) {
@@ -83,6 +81,7 @@ public class CloudPlugin extends CloudAPI {
             @Override
             public void onChannelUnregistered(ChannelHandlerContext channelHandlerContext) {}
         });
+        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
     }
 
     public void unload() {

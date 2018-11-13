@@ -23,12 +23,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ServerChangeStatePacketWrapper extends Packet {
 
-    private static List<PacketHandler> handlerList = new ArrayList<>();
-    @Override
-    public List<PacketHandler> getHandlerList() {
-        return handlerList;
-    }
-
     private UUID serverUuid;
     private State state;
 

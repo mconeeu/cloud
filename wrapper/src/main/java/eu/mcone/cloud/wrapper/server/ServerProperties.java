@@ -31,7 +31,8 @@ public class ServerProperties {
     @AllArgsConstructor
     @Getter @Setter
     public static class PluginDownload {
-        private String ciServer, job, artifact;
+        private int project;
+        private String artifactPath;
     }
 
 }

@@ -13,13 +13,14 @@ import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.download.CiServer;
-import eu.mcone.cloud.wrapper.download.JenkinsDownloader;
+import eu.mcone.cloud.wrapper.download.GitlabArtifactDownloader;
 import eu.mcone.cloud.wrapper.download.WorldDownloader;
 import eu.mcone.cloud.wrapper.server.console.ConsoleInputReader;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
+import org.gitlab4j.api.GitLabApiException;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
+import java.net.URISyntaxException;
 
 @Log
 public abstract class Server {
@@ -86,28 +88,28 @@ public abstract class Server {
                     if (serverDir.exists()) FileUtils.deleteDirectory(serverDir);
                     serverDir.mkdir();
 
-                    for (ServerProperties.PluginDownload download : properties.getPlugins()) {
-                        File plugin = new JenkinsDownloader(CiServer.valueOf(download.getCiServer())).getJenkinsArtifact(download.getJob(), download.getArtifact());
-
-                        if (plugin != null) {
-                            log.info("[" + info.getName() + "] Implementing Plugin " + download.getJob() + ":" + download.getArtifact());
-                            FileUtils.copyFile(
-                                    plugin,
-                                    new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName())
-                            );
-                        } else {
-                            log.info("[" + info.getName() + "] Plugin " + download.getJob() + ":" + download.getArtifact() + " could not be found. Aborting download...");
-                        }
-                    }
-
                     dowloadWorlds();
                 } else {
                     if (!serverDir.exists()) serverDir.mkdir();
                 }
 
+                for (ServerProperties.PluginDownload download : properties.getPlugins()) {
+                    File plugin = WrapperServer.getInstance().getGitlabArtifactDownloader().getArtifact(download.getProject(), download.getArtifactPath());
+
+                    if (plugin != null) {
+                        log.info("[" + info.getName() + "] Implementing Plugin " + plugin.getName());
+                        FileUtils.copyFile(
+                                plugin,
+                                new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName())
+                        );
+                    } else {
+                        log.info("[" + info.getName() + "] Artifact " + download.getArtifactPath() + " from project with id " + download.getProject() + " could not be found. Aborting download...");
+                    }
+                }
+
                 log.info("Implementing Cloud-Plugin");
                 FileUtils.copyFile(
-                        new JenkinsDownloader(CiServer.MCONE).getJenkinsArtifact("MCONE-Cloud", "mcone-cloud-plugin"),
+                        WrapperServer.getInstance().getGitlabArtifactDownloader().getArtifact(28, "/plugin/target/mcone-cloud-plugin-2.0.0-SNAPSHOT.jar"),
                         new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
                 );
 
@@ -135,10 +137,11 @@ public abstract class Server {
                 } else if (state.equals(ServerState.STARTING)) {
                     log.info("[" + info.getName() + "] Server crashed while starting! Fix this problem before starting it again!");
                 }
-            } catch (IOException | InterruptedException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException | CloudException e) {
+            } catch (IOException | InterruptedException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException | GitLabApiException e) {
                 log.info("[" + info.getName() + "] Could not start server:");
-                if (e instanceof CloudException) {
-                    log.severe("[" + info.getName() + "] " + e.getMessage());
+
+                if (e instanceof GitLabApiException) {
+                    log.severe("[" + info.getName() + "] Could not download the Cloud-Plugin from Gitlab Server!");
                     e.printStackTrace();
                     return;
                 }

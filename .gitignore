@@ -1,8 +1,21 @@
+# IntelliJ
 .idea/
-cloud-api/target/
-master/target/
-plugin-api-bukkit/target/
-plugin-api-bungee/target/
-plugin-api/target/
-plugin/target/
-wrapper/target/
+*.iml
+*.ipr
+*.ivs
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# Netbeans
+nbproject/
+nbactions.xml
+
+# maven
+target/
+dependency-reduced-pom.xml
+
+# OS X
+.DS_Store

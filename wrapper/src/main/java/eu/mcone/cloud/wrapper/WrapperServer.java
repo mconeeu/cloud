@@ -12,6 +12,7 @@ import eu.mcone.cloud.core.file.FileManager;
 import eu.mcone.cloud.core.packet.*;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.console.ConsoleCommandExecutor;
+import eu.mcone.cloud.wrapper.download.GitlabArtifactDownloader;
 import eu.mcone.cloud.wrapper.handler.*;
 import eu.mcone.cloud.wrapper.server.Server;
 import eu.mcone.networkmanager.api.network.client.ClientBootstrap;
@@ -68,6 +69,8 @@ public class WrapperServer {
     @Getter
     private Gson gson;
     @Getter
+    private GitlabArtifactDownloader gitlabArtifactDownloader;
+    @Getter
     @Setter
     private Channel channel;
     @Getter
@@ -103,8 +106,6 @@ public class WrapperServer {
 
         threadPool = Executors.newCachedThreadPool();
 
-        registerPacketHandlers();
-
         log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. Wrapper is starting...");
 
         log.info("Enable progress - Connecting to Database...");
@@ -127,6 +128,8 @@ public class WrapperServer {
             this.wrapperUuid = wrapperUuid;
         }
 
+        gitlabArtifactDownloader = new GitlabArtifactDownloader();
+
         log.info("Enable progress - Downloading missing executeables for all ServerVersions:");
         try {
             for (ServerVersion v : ServerVersion.values()) {
@@ -145,6 +148,7 @@ public class WrapperServer {
             @Override
             public void onChannelActive(ChannelHandlerContext chc) {
                 channel = chc.channel();
+                registerPacketHandlers();
 
                 if (WrapperServer.getInstance().getServers().size() < 1) {
                     chc.writeAndFlush(new WrapperRegisterPacketWrapper(WrapperServer.getInstance().getRam(), WrapperServer.getInstance().getWrapperUuid()));
@@ -186,11 +190,12 @@ public class WrapperServer {
     }
 
     private void registerPacketHandlers() {
-        ServerChangeStatePacketWrapper.addHandler(new ServerChangeStateHandler());
-        ServerCommandExecutePacketWrapper.addHandler(new ServerCommandExecuteHandler());
-        ServerInfoPacket.addHandler(new ServerInfoHandler());
-        WrapperRequestPacketMaster.addHandler(new WrapperRequestHandler());
-        WrapperShutdownPacketWrapper.addHandler(new WrapperShutdownHandler());
+        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerChangeStatePacketWrapper.class, new ServerChangeStateHandler());
+        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerChangeStatePacketWrapper.class, new ServerChangeStateHandler());
+        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerCommandExecutePacketWrapper.class, new ServerCommandExecuteHandler());
+        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerInfoPacket.class, new ServerInfoHandler());
+        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(WrapperRequestPacketMaster.class, new WrapperRequestHandler());
+        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(WrapperShutdownPacketWrapper.class, new WrapperShutdownHandler());
     }
 
     public Server getServer(UUID uuid) {
