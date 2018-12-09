@@ -19,10 +19,9 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -54,13 +53,13 @@ public class CloudPlugin extends CloudAPI {
 
         try {
             Properties ps = new Properties();
-            ps.load(new InputStreamReader(Files.newInputStream(Paths.get("server.properties"))));
+            FileInputStream fis = new FileInputStream(new File("server.properties"));
+            ps.load(fis);
 
             serverName = ps.getProperty("server-name");
             serverUuid = UUID.fromString(ps.getProperty("server-uuid"));
             hostname = ps.getProperty("wrapper-ip");
             port = Integer.valueOf(ps.getProperty("server-port"));
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -81,7 +80,7 @@ public class CloudPlugin extends CloudAPI {
             @Override
             public void onChannelUnregistered(ChannelHandlerContext channelHandlerContext) {}
         });
-        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
+        nettyBootstrap.getPacketManager().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
     }
 
     public void unload() {

@@ -37,7 +37,7 @@ public class WorldDownloader {
 
         File zipFile = new File(worldPath + File.separator + name + ".zip");
 
-        int oldBuild = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("worlds").getInt(name);
+        int oldBuild = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("worlds").getInt(name.replace('.', '-'));
         int build = buildEntry.getInteger("build");
 
         if (build != oldBuild) {
@@ -49,7 +49,7 @@ public class WorldDownloader {
                 fos.write(worldEntry.get("bytes", Binary.class).getData());
                 fos.close();
 
-                WrapperServer.getInstance().getConfig().getConfig().set("builds.worlds." + name, build);
+                WrapperServer.getInstance().getConfig().getConfig().set("builds.worlds." + name.replace('.', '-'), build);
                 WrapperServer.getInstance().getConfig().save();
 
                 return new CloudWorld(

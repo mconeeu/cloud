@@ -10,7 +10,7 @@ import eu.mcone.cloud.core.packet.*;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.console.ConsoleCommandExecutor;
 import eu.mcone.cloud.master.handler.*;
-import eu.mcone.cloud.master.network.WebRequestGetHandler;
+import eu.mcone.cloud.master.network.WrapperConnectionListener;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
@@ -58,6 +58,8 @@ public class MasterServer extends NetworkModule {
         registerPacket(WrapperRegisterPacketWrapper.class, new WrapperRegisterHandler());
         registerPacket(WrapperRequestPacketMaster.class, new WrapperRequestHandler());
         registerPacket(WrapperShutdownPacketWrapper.class);
+
+        ModuleHost.getInstance().getPacketManager().registerConnectionListener(new WrapperConnectionListener());
 
         //registerWebRequestHandler("cloud", new WebRequestGetHandler());
     }

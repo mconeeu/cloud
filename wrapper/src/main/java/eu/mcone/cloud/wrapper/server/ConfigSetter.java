@@ -41,9 +41,15 @@ class ConfigSetter {
 
     private void setPropertiesValues(Map<String, Object> values) throws IOException {
         Properties properties = new Properties();
-        properties.load(new FileInputStream(file));
+        FileInputStream fis = new FileInputStream(file);
+        properties.load(fis);
+
         values.forEach((key, value) -> properties.setProperty(key, (String) value));
-        properties.store(new FileOutputStream(file), "MCONE-Wrapper");
+        FileOutputStream fos = new FileOutputStream(file);
+        properties.store(fos, "MCONE-Wrapper");
+
+        fos.close();
+        fis.close();
     }
 
     private void setJsonValues(Map<String, Object> values) {

@@ -55,7 +55,7 @@ public class WrapperRegisterFromStandaloneHandler implements PacketHandler<Wrapp
             w.destroyServer(uuid);
         }
 
-        log.info("WrapperRegister - "+ ConsoleColor.YELLOW+"Waiting 5sec for servers to register...");
+        log.info("WrapperRegister - "+ ConsoleColor.YELLOW+"Waiting 10sec for servers to register...");
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
             for (HashMap.Entry<UUID, Server> e : newServers.entrySet()) {
                 final UUID uuid = e.getKey();
@@ -78,7 +78,7 @@ public class WrapperRegisterFromStandaloneHandler implements PacketHandler<Wrapp
                 s.setPreventStart(false);
             }
             log.info("WrapperRegister - "+ConsoleColor.GREEN+"Wrapper "+w.getUuid()+" is successfully registered from Standalone Mode!");
-        }, 5000, TimeUnit.MILLISECONDS);
+        }, 10000, TimeUnit.MILLISECONDS);
     }
 
 }

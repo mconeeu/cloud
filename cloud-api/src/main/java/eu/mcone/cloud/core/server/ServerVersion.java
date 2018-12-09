@@ -8,9 +8,8 @@ package eu.mcone.cloud.core.server;
 import lombok.Getter;
 
 public enum ServerVersion {
-    BUKKIT("https://yivesmirror.com/files/craftbukkit/craftbukkit-latest.jar"),
-    SPIGOT_LATEST("https://yivesmirror.com/files/paper/Paper-latest.jar"),
-    SPIGOT("https://yivesmirror.com/files/spigot/spigot-1.8.8-R0.1-SNAPSHOT-latest.jar"),
+    SPIGOT_LATEST("https://cdn.getbukkit.org/spigot/spigot-1.8.8-R0.1-SNAPSHOT-latest.jar"),
+    SPIGOT("https://cdn.getbukkit.org/spigot/spigot-1.13.2.jar"),
     BUNGEE("https://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar");
 
     @Getter

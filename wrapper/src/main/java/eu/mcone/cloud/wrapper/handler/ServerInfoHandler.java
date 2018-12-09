@@ -32,7 +32,7 @@ public class ServerInfoHandler implements PacketHandler<ServerInfoPacket> {
 
         switch (packet.getServerInfo().getVersion()) {
             case BUNGEE: new BungeeCord(packet.getServerInfo()); break;
-            case SPIGOT: case BUKKIT: new Bukkit(packet.getServerInfo()); break;
+            case SPIGOT: new Bukkit(packet.getServerInfo()); break;
         }
     }
 

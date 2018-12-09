@@ -5,15 +5,12 @@
 
 package eu.mcone.cloud.wrapper.server;
 
-import eu.mcone.cloud.core.exception.CloudException;
 import eu.mcone.cloud.core.file.UnZip;
 import eu.mcone.cloud.core.packet.ServerUpdateStatePacket;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.WrapperServer;
-import eu.mcone.cloud.wrapper.download.CiServer;
-import eu.mcone.cloud.wrapper.download.GitlabArtifactDownloader;
 import eu.mcone.cloud.wrapper.download.WorldDownloader;
 import eu.mcone.cloud.wrapper.server.console.ConsoleInputReader;
 import lombok.Getter;
@@ -28,12 +25,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
-import java.net.URISyntaxException;
+import java.nio.file.Files;
 
 @Log
 public abstract class Server {
 
-    private static final File homeDir = WrapperServer.getInstance().getFileManager().getHomeDir();
+    private static final File HOME_DIR = WrapperServer.getInstance().getFileManager().getHomeDir();
 
     @Getter @Setter
     protected ServerInfo info;
@@ -43,6 +40,8 @@ public abstract class Server {
     protected Process process;
     @Getter
     protected File serverDir;
+    @Getter
+    private File pluginDir;
     @Getter
     protected ServerState state = ServerState.OFFLINE;
     @Getter
@@ -55,17 +54,54 @@ public abstract class Server {
         this.properties = WrapperServer.getInstance().getGson().fromJson(info.getProperties(), ServerProperties.class);
 
         if (info.isStaticServer()) {
-            this.serverDir = new File(homeDir + File.separator + "staticservers" + File.separator + info.getName());
+            this.serverDir = new File(HOME_DIR + File.separator + "staticservers" + File.separator + info.getName());
         } else {
-            this.serverDir = new File(homeDir + File.separator + "servers" + File.separator + info.getName());
+            this.serverDir = new File(HOME_DIR + File.separator + "servers" + File.separator + info.getName());
         }
+        pluginDir = new File(serverDir, "plugins");
+
         System.out.println();
         WrapperServer.getInstance().getServers().add(this);
     }
 
+    public abstract void doStop();
+
     public abstract void start();
 
-    public abstract void stop();
+    public void stop() {
+        if (process != null) {
+            if (process.isAlive()) {
+                log.info("["+info.getName()+"] Stopping server...");
+                doStop();
+                this.setState(ServerState.OFFLINE);
+            } else {
+                log.warning("["+info.getName()+"] Could not stop server because the process is dead!");
+            }
+        } else {
+            log.severe("["+info.getName()+"] Could not stop server because it has no process!");
+        }
+    }
+
+    public void restart() {
+        if (process != null) {
+            if (process.isAlive()) {
+                log.info("["+info.getName()+"] Stopping server...");
+                state = ServerState.OFFLINE;
+                doStop();
+
+                try {
+                    process.waitFor();
+                    start();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                log.warning("["+info.getName()+"] Could not stop server because the process is dead!");
+            }
+        } else {
+            log.severe("["+info.getName()+"] Could not stop server because it has no process!");
+        }
+    }
 
     abstract void setConfig() throws IOException;
 
@@ -81,7 +117,7 @@ public abstract class Server {
         setState(ServerState.STARTING);
 
         WrapperServer.getInstance().getThreadPool().execute(() -> {
-            final File executable = new File(homeDir + File.separator + "jars" + File.separator + info.getVersion().toString() + ".jar");
+            final File executable = new File(HOME_DIR + File.separator + "jars" + File.separator + info.getVersion().toString() + ".jar");
 
             try {
                 if (!info.isStaticServer()) {
@@ -93,14 +129,16 @@ public abstract class Server {
                     if (!serverDir.exists()) serverDir.mkdir();
                 }
 
+                if (!pluginDir.exists()) pluginDir.mkdirs();
+
                 for (ServerProperties.PluginDownload download : properties.getPlugins()) {
                     File plugin = WrapperServer.getInstance().getGitlabArtifactDownloader().getArtifact(download.getProject(), download.getArtifactPath());
 
                     if (plugin != null) {
                         log.info("[" + info.getName() + "] Implementing Plugin " + plugin.getName());
-                        FileUtils.copyFile(
-                                plugin,
-                                new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName())
+                        Files.copy(
+                                plugin.toPath(),
+                                new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName()).toPath()
                         );
                     } else {
                         log.info("[" + info.getName() + "] Artifact " + download.getArtifactPath() + " from project with id " + download.getProject() + " could not be found. Aborting download...");
@@ -128,6 +166,7 @@ public abstract class Server {
 
                 this.process.waitFor();
                 this.process.destroy();
+                this.process.destroyForcibly();
                 log.info("[" + info.getName() + "] Server stopped!");
 
                 if (state.equals(ServerState.WAITING)) {
@@ -138,7 +177,7 @@ public abstract class Server {
                     log.info("[" + info.getName() + "] Server crashed while starting! Fix this problem before starting it again!");
                 }
             } catch (IOException | InterruptedException | IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException | GitLabApiException e) {
-                log.info("[" + info.getName() + "] Could not start server:");
+                log.severe("[" + info.getName() + "] Could not start server:");
 
                 if (e instanceof GitLabApiException) {
                     log.severe("[" + info.getName() + "] Could not download the Cloud-Plugin from Gitlab Server!");
@@ -149,12 +188,6 @@ public abstract class Server {
                 e.printStackTrace();
             }
         });
-        log.info("[" + info.getName() + "] Server start initialised, method returned");
-    }
-
-    public void restart() {
-        stop();
-        start();
     }
 
     public void forcestop() {
@@ -186,6 +219,7 @@ public abstract class Server {
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                     out.write(command + "\n");
                     out.flush();
+                    out.close();
 
                     log.info("[" + info.getName() + "] Sent command '" + command + "'");
                 } else {

@@ -16,11 +16,11 @@ import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 @Log
@@ -48,18 +48,8 @@ public class BungeeCord extends Server {
     }
 
     @Override
-    public void stop() {
-        if (process != null) {
-            if (process.isAlive()) {
-                log.info("["+info.getName()+"] Stopping server...");
-                this.sendCommand("end");
-                this.setState(ServerState.OFFLINE);
-            } else {
-                log.warning("["+info.getName()+"] Could not stop server because the process is dead!");
-            }
-        } else {
-            log.severe("["+info.getName()+"] Could not stop server because it has no process!");
-        }
+    public void doStop() {
+        this.sendCommand("end");
     }
 
     @Override
@@ -75,8 +65,8 @@ public class BungeeCord extends Server {
         }
         log.info("["+info.getName()+"] Setting all server properties...");
         Properties ps = new Properties();
-        final InputStreamReader isrProperties = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
-        ps.load(isrProperties);
+        FileInputStream fisProperties = new FileInputStream(propertyFile);
+        ps.load(fisProperties);
 
         //Server Data
         ps.setProperty("wrapper-ip", WrapperServer.getInstance().getHostname());
@@ -85,9 +75,11 @@ public class BungeeCord extends Server {
         ps.setProperty("server-uuid", info.getUuid().toString());
         ps.setProperty("server-name", info.getName());
 
-        OutputStream outputstream = Files.newOutputStream(Paths.get(propertyFile.getPath()));
-        outputstream.flush();
-        ps.store(outputstream, "MCONE_WRAPPER");
+        FileOutputStream fosProperties = new FileOutputStream(propertyFile);
+        ps.store(fosProperties, "MCONE_WRAPPER");
+
+        fisProperties.close();
+        fosProperties.close();
 
 
         /*
@@ -99,8 +91,8 @@ public class BungeeCord extends Server {
             FileUtils.copyURLToFile(fileUrl, configFile);
         }
 
-        final InputStreamReader isrBungee = new InputStreamReader(Files.newInputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
-        final Configuration bungeeConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(isrBungee);
+        FileInputStream fisBungee = new FileInputStream(configFile);
+        Configuration bungeeConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(fisBungee);
 
         bungeeConf.set("online_mode", true);
         bungeeConf.set("ip_forward", true);
@@ -116,8 +108,8 @@ public class BungeeCord extends Server {
         result.add(values);
         bungeeConf.set("listeners", result);
 
-        OutputStreamWriter oswBungee = new OutputStreamWriter(Files.newOutputStream(Paths.get(configFile.getPath())), StandardCharsets.UTF_8);
-        ConfigurationProvider.getProvider(YamlConfiguration.class).save(bungeeConf, oswBungee);
+        ConfigurationProvider.getProvider(YamlConfiguration.class).save(bungeeConf, configFile);
+        fisBungee.close();
     }
 
     private static int calculatePort() {

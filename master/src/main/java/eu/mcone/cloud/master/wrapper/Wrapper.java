@@ -102,22 +102,22 @@ public class Wrapper {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.START));
         log.info("["+uuid+"] Setting Wrapper Busy...");
         setBusy(true);
-        log.info("["+uuid+"] Started server " + server.getInfo().getName() + "!");
+        log.info("["+uuid+"] Initialized start of server " + server.getInfo().getName() + "!");
     }
 
     public void stopServer(Server server) {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.STOP));
-        log.info("["+uuid+"] Stopped server " + server.getInfo().getName() + "!");
+        log.info("["+uuid+"] Initialized stop of server " + server.getInfo().getName() + "!");
     }
 
     public void forcestopServer(Server server) {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.FORCESTOP));
-        log.info("["+uuid+"] Stopped server " + server.getInfo().getName() + "!");
+        log.info("["+uuid+"] Initialized force-stop of server " + server.getInfo().getName() + "!");
     }
 
     public void restartServer(Server server) {
         channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.RESTART));
-        log.info("["+uuid+"] Stopped server " + server.getInfo().getName() + "!");
+        log.info("["+uuid+"] Initialized restart of server " + server.getInfo().getName() + "!");
     }
 
     public void send(Packet packet) {

@@ -17,12 +17,10 @@ import net.md_5.bungee.config.YamlConfiguration;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Properties;
 
 @Log
@@ -55,25 +53,15 @@ public class Bukkit extends Server {
     }
 
     @Override
-    public void stop() {
-        if (process != null) {
-            if (process.isAlive()) {
-                log.info("["+info.getName()+"] Stopping server...");
-                this.sendCommand("stop");
-                this.setState(ServerState.OFFLINE);
-            } else {
-                log.warning("["+info.getName()+"] Could not stop server because the process is dead!");
-            }
-        } else {
-            log.severe("["+info.getName()+"] Could not stop server because it has no process!");
-        }
+    public void doStop() {
+        this.sendCommand("stop");
     }
 
     @Override
     void setConfig() throws IOException {
-        final File propertyFile = new File(serverDir+File.separator+"server.properties");
-        final File spigotFile = new File(serverDir+File.separator+"spigot.yml");
-        final File bukkitFile = new File(serverDir+File.separator+"bukkit.yml");
+        final File propertyFile = new File(serverDir + File.separator + "server.properties");
+        final File spigotFile = new File(serverDir + File.separator + "spigot.yml");
+        final File bukkitFile = new File(serverDir + File.separator + "bukkit.yml");
 
         /*
          * server.properties
@@ -82,10 +70,10 @@ public class Bukkit extends Server {
             URL fileUrl = getClass().getResource("/server.properties");
             FileUtils.copyURLToFile(fileUrl, propertyFile);
         }
-        log.info("["+info.getName()+"] Setting all server properties...");
+        log.info("[" + info.getName() + "] Setting all server properties...");
         Properties ps = new Properties();
-        final InputStreamReader isrProperties = new InputStreamReader(Files.newInputStream(Paths.get(propertyFile.getPath())));
-        ps.load(isrProperties);
+        FileInputStream fis = new FileInputStream(propertyFile);
+        ps.load(fis);
 
         //Server Data
         ps.setProperty("online-mode", "false");
@@ -100,7 +88,10 @@ public class Bukkit extends Server {
         ps.setProperty("server-templateID", Integer.toString(info.getTemplateID()));
         ps.setProperty("server-name", info.getName());
 
-        ps.store(new FileOutputStream(propertyFile), "MCONE_Wrapper");
+        FileOutputStream fos = new FileOutputStream(propertyFile);
+        ps.store(fos, "MCONE_Wrapper");
+        fos.close();
+        fis.close();
 
 
         if (info.getVersion().equals(ServerVersion.SPIGOT)) {
@@ -112,7 +103,7 @@ public class Bukkit extends Server {
                 FileUtils.copyURLToFile(fileUrl, spigotFile);
             }
 
-            log.info("["+info.getName()+"] Setting all spigot.yml settings...");
+            log.info("[" + info.getName() + "] Setting all spigot.yml settings...");
             final Configuration spigotConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(spigotFile);
 
             Configuration sectionSettings = spigotConf.getSection("settings");
@@ -137,7 +128,7 @@ public class Bukkit extends Server {
             FileUtils.copyURLToFile(fileUrl, bukkitFile);
         }
 
-        log.info("["+info.getName()+"] Setting all bukkit.yml settings...");
+        log.info("[" + info.getName() + "] Setting all bukkit.yml settings...");
         final Configuration bukkitConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(bukkitFile);
 
         Configuration sectionBukkitSettings = bukkitConf.getSection("settings");

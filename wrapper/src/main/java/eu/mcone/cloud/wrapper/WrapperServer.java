@@ -96,7 +96,7 @@ public class WrapperServer {
         fileManager.createHomeDir("servers");
         fileManager.createHomeDir("staticservers");
         fileManager.createHomeDir("jars");
-        fileManager.createHomeDir("jars" + File.separator + "jenkins");
+        fileManager.createHomeDir("jars" + File.separator + "gitlab");
         fileManager.createHomeDir("worlds");
 
         consoleReader = new ConsoleReader();
@@ -131,12 +131,12 @@ public class WrapperServer {
         gitlabArtifactDownloader = new GitlabArtifactDownloader();
 
         log.info("Enable progress - Downloading missing executeables for all ServerVersions:");
-        try {
-            for (ServerVersion v : ServerVersion.values()) {
+        for (ServerVersion v : ServerVersion.values()) {
+            try {
                 Downloader.download(v.getDownloadLink(), new File(fileManager.getHomeDir() + File.separator + "jars" + File.separator + v.toString() + ".jar"));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         log.info("Enable progress - Trying to connect to master...");
@@ -174,7 +174,7 @@ public class WrapperServer {
 
         log.info("Shutdowm progress - Stopping running servers...");
         for (Server s : servers) {
-            s.stop();
+            s.doStop();
         }
 
         try {
@@ -190,12 +190,11 @@ public class WrapperServer {
     }
 
     private void registerPacketHandlers() {
-        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerChangeStatePacketWrapper.class, new ServerChangeStateHandler());
-        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerChangeStatePacketWrapper.class, new ServerChangeStateHandler());
-        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerCommandExecutePacketWrapper.class, new ServerCommandExecuteHandler());
-        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(ServerInfoPacket.class, new ServerInfoHandler());
-        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(WrapperRequestPacketMaster.class, new WrapperRequestHandler());
-        nettyBootstrap.getChannelPacketHandler().registerPacketHandler(WrapperShutdownPacketWrapper.class, new WrapperShutdownHandler());
+        nettyBootstrap.getPacketManager().registerPacketHandler(ServerChangeStatePacketWrapper.class, new ServerChangeStateHandler());
+        nettyBootstrap.getPacketManager().registerPacketHandler(ServerCommandExecutePacketWrapper.class, new ServerCommandExecuteHandler());
+        nettyBootstrap.getPacketManager().registerPacketHandler(ServerInfoPacket.class, new ServerInfoHandler());
+        nettyBootstrap.getPacketManager().registerPacketHandler(WrapperRequestPacketMaster.class, new WrapperRequestHandler());
+        nettyBootstrap.getPacketManager().registerPacketHandler(WrapperShutdownPacketWrapper.class, new WrapperShutdownHandler());
     }
 
     public Server getServer(UUID uuid) {

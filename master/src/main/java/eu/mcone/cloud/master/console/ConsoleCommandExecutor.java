@@ -101,6 +101,7 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 Server s = MasterServer.getInstance().getServer(args[0]);
 
                 if (s != null) {
+                    System.out.println("Executing start command");
                     s.start();
                 } else {
                     log.info(ConsoleColor.RED + "The server " + args[0] + " does not exist!");
