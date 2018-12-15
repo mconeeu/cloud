@@ -6,22 +6,18 @@
 package eu.mcone.cloud.master.console;
 
 import eu.mcone.cloud.core.packet.ServerCommandExecutePacketWrapper;
-import eu.mcone.cloud.core.server.PluginRegisterData;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.cloud.master.handler.WrapperRegisterFromStandaloneHandler;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import eu.mcone.networkmanager.core.api.console.CommandExecutor;
 import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 
-import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 public class ConsoleCommandExecutor implements CommandExecutor {
 
-    private final static Logger log = Logger.getLogger("commandExecutor");
+    private final static Logger log = Logger.getLogger("eu.mcone.cloud.master.console.noClassName");
 
     @Override
     public void onCommand(String cmd, String[] args) {
@@ -66,17 +62,10 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 }
 
                 log.info("\n");
-                if (WrapperRegisterFromStandaloneHandler.getRegisteringServers() != null) {
-                    final Map<UUID, PluginRegisterData> registeringServers = WrapperRegisterFromStandaloneHandler.getRegisteringServers();
-
-                    log.info("List"+ConsoleColor.RED + "[!] Current registering servers with which are not known: " + registeringServers.size());
-                    log.info("List"+ConsoleColor.RED + registeringServers);
-                }
-
-                log.info("\n");
                 log.info("List - end");
-                return;
             }
+        } else if (cmd.equalsIgnoreCase("masterreload")) {
+            MasterServer.getInstance().reload();
         } else if (cmd.equalsIgnoreCase("cmd")) {
             if (args.length >= 2) {
                 Server s = MasterServer.getInstance().getServer(args[0]);
@@ -94,19 +83,17 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 } else {
                     log.info(ConsoleColor.RED + "No suitable server found for name " + args[0]);
                 }
-                return;
             }
         } else if (cmd.equalsIgnoreCase("startserver")) {
             if (args.length == 1) {
                 Server s = MasterServer.getInstance().getServer(args[0]);
 
                 if (s != null) {
-                    System.out.println("Executing start command");
+                    log.info("Executing start command");
                     s.start();
                 } else {
                     log.info(ConsoleColor.RED + "The server " + args[0] + " does not exist!");
                 }
-                return;
             }
         } else if (cmd.equalsIgnoreCase("stopserver")) {
             if (args.length == 1) {
@@ -117,7 +104,6 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 } else {
                     log.info(ConsoleColor.RED + "The server " + args[0] + " does not exist!");
                 }
-                return;
             }
         } else if (cmd.equalsIgnoreCase("forcestopserver")) {
             if (args.length == 1) {
@@ -128,16 +114,19 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 } else {
                     log.info(ConsoleColor.RED + "Dieser Server existiert nicht!");
                 }
-                return;
             }
-        } else if (cmd.equalsIgnoreCase("reload")) {
-            if (args.length == 0) {
-                MasterServer.getInstance().reload();
-                return;
+        } else if (cmd.equalsIgnoreCase("createserver")) {
+            if (args.length == 2) {
+                try {
+                    Template template = MasterServer.getInstance().getTeamplate(args[0]);
+                    int amount = Integer.parseInt(args[1]);
+
+                    template.createServer(amount);
+                } catch (NumberFormatException e) {
+                    log.severe("Second arg must be a number");
+                }
             }
         }
-
-        log.info(ConsoleColor.RED + cmd + " is not a valid command!");
     }
 
 }

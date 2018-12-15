@@ -26,6 +26,8 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @Log
 public abstract class Server {
@@ -60,7 +62,6 @@ public abstract class Server {
         }
         pluginDir = new File(serverDir, "plugins");
 
-        System.out.println();
         WrapperServer.getInstance().getServers().add(this);
     }
 
@@ -73,13 +74,14 @@ public abstract class Server {
             if (process.isAlive()) {
                 log.info("["+info.getName()+"] Stopping server...");
                 doStop();
-                this.setState(ServerState.OFFLINE);
             } else {
-                log.warning("["+info.getName()+"] Could not stop server because the process is dead!");
+                log.warning("["+info.getName()+"] Process is already dead!");
             }
         } else {
-            log.severe("["+info.getName()+"] Could not stop server because it has no process!");
+            log.warning("["+info.getName()+"] Process is null!");
         }
+
+        setState(ServerState.OFFLINE);
     }
 
     public void restart() {
@@ -91,7 +93,6 @@ public abstract class Server {
 
                 try {
                     process.waitFor();
-                    start();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -101,6 +102,8 @@ public abstract class Server {
         } else {
             log.severe("["+info.getName()+"] Could not stop server because it has no process!");
         }
+
+        start();
     }
 
     abstract void setConfig() throws IOException;
@@ -138,7 +141,8 @@ public abstract class Server {
                         log.info("[" + info.getName() + "] Implementing Plugin " + plugin.getName());
                         Files.copy(
                                 plugin.toPath(),
-                                new File(serverDir + File.separator + "plugins" + File.separator + plugin.getName()).toPath()
+                                Paths.get(serverDir.getPath(), "plugins", plugin.getName()),
+                                StandardCopyOption.REPLACE_EXISTING
                         );
                     } else {
                         log.info("[" + info.getName() + "] Artifact " + download.getArtifactPath() + " from project with id " + download.getProject() + " could not be found. Aborting download...");
@@ -146,12 +150,13 @@ public abstract class Server {
                 }
 
                 log.info("Implementing Cloud-Plugin");
-                FileUtils.copyFile(
-                        WrapperServer.getInstance().getGitlabArtifactDownloader().getArtifact(28, "/plugin/target/mcone-cloud-plugin-2.0.0-SNAPSHOT.jar"),
-                        new File(serverDir + File.separator + "plugins" + File.separator + "MCONE-CloudPlugin.jar")
+                Files.copy(
+                        WrapperServer.getInstance().getGitlabArtifactDownloader().getArtifact(28, "/plugin/target/mcone-cloud-plugin-2.0.1-SNAPSHOT.jar").toPath(),
+                        Paths.get(serverDir.getPath(), "plugins", "mcone-cloud-plugin-2.0.1-SNAPSHOT.jar"),
+                        StandardCopyOption.REPLACE_EXISTING
                 );
 
-                FileUtils.copyFile(executable, new File(serverDir + File.separator + "server.jar"));
+                Files.copy(executable.toPath(), Paths.get(serverDir.getPath(), "server.jar"), StandardCopyOption.REPLACE_EXISTING);
 
                 setConfig();
                 for (ServerProperties.Config config : properties.getConfigs()) {
@@ -195,21 +200,21 @@ public abstract class Server {
             if (process.isAlive()) {
                 log.info("[" + info.getName() + "] ForceStop server " + info.getName() + "...");
                 process.destroy();
-                setState(ServerState.OFFLINE);
             } else {
-                log.info("[" + info.getName() + "] Could not be forcestop server because the process is dead...");
+                log.info("[" + info.getName() + "] Process is already dead!");
             }
         } else {
-            log.info("[" + info.getName() + "] Could not forcestop because server has no process...");
+            log.warning("[" + info.getName() + "] Process was null!");
         }
+
+        setState(ServerState.OFFLINE);
     }
 
     public void delete() {
         log.info("[" + info.getName() + "] Deleting server...");
-        if (process.isAlive()) this.forcestop();
 
+        if (process.isAlive()) this.forcestop();
         WrapperServer.getInstance().getServers().remove(this);
-        log.info("[" + info.getName() + "] Server deleted...");
     }
 
     public void sendCommand(String command) {

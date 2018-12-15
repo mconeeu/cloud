@@ -13,6 +13,9 @@ import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.networkmanager.api.network.packet.Packet;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -24,15 +27,28 @@ import java.util.UUID;
 @Log
 public class Wrapper {
 
+    public final static GenericFutureListener<Future<? super Void>> FUTURE_LISTENER = future -> {
+        if (!future.isSuccess() || future.isCancelled()) {
+            log.severe("Netty Flush Operation failed:" +
+                    "\nisDone ? " + future.isDone() + ", " +
+                    "\nisSuccess ? " + future.isSuccess() + ", " +
+                    "\ncause : " + future.cause() + ", " +
+                    "\nisCancelled ? " + future.isCancelled());
+            if (future.cause() != null) future.cause().printStackTrace();
+        }
+    };
+
     @Getter
     private UUID uuid;
     @Getter
     private long ram;
-    @Getter @Setter
+    @Getter
+    @Setter
     private long ramInUse;
     @Getter
     private Channel channel;
-    @Getter @Setter
+    @Getter
+    @Setter
     private boolean busy = false;
     @Getter
     private Set<Server> servers;
@@ -43,12 +59,12 @@ public class Wrapper {
         this.ram = ram;
         this.servers = new HashSet<>();
 
-        log.info("["+uuid+"] Registered wrapper");
+        log.info("[" + uuid + "] Registered wrapper");
     }
 
-    public void delete() {
+    public void unregister() {
         for (Server s : servers) {
-            log.info("["+uuid+"] Unregistering server "+s.getInfo().getName());
+            log.info("[" + uuid + "] Unregistering server " + s.getInfo().getName());
             s.setWrapper(null);
             s.setChannel(null);
             s.setPlayerCount(-1);
@@ -65,68 +81,83 @@ public class Wrapper {
     }
 
     public void shutdown() {
-        channel.writeAndFlush(new WrapperShutdownPacketWrapper());
-        delete();
-    }
-
-    public void createServer(Server s) {
-        if (s.getInfo().getRam() + this.ramInUse <= this.ram) {
-            this.ramInUse += s.getInfo().getRam();
-
-            //Request server creation
-            channel.writeAndFlush(new ServerInfoPacket(s.getInfo()));
-
-            s.setWrapper(this);
-            servers.add(s);
-            log.info("["+uuid+"] Created server " + s.getInfo().getName() + "!");
-        } else {
-            log.info("["+uuid+"] Cannot create Server because less ram available!");
+        try {
+            log.fine("[" + uuid + "] Shutting down wrapper!");
+            send(new WrapperShutdownPacketWrapper()).await();
+            unregister();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
-    public void destroyServer(Server server) {
-        this.ramInUse -= server.getInfo().getRam();
-        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.DELETE));
+    public ChannelFuture createServer(Server s) {
+        if (!servers.contains(s)) {
+            if (s.getInfo().getRam() + this.ramInUse <= this.ram) {
+                this.ramInUse += s.getInfo().getRam();
+                s.setWrapper(this);
+                servers.add(s);
 
-        server.setWrapper(null);
-        server.setState(ServerState.OFFLINE);
-        log.info("["+uuid+"] Deleted server " + server.getInfo().getName() + "!");
+                log.fine("[" + uuid + "] Creating server " + s.getInfo().getName() + "!");
+                return send(new ServerInfoPacket(s.getInfo()));
+            } else {
+                log.warning("[" + uuid + "] Cannot create Server because less ram available!");
+            }
+        } else {
+            log.severe("[" + uuid + "] Server " + s.getInfo().getName() + " is already known on this Wrapper!");
+        }
+
+        return null;
     }
 
-    public void destroyServer(UUID uuid) {
-        this.ramInUse -= ram;
-        channel.writeAndFlush(new ServerChangeStatePacketWrapper(uuid, ServerChangeStatePacketWrapper.State.DELETE));
+    public ChannelFuture deleteServer(Server s) {
+        if (servers.contains(s)) {
+            this.ramInUse -= s.getInfo().getRam();
+            s.setWrapper(null);
+            s.setState(ServerState.OFFLINE);
+
+            log.fine("[" + uuid + "] Deleting server " + s.getInfo().getName() + "!");
+            servers.remove(s);
+            return send(new ServerChangeStatePacketWrapper(s.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.DELETE));
+        } else {
+            log.severe("[" + uuid + "] Server " + s.getInfo().getName() + " is not known on this Wrapper!");
+            return null;
+        }
     }
 
-    public void startServer(Server server) {
-        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.START));
-        log.info("["+uuid+"] Setting Wrapper Busy...");
+    public ChannelFuture deleteServer(UUID uuid) {
+        return send(new ServerChangeStatePacketWrapper(uuid, ServerChangeStatePacketWrapper.State.DELETE));
+    }
+
+    public ChannelFuture startServer(Server server) {
+        log.finest("[" + uuid + "] Setting Wrapper Busy...");
         setBusy(true);
-        log.info("["+uuid+"] Initialized start of server " + server.getInfo().getName() + "!");
+
+        log.fine("[" + uuid + "] Starting server " + server.getInfo().getName() + "!");
+        return send(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.START));
     }
 
-    public void stopServer(Server server) {
-        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.STOP));
-        log.info("["+uuid+"] Initialized stop of server " + server.getInfo().getName() + "!");
+    public ChannelFuture stopServer(Server server) {
+        log.fine("[" + uuid + "] Stopping server " + server.getInfo().getName() + "!");
+        return send(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.STOP));
     }
 
-    public void forcestopServer(Server server) {
-        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.FORCESTOP));
-        log.info("["+uuid+"] Initialized force-stop of server " + server.getInfo().getName() + "!");
+    public ChannelFuture forcestopServer(Server server) {
+        log.fine("[" + uuid + "] Force-stopping server " + server.getInfo().getName() + "!");
+        return send(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.FORCESTOP));
     }
 
-    public void restartServer(Server server) {
-        channel.writeAndFlush(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.RESTART));
-        log.info("["+uuid+"] Initialized restart of server " + server.getInfo().getName() + "!");
+    public ChannelFuture restartServer(Server server) {
+        log.fine("[" + uuid + "] Restarting server " + server.getInfo().getName() + "!");
+        return send(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.RESTART));
     }
 
-    public void send(Packet packet) {
-        channel.writeAndFlush(packet);
+    public ChannelFuture send(Packet packet) {
+        return channel.writeAndFlush(packet).addListener(FUTURE_LISTENER);
     }
 
     @Override
     public String toString() {
-        return uuid+" (Connection: "+channel.remoteAddress()+", RAM: "+ram+", Servers: "+servers.size()+")";
+        return uuid + " (Connection: " + channel.remoteAddress() + ", RAM: " + ram + ", Servers: " + servers.size() + ")";
     }
 
 }

@@ -13,7 +13,7 @@ import lombok.Setter;
 
 @AllArgsConstructor
 @Getter @Setter
-public class PluginRegisterData {
+public class ServerRegisterData {
 
     private Channel channel;
     private ServerRegisterPacketPlugin packet;

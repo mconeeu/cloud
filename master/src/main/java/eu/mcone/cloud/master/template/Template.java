@@ -25,20 +25,20 @@ public class Template {
     @Getter
     private String name, properties;
     @Getter
-    private int maxPlayers, min, max, emptyservers;
+    private int maxPlayers, min, max, emptyServers;
     @Getter
     private long ram;
     @Getter
     private ServerVersion version;
 
-    public Template(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, String properties) {
+    public Template(String name, long ram, int maxPlayers, int min, int max, int emptyServers, ServerVersion version, String properties) {
         this.servers = new HashSet<>();
         this.name = name;
         this.ram = ram;
         this.maxPlayers = maxPlayers;
-        this.max = min;
-        this.min = max;
-        this.emptyservers = emptyservers;
+        this.min = min;
+        this.max = max;
+        this.emptyServers = emptyServers;
         this.version = version;
         this.properties = properties;
 
@@ -47,12 +47,12 @@ public class Template {
         }
     }
 
-    public void recreate(long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, String properties) {
+    public void recreate(long ram, int maxPlayers, int min, int max, int emptyServers, ServerVersion version, String properties) {
         this.ram = ram;
         this.maxPlayers = maxPlayers;
         this.max = min;
         this.min = max;
-        this.emptyservers = emptyservers;
+        this.emptyServers = emptyServers;
         this.version = version;
         this.properties = properties;
 
@@ -63,6 +63,10 @@ public class Template {
             s.getInfo().setProperties(properties);
 
             if (s.getWrapper() != null) s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
+        }
+
+        if (servers.size() < min) {
+            createServer(min-servers.size());
         }
     }
 

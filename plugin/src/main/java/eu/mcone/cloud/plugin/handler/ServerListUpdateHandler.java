@@ -25,8 +25,6 @@ public class ServerListUpdateHandler implements PacketHandler<ServerListUpdatePa
             newConnection = false;
         }
 
-        System.out.println("new ServerListUpdatePacketPlugin (NAME: "+packet.getName()+", HOSTNAME: "+packet.getHostname()+":"+packet.getPort()+")");
-
         if (packet.getScope().equals(ServerListUpdatePacketPlugin.Scope.ADD)) {
             System.out.println("adding server " + packet.getName() + " to bc server map");
             ProxyServer.getInstance().getServers().put(

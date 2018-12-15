@@ -6,8 +6,10 @@
 package eu.mcone.cloud.master.handler;
 
 import eu.mcone.cloud.core.packet.ServerRegisterPacketPlugin;
-import eu.mcone.cloud.core.server.PluginRegisterData;
+import eu.mcone.cloud.core.server.ServerRegisterData;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
+import eu.mcone.cloud.master.network.BungeeServerListUpdater;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.networkmanager.api.network.client.handler.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -22,14 +24,14 @@ public class ServerRegisterHandler implements PacketHandler<ServerRegisterPacket
         Server s = MasterServer.getInstance().getServer(packet.getServerUuid());
 
         if (s != null) {
-            s.registerPluginData(new PluginRegisterData(chc.channel(), packet));
-        } else {
-            try {
-                WrapperRegisterFromStandaloneHandler.registeringServers.put(packet.getServerUuid(), new PluginRegisterData(chc.channel(), packet));
-                log.info("Server with uuid " + packet.getServerUuid() + " tried to register itself from " + packet.getHostname() + " but the server is not known! Put in waitlist.");
-            } catch (Exception e) {
-                e.printStackTrace();
+            s.registerFromPluginData(new ServerRegisterData(chc.channel(), packet));
+
+            if (!s.getInfo().getVersion().equals(ServerVersion.BUNGEE)) {
+                BungeeServerListUpdater.registerServerOnAllBungees(s);
             }
+        } else {
+            WrapperRegisterFromStandaloneHandler.addNonExistingRegisteringServer(packet.getServerUuid(), new ServerRegisterData(chc.channel(), packet));
+            log.finest("Server with uuid " + packet.getServerUuid() + " tried to register itself from " + packet.getHostname() + " but the server is not known! Put in registering-servers list.");
         }
     }
 

@@ -40,7 +40,7 @@ public abstract class ConsoleInputReader {
                         this.filter(line);
 
                         if (this.outputToConsole) {
-                            log.info("[" + this.server.getInfo().getName() + "] >> " + line);
+                            log.finest("[" + this.server.getInfo().getName() + "] >> " + line);
                         }
                     }
                 }

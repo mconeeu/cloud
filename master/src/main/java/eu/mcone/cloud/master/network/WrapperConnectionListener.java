@@ -18,7 +18,7 @@ public class WrapperConnectionListener implements ConnectionListener {
         Wrapper w = MasterServer.getInstance().getWrapper(ctx.channel());
         if (w != null) {
             log.info(ConsoleColor.RED+"Deleting Wrapper "+w.getUuid());
-            w.delete();
+            w.unregister();
         }
     }
 

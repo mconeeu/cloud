@@ -47,4 +47,5 @@ public class BungeePlugin extends Plugin implements BungeeCloudPlugin {
     public ServerInfo getFallbackServer() {
         return ((ReconnectHandler) ProxyServer.getInstance().getReconnectHandler()).getFallbackServer();
     }
+
 }

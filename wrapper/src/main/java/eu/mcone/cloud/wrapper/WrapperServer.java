@@ -193,7 +193,6 @@ public class WrapperServer {
         nettyBootstrap.getPacketManager().registerPacketHandler(ServerChangeStatePacketWrapper.class, new ServerChangeStateHandler());
         nettyBootstrap.getPacketManager().registerPacketHandler(ServerCommandExecutePacketWrapper.class, new ServerCommandExecuteHandler());
         nettyBootstrap.getPacketManager().registerPacketHandler(ServerInfoPacket.class, new ServerInfoHandler());
-        nettyBootstrap.getPacketManager().registerPacketHandler(WrapperRequestPacketMaster.class, new WrapperRequestHandler());
         nettyBootstrap.getPacketManager().registerPacketHandler(WrapperShutdownPacketWrapper.class, new WrapperShutdownHandler());
     }
 

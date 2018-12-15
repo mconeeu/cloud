@@ -46,6 +46,7 @@ public class MasterServer extends NetworkModule {
 
     public void onLoad() {
         instance = this;
+        staticServerManager = new StaticServerManager();
 
         registerPacket(ServerChangeStatePacketWrapper.class);
         registerPacket(ServerCommandExecutePacketWrapper.class);
@@ -56,12 +57,9 @@ public class MasterServer extends NetworkModule {
         registerPacket(ServerUpdateStatePacket.class, new ServerUpdateStateHandler());
         registerPacket(WrapperRegisterFromStandalonePacketWrapper.class, new WrapperRegisterFromStandaloneHandler());
         registerPacket(WrapperRegisterPacketWrapper.class, new WrapperRegisterHandler());
-        registerPacket(WrapperRequestPacketMaster.class, new WrapperRequestHandler());
         registerPacket(WrapperShutdownPacketWrapper.class);
 
         ModuleHost.getInstance().getPacketManager().registerConnectionListener(new WrapperConnectionListener());
-
-        //registerWebRequestHandler("cloud", new WebRequestGetHandler());
     }
 
     public void onEnable() {
@@ -73,21 +71,11 @@ public class MasterServer extends NetworkModule {
         log.info("Enable progress - Getting templates from database...");
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_templates").find()) {
             log.info("Enable progress - Creating Template " + entry.getString("name") + " and it's servers ...");
-
-            createTemplate(
-                    entry.getString("name"),
-                    entry.getLong("ram"),
-                    entry.getInteger("max_players"),
-                    entry.getInteger("min"),
-                    entry.getInteger("max"),
-                    entry.getInteger("empty_servers"),
-                    ServerVersion.valueOf(entry.getString("version")),
-                    entry.get("properties", Document.class).toJson()
-            );
+            createTemplate(entry);
         }
 
         log.info("Enable progress - Starting static server manager...");
-        staticServerManager = new StaticServerManager();
+        staticServerManager.initialize();
 
         log.info("Enable progress - Starting ServerManager with TimeTask...");
         serverManager = new ServerManager();
@@ -109,27 +97,17 @@ public class MasterServer extends NetworkModule {
                 log.info("Reload progress - Refreshing Template " + entry.getString("name") + "...");
 
                 oldTemplates.get(entry.getString("name")).recreate(
-                        entry.getInteger("ram"),
+                        entry.getLong("ram"),
                         entry.getInteger("max_players"),
                         entry.getInteger("min"),
                         entry.getInteger("max"),
-                        entry.getInteger("emptyservers"),
+                        entry.getInteger("empty_servers"),
                         ServerVersion.valueOf(entry.getString("version")),
                         entry.get("properties", Document.class).toJson()
                 );
             } else {
                 log.info("Reload progress - Adding Template " + entry.getString("name") + "...");
-
-                createTemplate(
-                        entry.getString("name"),
-                        entry.getInteger("ram"),
-                        entry.getInteger("max_players"),
-                        entry.getInteger("min"),
-                        entry.getInteger("max"),
-                        entry.getInteger("emptyservers"),
-                        ServerVersion.valueOf(entry.getString("version")),
-                        entry.get("properties", Document.class).toJson()
-                );
+                createTemplate(entry);
             }
 
             newTemplates.add(entry.getString("name"));
@@ -161,8 +139,21 @@ public class MasterServer extends NetworkModule {
         log.info("Shutdown progress - Good bye!");
     }
 
-    private void createTemplate(String name, long ram, int maxPlayers, int min, int max, int emptyservers, ServerVersion version, String properties) {
-        templates.add(new Template(name, ram, maxPlayers, min, max, emptyservers, version, properties));
+    private void createTemplate(Document entry) {
+        createTemplate(
+                entry.getString("name"),
+                entry.getLong("ram"),
+                entry.getInteger("max_players"),
+                entry.getInteger("min"),
+                entry.getInteger("max"),
+                entry.getInteger("empty_servers"),
+                ServerVersion.valueOf(entry.getString("version")),
+                entry.get("properties", Document.class).toJson()
+        );
+    }
+
+    private void createTemplate(String name, long ram, int maxPlayers, int min, int max, int emptyServers, ServerVersion version, String properties) {
+        templates.add(new Template(name, ram, maxPlayers, min, max, emptyServers, version, properties));
     }
 
     public void unregisterTemplate(Template t) {
@@ -178,6 +169,15 @@ public class MasterServer extends NetworkModule {
 
     public void unregisterWrapper(Wrapper w) {
         wrappers.remove(w);
+    }
+
+    public Template getTeamplate(String name) {
+        for (Template t : templates) {
+            if (t.getName().equalsIgnoreCase(name)) {
+                return t;
+            }
+        }
+        return null;
     }
 
     public Server getServer(UUID uuid) {

@@ -8,6 +8,8 @@ package eu.mcone.cloud.master.server;
 import eu.mcone.cloud.core.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
+import eu.mcone.cloud.master.MasterServer;
+import eu.mcone.cloud.master.template.Template;
 import eu.mcone.networkmanager.api.ModuleHost;
 import eu.mcone.networkmanager.core.api.database.Database;
 import lombok.Getter;
@@ -20,30 +22,29 @@ import java.util.*;
 public class StaticServerManager {
 
     @Getter
-    private List<Server> servers = new ArrayList<>();
+    private List<Server> servers;
 
     public StaticServerManager() {
-        for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
-            log.info("Creating Static Server " + entry.getString("name") + "...");
+        this.servers = new ArrayList<>();
+    }
 
-            //Create Server and store in HashMap
-            UUID uuid = UUID.randomUUID();
-            servers.add(
-                    new Server(
-                            new ServerInfo(
-                                    uuid,
-                                    entry.getString("name"),
-                                    "",
-                                    entry.getInteger("max"),
-                                    0,
-                                    entry.getLong("ram"),
-                                    true,
-                                    ServerVersion.valueOf(entry.getString("version")),
-                                    "{\"plugins\":[], \"worlds\":[], \"gamemodeType\":[], \"configs\":[]}"
-                            ),
-                            null,
-                            UUID.fromString(entry.getString("wrapper"))
-                    )
+    public void initialize() {
+        serverLoop:
+        for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
+            for (Template t : MasterServer.getInstance().getTemplates()) {
+                if (entry.getString("name").startsWith(t.getName())) {
+                    log.severe("Could not create static server "+entry.getString("name")+": name starts with name of an existing Template"+t.getName());
+                    continue serverLoop;
+                }
+            }
+
+            log.info("Creating static Server " + entry.getString("name") + "...");
+            initializeServer(
+                    entry.getString("name"),
+                    entry.getInteger("max"),
+                    entry.getLong("ram"),
+                    ServerVersion.valueOf(entry.getString("version")),
+                    UUID.fromString(entry.getString("wrapper"))
             );
         }
     }
@@ -55,33 +56,35 @@ public class StaticServerManager {
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
             if (oldServers.containsKey(entry.getString("name"))) {
                 log.info("Reload progress - Recreating static Server " + entry.getString("name") + "...");
-
                 Server s = oldServers.get(entry.getString("name"));
-                s.getInfo().setMaxPlayers(entry.getInteger("max"));
-                s.getInfo().setRam(entry.getLong("ram"));
-                s.getInfo().setVersion(ServerVersion.valueOf(entry.getString("version")));
 
-                if (s.getWrapper() != null) s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
+                if (s.getInfo().isStaticServer() && (s.getWrapperUuid().equals(UUID.fromString(entry.getString("wrapper"))) || s.getWrapper() == null)) {
+                    s.setWrapperUuid(UUID.fromString(entry.getString("wrapper")));
+                    s.getInfo().setMaxPlayers(entry.getInteger("max"));
+                    s.getInfo().setRam(entry.getLong("ram"));
+                    s.getInfo().setVersion(ServerVersion.valueOf(entry.getString("version")));
+
+                    if (s.getWrapper() != null) s.getWrapper().send(new ServerInfoPacket(s.getInfo()));
+                } else {
+                    s.delete();
+
+                    initializeServer(
+                            entry.getString("name"),
+                            entry.getInteger("max"),
+                            entry.getLong("ram"),
+                            ServerVersion.valueOf(entry.getString("version")),
+                            UUID.fromString(entry.getString("wrapper"))
+                    );
+                }
             } else {
                 log.info("Reload progress - Adding static Server " + entry.getString("name") + "...");
 
-                UUID uuid = UUID.randomUUID();
-                servers.add(
-                        new Server(
-                                new ServerInfo(
-                                        uuid,
-                                        entry.getString("name"),
-                                        "",
-                                        entry.getInteger("max"),
-                                        0,
-                                        entry.getLong("ram"),
-                                        true,
-                                        ServerVersion.valueOf(entry.getString("version")),
-                                        "{\"plugins\":[], \"worlds\":[], \"gamemode\":[], \"mode\":[], \"configs\":[]}"
-                                ),
-                                null,
-                                UUID.fromString(entry.getString("wrapper"))
-                        )
+                initializeServer(
+                        entry.getString("name"),
+                        entry.getInteger("max"),
+                        entry.getLong("ram"),
+                        ServerVersion.valueOf(entry.getString("version")),
+                        UUID.fromString(entry.getString("wrapper"))
                 );
             }
 
@@ -95,17 +98,7 @@ public class StaticServerManager {
         }
     }
 
-    public void addStaticServer(String name, int maxPlayers, long ram, ServerVersion version, String wrappername) {
-        log.info("Creating Static Server " + name + "...");
-
-        ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").insertOne(
-                new Document("name", name)
-                        .append("max", maxPlayers)
-                        .append("ram", ram)
-                        .append("version", version.toString())
-                        .append("wrapper", wrappername)
-        );
-
+    private void initializeServer(String name, int max, long ram, ServerVersion version, UUID wrapperUuid) {
         UUID uuid = UUID.randomUUID();
         servers.add(
                 new Server(
@@ -113,17 +106,35 @@ public class StaticServerManager {
                                 uuid,
                                 name,
                                 "",
-                                maxPlayers,
+                                max,
                                 0,
                                 ram,
                                 true,
                                 version,
-                                "{\"plugins\":[], \"worlds\":[], \"gamemode\":[], \"mode\":[], \"configs\":[]}"
+                                "{\"plugins\":[], \"worlds\":[], \"gamemodeType\":[], \"configs\":[]}"
                         ),
                         null,
-                        UUID.fromString(wrappername)
+                        wrapperUuid
                 )
         );
+    }
+
+    public void addStaticServer(String name, int max, long ram, ServerVersion version, UUID wrapperUuid) {
+        log.info("Creating new static Server " + name + "...");
+
+        ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").insertOne(
+                new Document("name", name)
+                        .append("max", max)
+                        .append("ram", ram)
+                        .append("version", version.toString())
+                        .append("wrapper", wrapperUuid.toString())
+        );
+
+        initializeServer(name, max, ram, version, wrapperUuid);
+    }
+
+    public void deleteServer(Server s) {
+        servers.remove(s);
     }
 
 }

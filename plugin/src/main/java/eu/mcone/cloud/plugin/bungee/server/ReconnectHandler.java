@@ -41,7 +41,6 @@ public class ReconnectHandler implements net.md_5.bungee.api.ReconnectHandler {
         Map<ServerInfo, Integer> servers = new HashMap<>();
 
         for (ServerInfo s : ProxyServer.getInstance().getServers().values()) {
-            System.out.println(s.toString());
             if (s.getName().contains("Lobby-")) {
                 servers.put(s, s.getPlayers().size());
             }

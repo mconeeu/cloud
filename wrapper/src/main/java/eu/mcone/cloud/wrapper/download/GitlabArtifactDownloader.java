@@ -31,7 +31,6 @@ public class GitlabArtifactDownloader {
 
     public File getArtifact(int projectId, String artifactPath) throws GitLabApiException {
         String artifactName = new LinkedList<>(Arrays.asList(artifactPath.split("/"))).getLast();
-        log.info("Downloading artifact "+artifactName+" from project with id "+projectId);
 
         int oldPipeline = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("gitlab").getInt(artifactName.replace('.', '-'));
         int latestPipeline = gitLabApi.getPipelineApi().getPipelines(projectId).iterator().next().getId();
@@ -45,12 +44,15 @@ public class GitlabArtifactDownloader {
                     WrapperServer.getInstance().getConfig().save();
 
                     Path path = Paths.get(artifactPath);
+                    log.info("Downloading artifact "+artifactName+" from project with id "+projectId);
                     return gitLabApi.getJobApi().downloadSingleArtifactsFile(projectId, job.getId(), path, JAR_DIR);
                 }
             }
+
+            log.warning("Failed to download artifact "+artifactName+" from project with id "+projectId);
             return null;
         } else {
-            log.finest("Artifact already downloaded. Using cached jar...");
+            log.info("Using cached jar for artifact "+artifactName+"...");
             return new File(JAR_DIR, artifactName);
         }
     }

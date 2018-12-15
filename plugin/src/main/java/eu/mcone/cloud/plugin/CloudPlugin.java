@@ -10,6 +10,7 @@ import eu.mcone.cloud.core.packet.ServerListUpdatePacketPlugin;
 import eu.mcone.cloud.core.packet.ServerRegisterPacketPlugin;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.plugin.handler.ServerListUpdateHandler;
 import eu.mcone.networkmanager.api.network.client.ClientBootstrap;
 import eu.mcone.networkmanager.api.network.client.NetworkmanagerClient;
@@ -40,9 +41,13 @@ public class CloudPlugin extends CloudAPI {
     @Getter @Setter
     private ServerState serverState = ServerState.WAITING;
     @Getter
+    private ServerVersion version;
+    @Getter
+    private boolean staticServer;
+    @Getter
     private List<CloudWorld> loadedWorlds;
     @Getter
-    private UUID serverUuid;
+    private UUID serverUuid, wrapperUuid;
     @Getter
     private int port;
 
@@ -58,8 +63,11 @@ public class CloudPlugin extends CloudAPI {
 
             serverName = ps.getProperty("server-name");
             serverUuid = UUID.fromString(ps.getProperty("server-uuid"));
+            wrapperUuid = UUID.fromString(ps.getProperty("wrapper-uuid"));
             hostname = ps.getProperty("wrapper-ip");
             port = Integer.valueOf(ps.getProperty("server-port"));
+            version = ServerVersion.valueOf(ps.getProperty("server-version"));
+            staticServer = Boolean.valueOf(ps.getProperty("static-server"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -72,15 +80,25 @@ public class CloudPlugin extends CloudAPI {
             @Override
             public void onChannelActive(ChannelHandlerContext chc) {
                 channel = chc.channel();
+                nettyBootstrap.getPacketManager().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
                 ServerListUpdateHandler.setNewConnection(true);
 
-                chc.writeAndFlush(new ServerRegisterPacketPlugin(serverUuid, hostname, port, plugin.getPlayerCount(), serverState));
-                System.out.println("new channel to " + chc.channel().remoteAddress().toString());
+                chc.writeAndFlush(new ServerRegisterPacketPlugin(
+                        serverUuid,
+                        wrapperUuid,
+                        hostname,
+                        port,
+                        plugin.getPlayerCount(),
+                        serverState,
+                        version,
+                        staticServer
+                ));
             }
             @Override
             public void onChannelUnregistered(ChannelHandlerContext channelHandlerContext) {}
         });
-        nettyBootstrap.getPacketManager().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
+
+        System.out.println("CloudPlugin finnally enabled!");
     }
 
     public void unload() {

@@ -85,8 +85,11 @@ public class Bukkit extends Server {
 
         //CloudSystem Data
         ps.setProperty("server-uuid", info.getUuid().toString());
+        ps.setProperty("wrapper-uuid", WrapperServer.getInstance().getWrapperUuid().toString());
         ps.setProperty("server-templateID", Integer.toString(info.getTemplateID()));
         ps.setProperty("server-name", info.getName());
+        ps.setProperty("server-version", info.getVersion().toString());
+        ps.setProperty("static-server", Boolean.valueOf(info.isStaticServer()).toString());
 
         FileOutputStream fos = new FileOutputStream(propertyFile);
         ps.store(fos, "MCONE_Wrapper");

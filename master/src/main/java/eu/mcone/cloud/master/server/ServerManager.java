@@ -44,29 +44,29 @@ public class ServerManager {
 
                 int emptycount = 0;
 
-                for (Integer i : playercount.values()) {
+                for (Map.Entry<Server, Integer> e : playercount.entrySet()) {
                     //Count the amount of servers with 0 players.
-                    if (i.equals(0)) {
+                    if (e.getValue() < (0.4 * e.getKey().getTemplate().getMax())) {
                         emptycount++;
                     }
                 }
 
                 //If the amount of empty servers is smaller then the set amount, create more empty servers
-                if (emptycount < t.getEmptyservers()) {
+                if (emptycount < t.getEmptyServers()) {
                     //If the maximum server count is not reached after adding server, create server
-                    if (t.getServers().size()+1 <= t.getMax()) {
+                    if (t.getServers().size() + 1 <= t.getMax()) {
                         t.createServer(1);
                     }
                     //Else if the amount of empty servers is bigger then the set amount, delete empty servers
-                } else if (emptycount > t.getEmptyservers()) {
-                    int deleteServers = emptycount - t.getEmptyservers();
+                } else if (emptycount > t.getEmptyServers() && emptycount > 1) {
+                    int deleteServers = emptycount - t.getEmptyServers();
 
                     for (Server s : t.getServers()) {
-                        if (s.getPlayerCount()==0 && deleteServers>0) {
+                        if (s.getPlayerCount() < (0.4 * s.getTemplate().getMax()) && deleteServers > 0) {
                             deleteServers--;
 
                             //If the minimum server count is not reached after deleting server, delete server.
-                            if (t.getServers().size()-1 >= t.getMin()) {
+                            if (t.getServers().size() - 1 >= t.getMin()) {
                                 s.delete();
                             }
                         }
@@ -84,32 +84,40 @@ public class ServerManager {
 
             while (i.hasNext()) {
                 Server server = i.next();
-                UUID wrapperUuid = server.getWrapperUuid();
 
-                if (wrapperUuid == null) {
+                if (!server.getInfo().isStaticServer()) {
                     Wrapper bestwrapper = getBestWrapper();
 
                     if (bestwrapper != null) {
                         server.setWrapper(bestwrapper);
                         i.remove();
-                        log.info(ConsoleColor.GREEN+"Found wrapper " + bestwrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!"+ConsoleColor.RESET);
-                        bestwrapper.createServer(server);
-                        server.start();
+                        log.info(ConsoleColor.GREEN + "Found wrapper " + bestwrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!" + ConsoleColor.RESET);
+
+                        try {
+                            bestwrapper.createServer(server).await();
+                            server.start();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     } else {
-                        log.info(ConsoleColor.DARK_GRAY+"No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList..."+ConsoleColor.RESET);
+                        log.finest(ConsoleColor.DARK_GRAY + "No wrapper for server " + server.getInfo().getName() + " available! Staying in WaitList..." + ConsoleColor.RESET);
                     }
                 } else {
-                    Wrapper wrapper = MasterServer.getInstance().getWrapper(wrapperUuid);
+                    Wrapper wrapper = MasterServer.getInstance().getWrapper(server.getWrapperUuid());
 
                     if (wrapper != null && !wrapper.isBusy()) {
                         server.setWrapper(wrapper);
                         i.remove();
-                        log.info(ConsoleColor.GREEN+"Found explicit wrapper " + wrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
-                        wrapper.createServer(server);
-                        server.start();
-                        break;
+                        log.info(ConsoleColor.GREEN + "Found explicit wrapper " + wrapper.getUuid() + " for server " + server.getInfo().getName() + "! Creating Server!");
+
+                        try {
+                            wrapper.createServer(server).await();
+                            server.start();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     } else {
-                        log.info(ConsoleColor.DARK_GRAY+"Explicit wrapper " + wrapperUuid + " not found for server " + server.getInfo().getName() + "! Staying in WaitList..."+ConsoleColor.RESET);
+                        log.finest(ConsoleColor.DARK_GRAY + "Explicit wrapper " + server.getWrapperUuid() + " not found for server " + server.getInfo().getName() + "! Staying in WaitList..." + ConsoleColor.RESET);
                     }
                 }
             }

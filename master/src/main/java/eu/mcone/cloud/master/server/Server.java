@@ -5,16 +5,17 @@
 
 package eu.mcone.cloud.master.server;
 
-import eu.mcone.cloud.core.packet.ServerListUpdatePacketPlugin;
-import eu.mcone.cloud.core.server.PluginRegisterData;
 import eu.mcone.cloud.core.server.ServerInfo;
+import eu.mcone.cloud.core.server.ServerRegisterData;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
+import eu.mcone.cloud.master.network.BungeeServerListUpdater;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import eu.mcone.networkmanager.api.network.packet.Packet;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -26,7 +27,7 @@ public class Server {
 
     @Getter
     private ServerInfo info;
-    @Getter
+    @Getter @Setter
     private UUID wrapperUuid;
     @Getter
     private Template template;
@@ -51,58 +52,52 @@ public class Server {
     }
 
     public void start() {
-        //Check if Wrapper is set
         if (wrapper == null) {
-            log.info("["+info.getName()+"] No wrapper set for server!");
+            log.severe("["+info.getName()+"] No wrapper set!");
         } else {
-            //Start server on Wrapper
-            log.info("["+info.getName()+"] Starting server...");
+            log.fine("["+info.getName()+"] Starting server...");
             this.wrapper.startServer(this);
         }
     }
 
     public void stop() {
-        //Check if Wrapper is set
         if (wrapper == null) {
-            log.info("["+info.getName()+"] No wrapper set for server!");
+            log.severe("["+info.getName()+"] No wrapper set!");
         } else {
-            //Stop server on Wrapper
-            log.info("["+info.getName()+"] Stopping server...");
+            log.fine("["+info.getName()+"] Stopping server...");
             this.wrapper.stopServer(this);
         }
     }
 
     public void forcestop() {
-        //Check if Wrapper is set
         if (wrapper == null) {
-            log.warning("["+info.getName()+"] No wrapper set for server!");
+            log.severe("["+info.getName()+"] No wrapper set!");
         } else {
-            //Stop server on Wrapper
-            log.warning("["+info.getName()+"] Forcestopping server...");
+            log.fine("["+info.getName()+"] Forcestopping server...");
             this.wrapper.forcestopServer(this);
         }
     }
 
     public void restart() {
-        //Check if Wrapper is set
         if (wrapper == null) {
-            log.warning("["+info.getName()+"] No wrapper set for server!");
+            log.severe("["+info.getName()+"] No wrapper set!");
         } else {
-            //Stop server on Wrapper
-            log.warning("["+info.getName()+"] Restarting server...");
+            log.fine("["+info.getName()+"] Restarting server...");
             this.wrapper.restartServer(this);
         }
     }
 
     public void delete() {
         if (wrapper != null) {
-            this.wrapper.destroyServer(this);
+            this.wrapper.deleteServer(this);
+            BungeeServerListUpdater.unregisterServerOnAllBungees(this);
         }
 
         if (template != null) template.deleteServer(this);
+        if (info.isStaticServer()) MasterServer.getInstance().getStaticServerManager().deleteServer(this);
     }
 
-    public void registerPluginData(PluginRegisterData data) {
+    public void registerFromPluginData(ServerRegisterData data) {
         this.channel = data.getChannel();
         this.state = data.getPacket().getState();
         this.playerCount = data.getPacket().getPlayercount();
@@ -111,25 +106,12 @@ public class Server {
         this.info.setPort(data.getPacket().getPort());
 
         if (info.getVersion().equals(ServerVersion.BUNGEE)) {
-            for (Server server : MasterServer.getInstance().getServers()) {
-                if (!server.getInfo().getVersion().equals(ServerVersion.BUNGEE) && !server.getState().equals(ServerState.OFFLINE)) {
-                    log.info("["+info.getName()+"] Registering Server "+server.getInfo().getName());
-                    send(new ServerListUpdatePacketPlugin(server.getInfo(), ServerListUpdatePacketPlugin.Scope.ADD));
-                }
-            }
+            BungeeServerListUpdater.registerAllServersOnBungee(this);
         }
     }
 
-    public void send(Packet packet) {
-        if (channel != null) {
-            if (channel.isOpen() && channel.isActive() && channel.isWritable() && channel.isRegistered()) {
-                channel.writeAndFlush(packet);
-            } else {
-                log.severe("["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel fail)");
-            }
-        } else {
-            log.severe("["+info.getName()+"] Could not send Packet "+packet.getClass().getSimpleName()+" (Channel == null)");
-        }
+    public ChannelFuture send(Packet packet) {
+        return channel.writeAndFlush(packet).addListener(Wrapper.FUTURE_LISTENER);
     }
 
     @Override

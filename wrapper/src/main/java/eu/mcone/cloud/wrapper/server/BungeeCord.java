@@ -73,7 +73,10 @@ public class BungeeCord extends Server {
         ps.setProperty("server-port", Integer.toString(info.getPort()));
         ps.setProperty("max-players", Integer.toString(info.getMaxPlayers()));
         ps.setProperty("server-uuid", info.getUuid().toString());
+        ps.setProperty("wrapper-uuid", WrapperServer.getInstance().getWrapperUuid().toString());
         ps.setProperty("server-name", info.getName());
+        ps.setProperty("server-version", info.getVersion().toString());
+        ps.setProperty("static-server", Boolean.valueOf(info.isStaticServer()).toString());
 
         FileOutputStream fosProperties = new FileOutputStream(propertyFile);
         ps.store(fosProperties, "MCONE_WRAPPER");

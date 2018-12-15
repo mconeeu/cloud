@@ -6,9 +6,11 @@
 package eu.mcone.cloud.core.file;
 
 import lombok.Getter;
+import lombok.extern.java.Log;
 
 import java.io.File;
 
+@Log
 public class FileManager {
 
     @Getter
@@ -24,7 +26,7 @@ public class FileManager {
 
         if (!file.exists()) {
             file.mkdir();
-            System.out.println("creating "+file.getPath());
+            log.fine("creating home directory "+file.getPath());
         }
     }
 
