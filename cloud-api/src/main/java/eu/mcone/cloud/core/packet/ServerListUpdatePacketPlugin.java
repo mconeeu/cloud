@@ -6,7 +6,6 @@
 package eu.mcone.cloud.core.packet;
 
 import eu.mcone.cloud.core.server.ServerInfo;
-import eu.mcone.networkmanager.api.network.client.handler.PacketHandler;
 import eu.mcone.networkmanager.api.network.packet.Packet;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,8 +13,6 @@ import lombok.NoArgsConstructor;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor

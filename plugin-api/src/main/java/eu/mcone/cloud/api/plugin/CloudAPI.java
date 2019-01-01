@@ -7,7 +7,9 @@ package eu.mcone.cloud.api.plugin;
 
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
+import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.networkmanager.api.network.packet.Packet;
+import io.netty.channel.ChannelFuture;
 import lombok.Getter;
 
 import java.util.List;
@@ -34,14 +36,20 @@ public abstract class CloudAPI {
 
     public abstract String getHostname();
 
-    public abstract ServerState getServerState();
+    public abstract ServerState getState();
+
+    public abstract ServerVersion getVersion();
+
+    public abstract boolean isStaticServer();
 
     public abstract List<CloudWorld> getLoadedWorlds();
 
     public abstract UUID getServerUuid();
 
+    public abstract UUID getWrapperUuid();
+
     public abstract int getPort();
 
-    public abstract void send(Packet packet);
+    public abstract ChannelFuture send(Packet packet);
 
 }

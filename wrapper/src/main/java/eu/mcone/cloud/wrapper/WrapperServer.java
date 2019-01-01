@@ -80,7 +80,7 @@ public class WrapperServer {
     @Getter
     private ExecutorService threadPool;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         new WrapperServer();
     }
 

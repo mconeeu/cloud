@@ -5,14 +5,11 @@
 
 package eu.mcone.cloud.core.packet;
 
-import eu.mcone.networkmanager.api.network.client.handler.PacketHandler;
 import eu.mcone.networkmanager.api.network.packet.Packet;
 import lombok.NoArgsConstructor;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 @NoArgsConstructor
 public class WrapperShutdownPacketWrapper extends Packet {

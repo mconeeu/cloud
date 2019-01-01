@@ -6,7 +6,7 @@
 package eu.mcone.cloud.plugin.handler;
 
 import eu.mcone.cloud.core.packet.ServerListUpdatePacketPlugin;
-import eu.mcone.networkmanager.api.network.client.handler.PacketHandler;
+import eu.mcone.networkmanager.api.network.packet.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Setter;
 import net.md_5.bungee.api.ProxyServer;

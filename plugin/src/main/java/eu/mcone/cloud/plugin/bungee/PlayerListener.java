@@ -10,8 +10,10 @@ import eu.mcone.cloud.core.packet.ServerUpdateStatePacket;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.event.PreLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
@@ -23,14 +25,28 @@ public class PlayerListener implements Listener {
         this.instance = instance;
     }
 
+    public void on(PreLoginEvent e) {
+        if (instance.getChannel() == null) {
+            e.setCancelled(true);
+            e.setCancelReason(
+                    new TextComponent(TextComponent.fromLegacyText("§f§lMC ONE §3Minecraftnetzwerk"
+                            + "\n§4§oDer Netzwerkserver ist noch nicht verbunden!"
+                            + "\n§r"
+                            + "\n§fBitte versuche es in wenigen Sekunden nochmal..."
+                            + "\n§7Ohne die Verbindung zum Netzwerkserver können wir"
+                            + "\n."))
+            );
+        }
+    }
+
     @EventHandler
     public void on(PostLoginEvent e) {
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), ProxyServer.getInstance().getOnlineCount()));
 
-        if (instance.getServerState().equals(ServerState.WAITING)) {
+        if (instance.getState().equals(ServerState.WAITING)) {
             if (ProxyServer.getInstance().getOnlineCount() >= ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers()) {
                 instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.FULL));
-                instance.setServerState(ServerState.FULL);
+                instance.setState(ServerState.FULL);
             }
         }
     }
@@ -40,10 +56,10 @@ public class PlayerListener implements Listener {
         int onlinePlayers = ProxyServer.getInstance().getOnlineCount()-1;
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), onlinePlayers));
 
-        if (instance.getServerState().equals(ServerState.FULL)) {
+        if (instance.getState().equals(ServerState.FULL)) {
             if (onlinePlayers < ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers()) {
                 instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.WAITING));
-                instance.setServerState(ServerState.WAITING);
+                instance.setState(ServerState.WAITING);
             }
         }
     }

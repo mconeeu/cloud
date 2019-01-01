@@ -16,7 +16,10 @@ import eu.mcone.networkmanager.api.network.client.ClientBootstrap;
 import eu.mcone.networkmanager.api.network.client.NetworkmanagerClient;
 import eu.mcone.networkmanager.api.network.packet.Packet;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,7 +31,18 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-public class CloudPlugin extends CloudAPI {
+public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
+
+    private final static GenericFutureListener<Future<? super Void>> FUTURE_LISTENER = future -> {
+        if (!future.isSuccess() || future.isCancelled()) {
+            System.err.println("Netty Flush Operation failed:" +
+                    "\nisDone ? " + future.isDone() + ", " +
+                    "\nisSuccess ? " + future.isSuccess() + ", " +
+                    "\ncause : " + future.cause() + ", " +
+                    "\nisCancelled ? " + future.isCancelled());
+            if (future.cause() != null) future.cause().printStackTrace();
+        }
+    };
 
     @Getter
     private eu.mcone.cloud.api.plugin.CloudPlugin plugin;
@@ -39,7 +53,7 @@ public class CloudPlugin extends CloudAPI {
     @Getter
     private String serverName, hostname;
     @Getter @Setter
-    private ServerState serverState = ServerState.WAITING;
+    private ServerState state = ServerState.WAITING;
     @Getter
     private ServerVersion version;
     @Getter
@@ -72,31 +86,7 @@ public class CloudPlugin extends CloudAPI {
             e.printStackTrace();
         }
 
-        nettyBootstrap = new ClientBootstrap("localhost", "", new NetworkmanagerClient() {
-            @Override
-            public void runAsync(Runnable runnable) {
-                plugin.runAsync(runnable);
-            }
-            @Override
-            public void onChannelActive(ChannelHandlerContext chc) {
-                channel = chc.channel();
-                nettyBootstrap.getPacketManager().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
-                ServerListUpdateHandler.setNewConnection(true);
-
-                chc.writeAndFlush(new ServerRegisterPacketPlugin(
-                        serverUuid,
-                        wrapperUuid,
-                        hostname,
-                        port,
-                        plugin.getPlayerCount(),
-                        serverState,
-                        version,
-                        staticServer
-                ));
-            }
-            @Override
-            public void onChannelUnregistered(ChannelHandlerContext channelHandlerContext) {}
-        });
+        nettyBootstrap = new ClientBootstrap("localhost", "", this);
 
         System.out.println("CloudPlugin finnally enabled!");
     }
@@ -105,8 +95,34 @@ public class CloudPlugin extends CloudAPI {
         channel.close();
     }
 
-    public void send(Packet packet) {
-        channel.writeAndFlush(packet);
+    public ChannelFuture send(Packet packet) {
+        return channel.writeAndFlush(packet).addListener(FUTURE_LISTENER);
     }
+
+    @Override
+    public void runAsync(Runnable runnable) {
+        plugin.runAsync(runnable);
+    }
+
+    @Override
+    public void onChannelActive(ChannelHandlerContext chc) {
+        channel = chc.channel();
+        nettyBootstrap.getPacketManager().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
+        ServerListUpdateHandler.setNewConnection(true);
+
+        chc.writeAndFlush(new ServerRegisterPacketPlugin(
+                serverUuid,
+                wrapperUuid,
+                hostname,
+                port,
+                plugin.getPlayerCount(),
+                state,
+                version,
+                staticServer
+        ));
+    }
+
+    @Override
+    public void onChannelUnregistered(ChannelHandlerContext channelHandlerContext) {}
 
 }

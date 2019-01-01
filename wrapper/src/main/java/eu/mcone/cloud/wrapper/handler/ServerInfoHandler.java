@@ -11,7 +11,7 @@ import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.server.Bukkit;
 import eu.mcone.cloud.wrapper.server.BungeeCord;
 import eu.mcone.cloud.wrapper.server.Server;
-import eu.mcone.networkmanager.api.network.client.handler.PacketHandler;
+import eu.mcone.networkmanager.api.network.packet.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.java.Log;
 

@@ -27,7 +27,7 @@ public class PlayerListener implements Listener {
     public void on(PlayerJoinEvent e) {
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), Bukkit.getOnlinePlayers().size()));
 
-        if (instance.getServerState().equals(ServerState.WAITING)) {
+        if (instance.getState().equals(ServerState.WAITING)) {
             if (Bukkit.getOnlinePlayers().size() >= Bukkit.getMaxPlayers()) {
                 instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.FULL));
             }
@@ -39,7 +39,7 @@ public class PlayerListener implements Listener {
         int onlinePlayer = Bukkit.getOnlinePlayers().size()-1;
         instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), onlinePlayer));
 
-        if (instance.getServerState().equals(ServerState.FULL)) {
+        if (instance.getState().equals(ServerState.FULL)) {
             if (onlinePlayer < Bukkit.getMaxPlayers()) {
                 instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.WAITING));
             }

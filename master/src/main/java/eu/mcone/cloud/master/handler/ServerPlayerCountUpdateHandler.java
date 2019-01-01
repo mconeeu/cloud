@@ -8,7 +8,7 @@ package eu.mcone.cloud.master.handler;
 import eu.mcone.cloud.core.packet.ServerPlayerCountUpdatePacketPlugin;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
-import eu.mcone.networkmanager.api.network.client.handler.PacketHandler;
+import eu.mcone.networkmanager.api.network.packet.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.java.Log;
 

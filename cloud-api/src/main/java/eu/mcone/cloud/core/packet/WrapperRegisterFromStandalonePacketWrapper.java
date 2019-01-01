@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.core.packet;
 
-import eu.mcone.networkmanager.api.network.client.handler.PacketHandler;
 import eu.mcone.networkmanager.api.network.packet.Packet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
