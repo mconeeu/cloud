@@ -13,7 +13,7 @@ import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.network.BungeeServerListUpdater;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.api.network.packet.PacketHandler;
+import eu.mcone.networkmanager.api.packet.interfaces.PacketHandler;
 import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;

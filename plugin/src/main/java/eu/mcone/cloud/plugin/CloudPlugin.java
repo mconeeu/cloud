@@ -12,9 +12,9 @@ import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.plugin.handler.ServerListUpdateHandler;
-import eu.mcone.networkmanager.api.network.client.ClientBootstrap;
-import eu.mcone.networkmanager.api.network.client.NetworkmanagerClient;
-import eu.mcone.networkmanager.api.network.packet.Packet;
+import eu.mcone.networkmanager.api.packet.Packet;
+import eu.mcone.networkmanager.client.ClientBootstrap;
+import eu.mcone.networkmanager.client.NetworkmanagerClient;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -95,9 +95,7 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
         channel.close();
     }
 
-    public ChannelFuture send(Packet packet) {
-        return channel.writeAndFlush(packet).addListener(FUTURE_LISTENER);
-    }
+
 
     @Override
     public void runAsync(Runnable runnable) {
@@ -125,4 +123,8 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
     @Override
     public void onChannelUnregistered(ChannelHandlerContext channelHandlerContext) {}
 
+    @Override
+    public ChannelFuture send(Packet packet) {
+        return channel.writeAndFlush(packet).addListener(FUTURE_LISTENER);
+    }
 }

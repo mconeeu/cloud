@@ -7,7 +7,7 @@ package eu.mcone.cloud.master.handler;
 
 import eu.mcone.cloud.core.packet.WrapperRegisterPacketWrapper;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.networkmanager.api.network.packet.PacketHandler;
+import eu.mcone.networkmanager.api.packet.interfaces.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.java.Log;
 

@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Properties;
 
@@ -55,7 +56,7 @@ class ConfigSetter {
     private void setJsonValues(Map<String, Object> values) {
         try {
             if (values.get("json") != null) {
-                FileUtils.writeStringToFile(file, (String) values.get("json"));
+                FileUtils.writeStringToFile(file, (String) values.get("json"), "UTF-8");
             } else {
                 throw new CloudRuntimeException("Cannot set json to Config. Config-Value-Map does not contain key json!");
             }

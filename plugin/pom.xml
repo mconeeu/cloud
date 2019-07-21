@@ -75,9 +75,16 @@
         <dependency>
             <groupId>eu.mcone.networkmanager</groupId>
             <artifactId>network-api</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>eu.mcone.networkmanager</groupId>
+            <artifactId>client</artifactId>
+            <version>1.1.4-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency> <!-- Spigot (this includes Spigot API, Bukkit API, Craftbukkit and NMS) -->
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
@@ -98,6 +105,5 @@
             <type>javadoc</type>
         </dependency>
     </dependencies>
-
 
 </project>

@@ -24,35 +24,44 @@ public class GitlabArtifactDownloader {
 
     private final static File JAR_DIR = new File(WrapperServer.getInstance().getFileManager().getHomeDir().getPath() + File.separator + "jars" + File.separator + "gitlab");
     private GitLabApi gitLabApi;
-  
+
     public GitlabArtifactDownloader() {
-        gitLabApi = new GitLabApi("https://gitlab.mcone.eu", "pUwScza4PsZoFqPnVsNz");
+        //Private Token Dominik.Lippl
+        gitLabApi = new GitLabApi("https://gitlab.onegaming.group", " eCktFWAXQEi7BsWyLRpv");
     }
 
     public File getArtifact(int projectId, String artifactPath) throws GitLabApiException {
         String artifactName = new LinkedList<>(Arrays.asList(artifactPath.split("/"))).getLast();
+        System.out.println("Artifact Name: " + artifactName);
+        System.out.println("Path: " + artifactPath);
 
         int oldPipeline = WrapperServer.getInstance().getConfig().getConfig().getSection("builds").getSection("gitlab").getInt(artifactName.replace('.', '-'));
         int latestPipeline = gitLabApi.getPipelineApi().getPipelines(projectId).iterator().next().getId();
 
+        System.out.println("Old pipe: " + oldPipeline);
+        System.out.println("latest: " + latestPipeline);
+
         if (oldPipeline < latestPipeline) {
             List<Job> jobs = gitLabApi.getJobApi().getJobsForPipeline(projectId, latestPipeline, Constants.JobScope.SUCCESS);
+            System.out.println("Jobs: " + jobs);
 
             for (Job job : jobs) {
+                System.out.println("Job name: " + job.getName());
+                System.out.println("Job: " + job.getName());
                 if (job.getStage().equals("build") && job.getName().equals("build")) {
-                    WrapperServer.getInstance().getConfig().getConfig().set("builds.gitlab."+artifactName.replace('.', '-'), latestPipeline);
+                    WrapperServer.getInstance().getConfig().getConfig().set("builds.gitlab." + artifactName.replace('.', '-'), latestPipeline);
                     WrapperServer.getInstance().getConfig().save();
 
                     Path path = Paths.get(artifactPath);
-                    log.info("Downloading artifact "+artifactName+" from project with id "+projectId);
+                    log.info("Downloading artifact " + artifactName + " from project with id " + projectId);
                     return gitLabApi.getJobApi().downloadSingleArtifactsFile(projectId, job.getId(), path, JAR_DIR);
                 }
             }
 
-            log.warning("Failed to download artifact "+artifactName+" from project with id "+projectId);
+            log.warning("Failed to download artifact " + artifactName + " from project with id " + projectId);
             return null;
         } else {
-            log.info("Using cached jar for artifact "+artifactName+"...");
+            log.info("Using cached jar for artifact " + artifactName + "...");
             return new File(JAR_DIR, artifactName);
         }
     }

@@ -6,6 +6,7 @@
 package eu.mcone.cloud.wrapper;
 
 import com.google.gson.Gson;
+import com.mongodb.client.MongoDatabase;
 import eu.mcone.cloud.core.file.CloudConfig;
 import eu.mcone.cloud.core.file.Downloader;
 import eu.mcone.cloud.core.file.FileManager;
@@ -15,12 +16,11 @@ import eu.mcone.cloud.wrapper.console.ConsoleCommandExecutor;
 import eu.mcone.cloud.wrapper.download.GitlabArtifactDownloader;
 import eu.mcone.cloud.wrapper.handler.*;
 import eu.mcone.cloud.wrapper.server.Server;
-import eu.mcone.networkmanager.api.network.client.ClientBootstrap;
-import eu.mcone.networkmanager.api.network.client.NetworkmanagerClient;
-import eu.mcone.networkmanager.api.network.packet.Packet;
+import eu.mcone.networkmanager.api.packet.Packet;
+import eu.mcone.networkmanager.client.ClientBootstrap;
+import eu.mcone.networkmanager.client.NetworkmanagerClient;
 import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 import eu.mcone.networkmanager.core.api.database.Database;
-import eu.mcone.networkmanager.core.api.database.MongoDatabase;
 import eu.mcone.networkmanager.core.console.ConsoleReader;
 import eu.mcone.networkmanager.core.console.log.MconeLogger;
 import eu.mcone.networkmanager.core.database.MongoConnection;

@@ -37,7 +37,7 @@
         <developer>
             <id>dominklippl</id>
             <name>Dominik Lippl</name>
-            <url>http://twinsterhd.ga</url>
+            <url>http://derdeveloper.eu</url>
             <organization>MC ONE</organization>
             <organizationUrl>https://www.mcone.eu</organizationUrl>
             <roles>
@@ -94,12 +94,12 @@
     </distributionManagement>
 
     <dependencies>
+        <!-- Fixed Problems with JDK 11 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.6</version>
+            <version>1.18.4</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
 </project>

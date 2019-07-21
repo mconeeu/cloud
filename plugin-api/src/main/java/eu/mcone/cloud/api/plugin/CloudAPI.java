@@ -8,7 +8,7 @@ package eu.mcone.cloud.api.plugin;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
-import eu.mcone.networkmanager.api.network.packet.Packet;
+import eu.mcone.networkmanager.api.packet.Packet;
 import io.netty.channel.ChannelFuture;
 import lombok.Getter;
 

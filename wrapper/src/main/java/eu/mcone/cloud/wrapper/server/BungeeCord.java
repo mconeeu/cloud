@@ -40,9 +40,9 @@ public class BungeeCord extends Server {
                         "-DDisableTsQuery=true",
                         "-Dfile.encoding=UTF-8",
                         "-Djline.terminal=jline.UnsupportedTerminal",
-                        "-Xmx"+info.getRam()+"M",
+                        "-Xmx" + info.getRam() + "M",
                         "-jar",
-                        serverDir+File.separator+"server.jar"
+                        serverDir + File.separator + "server.jar"
                 }
         );
     }
@@ -54,16 +54,17 @@ public class BungeeCord extends Server {
 
     @Override
     void setConfig() throws IOException {
-        final File propertyFile = new File(serverDir+File.separator+"server.properties");
-        final File configFile = new File(serverDir+File.separator+"config.yml");
+        final File propertyFile = new File(serverDir + File.separator + "server.properties");
+        final File configFile = new File(serverDir + File.separator + "config.yml");
 
         /*
          * server.properties
          */
         if (!propertyFile.exists()) {
-            propertyFile.createNewFile();
+            boolean isFileCreated = propertyFile.createNewFile();
         }
-        log.info("["+info.getName()+"] Setting all server properties...");
+
+        log.info("[" + info.getName() + "] Setting all server properties...");
         Properties ps = new Properties();
         FileInputStream fisProperties = new FileInputStream(propertyFile);
         ps.load(fisProperties);
@@ -88,7 +89,7 @@ public class BungeeCord extends Server {
         /*
          * config.yml
          */
-        log.info("["+info.getName()+"] Setting all config.yml settings!");
+        log.info("[" + info.getName() + "] Setting all config.yml settings!");
         if (!configFile.exists()) {
             URL fileUrl = getClass().getResource("/bungeeconfig.yml");
             FileUtils.copyURLToFile(fileUrl, configFile);
@@ -103,9 +104,9 @@ public class BungeeCord extends Server {
         List<?> listeners = bungeeConf.getList("listeners");
 
         HashMap<Object, Object> values = (listeners != null && listeners.size() > 0) ? (HashMap<Object, Object>) listeners.get(0) : new HashMap<>();
-        values.put("host", "0.0.0.0:"+info.getPort());
+        values.put("host", "0.0.0.0:" + info.getPort());
         values.put("max_players", info.getMaxPlayers());
-        values.put("motd", "&f&lMC ONE &3CloudServer &8» &7"+info.getName());
+        values.put("motd", "&f&lMC ONE &3CloudServer &8» &7" + info.getName());
 
         List<Map<Object, Object>> result = new ArrayList<>();
         result.add(values);
