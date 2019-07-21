@@ -26,6 +26,12 @@ variables:
 validate:jdk8:
   <<: *validate
   image: maven:3.6.1-jdk-8
+  artifacts:
+     name: "$CI_PROJECT_PATH-jars-packaged-$CI_JOB_NAME"
+     paths:
+      - $CI_PROJECT_DIR/*/target/*.jar
+  only:
+   - master
 
 verify:master:jdk8:
   <<: *verify

@@ -22,11 +22,11 @@ public class FileManager {
 
     public void createHomeDir(String path) {
         String s = File.separator;
-        File file = new File(homeDir+s+path);
+        File file = new File(homeDir + s + path);
 
         if (!file.exists()) {
             file.mkdir();
-            log.fine("creating home directory "+file.getPath());
+            log.fine("creating home directory " + file.getPath());
         }
     }
 

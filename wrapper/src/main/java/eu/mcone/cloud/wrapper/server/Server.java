@@ -151,8 +151,8 @@ public abstract class Server {
 
                 log.info("Implementing Cloud-Plugin");
                 Files.copy(
-                        WrapperServer.getInstance().getGitlabArtifactDownloader().getArtifact(28, "/plugin/target/mcone-cloud-plugin-2.0.1-SNAPSHOT.jar").toPath(),
-                        Paths.get(serverDir.getPath(), "plugins", "mcone-cloud-plugin-2.0.1-SNAPSHOT.jar"),
+                        WrapperServer.getInstance().getGitlabArtifactDownloader().getArtifact(28, "/plugin/target/mcone-cloud-plugin-2.1.0-SNAPSHOT.jar").toPath(),
+                        Paths.get(serverDir.getPath(), "plugins", "mcone-cloud-plugin-2.1.0-SNAPSHOT.jar"),
                         StandardCopyOption.REPLACE_EXISTING
                 );
 

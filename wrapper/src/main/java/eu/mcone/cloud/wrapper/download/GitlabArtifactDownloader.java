@@ -47,14 +47,19 @@ public class GitlabArtifactDownloader {
 
             for (Job job : jobs) {
                 System.out.println("Job name: " + job.getName());
-                System.out.println("Job: " + job.getName());
-                if (job.getStage().equals("build") && job.getName().equals("build")) {
+                System.out.println("Job stage: " + job.getStage());
+                if (job.getStage().equals("build") && job.getName().equalsIgnoreCase("validate:jdk8")) {
+                    System.out.println("DEBUG-1");
                     WrapperServer.getInstance().getConfig().getConfig().set("builds.gitlab." + artifactName.replace('.', '-'), latestPipeline);
                     WrapperServer.getInstance().getConfig().save();
 
                     Path path = Paths.get(artifactPath);
+                    Path test = Paths.get(job.getWebUrl());
+
+                    System.out.println("DEBUG-Path: " + path);
+                    System.out.println("Web path: " + test);
                     log.info("Downloading artifact " + artifactName + " from project with id " + projectId);
-                    return gitLabApi.getJobApi().downloadSingleArtifactsFile(projectId, job.getId(), path, JAR_DIR);
+                    return gitLabApi.getJobApi().downloadSingleArtifactsFile(projectId, job.getId(), test, JAR_DIR);
                 }
             }
 
