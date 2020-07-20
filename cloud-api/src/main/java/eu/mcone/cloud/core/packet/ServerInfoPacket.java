@@ -7,7 +7,7 @@ package eu.mcone.cloud.core.packet;
 
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
-import eu.mcone.networkmanager.api.packet.Packet;
+import group.onegaming.networkmanager.api.packet.Packet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

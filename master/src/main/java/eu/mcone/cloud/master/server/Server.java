@@ -13,7 +13,7 @@ import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.network.BungeeServerListUpdater;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.api.packet.Packet;
+import group.onegaming.networkmanager.api.packet.Packet;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import lombok.Getter;

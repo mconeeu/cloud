@@ -10,8 +10,8 @@ import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
-import eu.mcone.networkmanager.core.api.database.Database;
-import eu.mcone.networkmanager.host.api.ModuleHost;
+import group.onegaming.networkmanager.core.api.database.Database;
+import group.onegaming.networkmanager.host.api.ModuleHost;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.bson.Document;
@@ -22,7 +22,7 @@ import java.util.*;
 public class StaticServerManager {
 
     @Getter
-    private List<Server> servers;
+    private final List<Server> servers;
 
     public StaticServerManager() {
         this.servers = new ArrayList<>();
@@ -33,7 +33,7 @@ public class StaticServerManager {
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
             for (Template t : MasterServer.getInstance().getTemplates()) {
                 if (entry.getString("name").startsWith(t.getName())) {
-                    log.severe("Could not create static server "+entry.getString("name")+": name starts with name of an existing Template"+t.getName());
+                    log.severe("Could not create static server " + entry.getString("name") + ": name starts with name of an existing Template" + t.getName());
                     continue serverLoop;
                 }
             }

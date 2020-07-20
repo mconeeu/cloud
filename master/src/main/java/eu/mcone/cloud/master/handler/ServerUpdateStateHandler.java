@@ -11,7 +11,7 @@ import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.network.BungeeServerListUpdater;
 import eu.mcone.cloud.master.server.Server;
-import eu.mcone.networkmanager.api.packet.interfaces.PacketHandler;
+import group.onegaming.networkmanager.api.packet.interfaces.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.java.Log;
 

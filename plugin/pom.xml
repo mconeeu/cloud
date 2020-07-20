@@ -50,6 +50,7 @@
     </build>
 
     <repositories>
+        <!-- This adds the Spigot Maven repository to the build -->
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
@@ -59,6 +60,15 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>mcone-systems</id>
+            <name>MC ONE Repo</name>
+            <url>https://repo.onegaming.group/repository/mcone-systems/</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>eu.mcone.cloud</groupId>
@@ -73,13 +83,13 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>eu.mcone.networkmanager</groupId>
+            <groupId>group.onegaming.networkmanager</groupId>
             <artifactId>network-api</artifactId>
             <version>1.1.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>eu.mcone.networkmanager</groupId>
+            <groupId>group.onegaming.networkmanager</groupId>
             <artifactId>client</artifactId>
             <version>1.1.4-SNAPSHOT</version>
             <scope>compile</scope>
@@ -91,6 +101,7 @@
             <version>1.8.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>

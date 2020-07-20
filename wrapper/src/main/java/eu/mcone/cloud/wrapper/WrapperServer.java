@@ -16,14 +16,14 @@ import eu.mcone.cloud.wrapper.console.ConsoleCommandExecutor;
 import eu.mcone.cloud.wrapper.download.GitlabArtifactDownloader;
 import eu.mcone.cloud.wrapper.handler.*;
 import eu.mcone.cloud.wrapper.server.Server;
-import eu.mcone.networkmanager.api.packet.Packet;
-import eu.mcone.networkmanager.client.ClientBootstrap;
-import eu.mcone.networkmanager.client.NetworkmanagerClient;
-import eu.mcone.networkmanager.core.api.console.ConsoleColor;
-import eu.mcone.networkmanager.core.api.database.Database;
-import eu.mcone.networkmanager.core.console.ConsoleReader;
-import eu.mcone.networkmanager.core.console.log.MconeLogger;
-import eu.mcone.networkmanager.core.database.MongoConnection;
+import group.onegaming.networkmanager.api.packet.Packet;
+import group.onegaming.networkmanager.client.ClientBootstrap;
+import group.onegaming.networkmanager.client.NetworkmanagerClient;
+import group.onegaming.networkmanager.core.api.console.ConsoleColor;
+import group.onegaming.networkmanager.core.api.database.Database;
+import group.onegaming.networkmanager.core.console.ConsoleReader;
+import group.onegaming.networkmanager.core.console.log.MconeLogger;
+import group.onegaming.networkmanager.core.database.MongoConnection;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
@@ -100,7 +100,7 @@ public class WrapperServer {
         fileManager.createHomeDir("worlds");
 
         consoleReader = new ConsoleReader();
-        consoleReader.registerCommand(new ConsoleCommandExecutor());
+        consoleReader.registerCommand("", "", new ConsoleCommandExecutor());
 
         gson = new Gson();
 

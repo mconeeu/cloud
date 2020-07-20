@@ -11,7 +11,7 @@ import eu.mcone.cloud.core.packet.WrapperShutdownPacketWrapper;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
-import eu.mcone.networkmanager.api.packet.Packet;
+import group.onegaming.networkmanager.api.packet.Packet;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.concurrent.Future;

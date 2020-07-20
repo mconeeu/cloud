@@ -10,8 +10,8 @@ import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.core.api.console.CommandExecutor;
-import eu.mcone.networkmanager.core.api.console.ConsoleColor;
+import group.onegaming.networkmanager.core.api.console.CommandExecutor;
+import group.onegaming.networkmanager.core.api.console.ConsoleColor;
 
 import java.util.logging.Logger;
 
@@ -20,9 +20,9 @@ public class ConsoleCommandExecutor implements CommandExecutor {
     private final static Logger log = Logger.getLogger("eu.mcone.cloud.master.console.noClassName");
 
     @Override
-    public void onCommand(String cmd, String[] args) {
-        if (cmd.equalsIgnoreCase("list")) {
-            if (args.length == 0) {
+    public void onCommand(String[] args) {
+        if (args.length == 1) {
+            if (args[0].equalsIgnoreCase("list")) {
                 int i = 0;
 
                 log.info("List - Listing all templates");
@@ -63,11 +63,38 @@ public class ConsoleCommandExecutor implements CommandExecutor {
 
                 log.info("\n");
                 log.info("List - end");
+            } else if (args[0].equalsIgnoreCase("masterreload")) {
+                MasterServer.getInstance().reload();
             }
-        } else if (cmd.equalsIgnoreCase("masterreload")) {
-            MasterServer.getInstance().reload();
-        } else if (cmd.equalsIgnoreCase("cmd")) {
-            if (args.length >= 2) {
+        } else if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("startserver")) {
+                Server s = MasterServer.getInstance().getServer(args[1]);
+
+                if (s != null) {
+                    log.info("Executing start command");
+                    s.start();
+                } else {
+                    log.info(ConsoleColor.RED + "The server " + args[1] + " does not exist!");
+                }
+            } else if (args[0].equalsIgnoreCase("stopserver")) {
+                Server s = MasterServer.getInstance().getServer(args[1]);
+
+                if (s != null) {
+                    s.stop();
+                } else {
+                    log.info(ConsoleColor.RED + "The server " + args[1] + " does not exist!");
+                }
+            } else if (args[0].equalsIgnoreCase("forcestopserver")) {
+                Server s = MasterServer.getInstance().getServer(args[1]);
+
+                if (s != null) {
+                    s.forcestop();
+                } else {
+                    log.info(ConsoleColor.RED + "Dieser Server existiert nicht!");
+                }
+            }
+        } else if (args.length == 3) {
+            if (args[0].equalsIgnoreCase("cmd")) {
                 Server s = MasterServer.getInstance().getServer(args[0]);
 
                 if (s != null) {
@@ -83,40 +110,7 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 } else {
                     log.info(ConsoleColor.RED + "No suitable server found for name " + args[0]);
                 }
-            }
-        } else if (cmd.equalsIgnoreCase("startserver")) {
-            if (args.length == 1) {
-                Server s = MasterServer.getInstance().getServer(args[0]);
-
-                if (s != null) {
-                    log.info("Executing start command");
-                    s.start();
-                } else {
-                    log.info(ConsoleColor.RED + "The server " + args[0] + " does not exist!");
-                }
-            }
-        } else if (cmd.equalsIgnoreCase("stopserver")) {
-            if (args.length == 1) {
-                Server s = MasterServer.getInstance().getServer(args[0]);
-
-                if (s != null) {
-                    s.stop();
-                } else {
-                    log.info(ConsoleColor.RED + "The server " + args[0] + " does not exist!");
-                }
-            }
-        } else if (cmd.equalsIgnoreCase("forcestopserver")) {
-            if (args.length == 1) {
-                Server s = MasterServer.getInstance().getServer(args[0]);
-
-                if (s != null) {
-                    s.forcestop();
-                } else {
-                    log.info(ConsoleColor.RED + "Dieser Server existiert nicht!");
-                }
-            }
-        } else if (cmd.equalsIgnoreCase("createserver")) {
-            if (args.length == 2) {
+            } else if (args[0].equalsIgnoreCase("createserver")) {
                 try {
                     Template template = MasterServer.getInstance().getTeamplate(args[0]);
                     int amount = Integer.parseInt(args[1]);
@@ -128,5 +122,4 @@ public class ConsoleCommandExecutor implements CommandExecutor {
             }
         }
     }
-
 }

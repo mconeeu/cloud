@@ -16,10 +16,10 @@ import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.core.api.console.ConsoleColor;
-import eu.mcone.networkmanager.core.api.database.Database;
-import eu.mcone.networkmanager.host.api.ModuleHost;
-import eu.mcone.networkmanager.host.api.module.NetworkModule;
+import group.onegaming.networkmanager.core.api.console.ConsoleColor;
+import group.onegaming.networkmanager.core.api.database.Database;
+import group.onegaming.networkmanager.host.api.ModuleHost;
+import group.onegaming.networkmanager.host.api.module.NetworkModule;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -63,7 +63,7 @@ public class MasterServer extends NetworkModule {
     }
 
     public void onEnable() {
-        ModuleHost.getInstance().getConsoleReader().registerCommand(new ConsoleCommandExecutor());
+        ModuleHost.getInstance().getConsoleReader().registerCommand("wrapper", "", new ConsoleCommandExecutor());
         gson = new Gson();
 
         log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. CloudMaster is starting...");

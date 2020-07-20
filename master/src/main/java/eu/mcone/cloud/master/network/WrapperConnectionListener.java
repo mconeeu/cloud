@@ -2,8 +2,8 @@ package eu.mcone.cloud.master.network;
 
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.core.api.console.ConsoleColor;
-import eu.mcone.networkmanager.host.api.server.ConnectionListener;
+import group.onegaming.networkmanager.core.api.console.ConsoleColor;
+import group.onegaming.networkmanager.host.api.server.ConnectionListener;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.java.Log;
 

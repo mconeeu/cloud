@@ -12,9 +12,9 @@ import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.plugin.handler.ServerListUpdateHandler;
-import eu.mcone.networkmanager.api.packet.Packet;
-import eu.mcone.networkmanager.client.ClientBootstrap;
-import eu.mcone.networkmanager.client.NetworkmanagerClient;
+import group.onegaming.networkmanager.api.packet.Packet;
+import group.onegaming.networkmanager.client.ClientBootstrap;
+import group.onegaming.networkmanager.client.NetworkmanagerClient;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -45,9 +45,9 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
     };
 
     @Getter
-    private eu.mcone.cloud.api.plugin.CloudPlugin plugin;
+    private final eu.mcone.cloud.api.plugin.CloudPlugin plugin;
     @Getter
-    private ClientBootstrap nettyBootstrap;
+    private final ClientBootstrap nettyBootstrap;
     @Getter @Setter
     private Channel channel;
     @Getter
@@ -59,7 +59,7 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
     @Getter
     private boolean staticServer;
     @Getter
-    private List<CloudWorld> loadedWorlds;
+    private final List<CloudWorld> loadedWorlds;
     @Getter
     private UUID serverUuid, wrapperUuid;
     @Getter

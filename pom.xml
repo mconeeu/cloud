@@ -71,6 +71,13 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <repository>
+            <id>mcone-systems</id>
+            <url>https://repo.onegaming.group/repository/mcone-systems/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -85,20 +92,14 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>mcone-systems</id>
-            <name>MC ONE Repo</name>
-            <url>https://repo.mcone.eu/repository/mcone-systems/</url>
-        </repository>
-    </distributionManagement>
+
 
     <dependencies>
         <!-- Fixed Problems with JDK 11 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.4</version>
+            <version>1.18.12</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

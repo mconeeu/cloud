@@ -7,7 +7,7 @@ package eu.mcone.cloud.wrapper.handler;
 
 import eu.mcone.cloud.core.packet.WrapperShutdownPacketWrapper;
 import eu.mcone.cloud.wrapper.WrapperServer;
-import eu.mcone.networkmanager.api.packet.interfaces.PacketHandler;
+import group.onegaming.networkmanager.api.packet.interfaces.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.java.Log;
 

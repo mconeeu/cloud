@@ -8,7 +8,7 @@ package eu.mcone.cloud.master.server;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.template.Template;
 import eu.mcone.cloud.master.wrapper.Wrapper;
-import eu.mcone.networkmanager.core.api.console.ConsoleColor;
+import group.onegaming.networkmanager.core.api.console.ConsoleColor;
 import lombok.extern.java.Log;
 
 import java.util.*;
