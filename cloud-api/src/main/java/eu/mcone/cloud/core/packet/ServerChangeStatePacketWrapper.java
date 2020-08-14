@@ -5,7 +5,6 @@
 
 package eu.mcone.cloud.core.packet;
 
-
 import group.onegaming.networkmanager.api.packet.Packet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,5 +1,6 @@
 {
   "name": "mcone-cloud-master",
   "author": "Rufus Maiwald, Dominik Lippl",
-  "main": "eu.mcone.cloud.master.MasterServer"
+  "main": "eu.mcone.cloud.master.MasterServer",
+  "version": "${project.version}"
 }

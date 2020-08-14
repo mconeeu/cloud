@@ -5,6 +5,8 @@
 
 package eu.mcone.cloud.master.wrapper;
 
+import eu.mcone.cloud.core.api.server.Server;
+import eu.mcone.cloud.core.api.wrapper.Wrapper;
 import eu.mcone.cloud.core.packet.ServerChangeStatePacketWrapper;
 import eu.mcone.cloud.core.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.packet.WrapperShutdownPacketWrapper;
@@ -12,10 +14,11 @@ import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.Server;
 import group.onegaming.networkmanager.api.packet.Packet;
+import eu.mcone.cloud.master.server.CloudServer;
+import eu.mcone.networkmanager.api.packet.Packet;
+import eu.mcone.networkmanager.api.pipeline.FutureListeners;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -25,35 +28,22 @@ import java.util.Set;
 import java.util.UUID;
 
 @Log
-public class Wrapper {
-
-    public final static GenericFutureListener<Future<? super Void>> FUTURE_LISTENER = future -> {
-        if (!future.isSuccess() || future.isCancelled()) {
-            log.severe("Netty Flush Operation failed:" +
-                    "\nisDone ? " + future.isDone() + ", " +
-                    "\nisSuccess ? " + future.isSuccess() + ", " +
-                    "\ncause : " + future.cause() + ", " +
-                    "\nisCancelled ? " + future.isCancelled());
-            if (future.cause() != null) future.cause().printStackTrace();
-        }
-    };
+public class CloudWrapper implements Wrapper {
 
     @Getter
     private UUID uuid;
     @Getter
     private long ram;
-    @Getter
-    @Setter
+    @Getter @Setter
     private long ramInUse;
     @Getter
     private Channel channel;
-    @Getter
-    @Setter
+    @Getter @Setter
     private boolean busy = false;
     @Getter
     private Set<Server> servers;
 
-    public Wrapper(UUID uuid, Channel channel, long ram) {
+    public CloudWrapper(UUID uuid, Channel channel, long ram) {
         this.uuid = uuid;
         this.channel = channel;
         this.ram = ram;
@@ -64,11 +54,13 @@ public class Wrapper {
 
     public void unregister() {
         for (Server s : servers) {
+            CloudServer server = (CloudServer) s;
+
             log.info("[" + uuid + "] Unregistering server " + s.getInfo().getName());
-            s.setWrapper(null);
-            s.setChannel(null);
-            s.setPlayerCount(-1);
-            s.setState(ServerState.OFFLINE);
+            server.setWrapper(null);
+            server.setChannel(null);
+            server.clearPlayers();
+            server.setState(ServerState.OFFLINE);
         }
 
         this.ram = -1;
@@ -77,7 +69,7 @@ public class Wrapper {
         this.busy = false;
         this.servers.clear();
 
-        MasterServer.getInstance().unregisterWrapper(this);
+        MasterServer.getServer().unregisterWrapper(this);
     }
 
     public void shutdown() {
@@ -90,7 +82,7 @@ public class Wrapper {
         }
     }
 
-    public ChannelFuture createServer(Server s) {
+    public ChannelFuture createServer(CloudServer s) {
         if (!servers.contains(s)) {
             if (s.getInfo().getRam() + this.ramInUse <= this.ram) {
                 this.ramInUse += s.getInfo().getRam();
@@ -109,7 +101,7 @@ public class Wrapper {
         return null;
     }
 
-    public ChannelFuture deleteServer(Server s) {
+    public ChannelFuture deleteServer(CloudServer s) {
         if (servers.contains(s)) {
             this.ramInUse -= s.getInfo().getRam();
             s.setWrapper(null);
@@ -128,7 +120,7 @@ public class Wrapper {
         return send(new ServerChangeStatePacketWrapper(uuid, ServerChangeStatePacketWrapper.State.DELETE));
     }
 
-    public ChannelFuture startServer(Server server) {
+    public ChannelFuture startServer(CloudServer server) {
         log.finest("[" + uuid + "] Setting Wrapper Busy...");
         setBusy(true);
 
@@ -136,23 +128,23 @@ public class Wrapper {
         return send(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.START));
     }
 
-    public ChannelFuture stopServer(Server server) {
+    public ChannelFuture stopServer(CloudServer server) {
         log.fine("[" + uuid + "] Stopping server " + server.getInfo().getName() + "!");
         return send(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.STOP));
     }
 
-    public ChannelFuture forcestopServer(Server server) {
+    public ChannelFuture forcestopServer(CloudServer server) {
         log.fine("[" + uuid + "] Force-stopping server " + server.getInfo().getName() + "!");
         return send(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.FORCESTOP));
     }
 
-    public ChannelFuture restartServer(Server server) {
+    public ChannelFuture restartServer(CloudServer server) {
         log.fine("[" + uuid + "] Restarting server " + server.getInfo().getName() + "!");
         return send(new ServerChangeStatePacketWrapper(server.getInfo().getUuid(), ServerChangeStatePacketWrapper.State.RESTART));
     }
 
     public ChannelFuture send(Packet packet) {
-        return channel.writeAndFlush(packet).addListener(FUTURE_LISTENER);
+        return channel.writeAndFlush(packet).addListener(FutureListeners.FUTURE_LISTENER);
     }
 
     @Override

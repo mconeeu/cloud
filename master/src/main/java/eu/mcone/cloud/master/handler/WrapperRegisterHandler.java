@@ -17,7 +17,7 @@ public class WrapperRegisterHandler implements PacketHandler<WrapperRegisterPack
     @Override
     public void onPacketReceive(WrapperRegisterPacketWrapper packet, ChannelHandlerContext chc) {
         log.fine("new WrapperRegisterPacketWrapper (UUID: "+packet.getUuid()+", RAM: "+packet.getRam()+")");
-        MasterServer.getInstance().createWrapper(packet.getUuid(), chc.channel(), packet.getRam());
+        MasterServer.getServer().createWrapper(packet.getUuid(), chc.channel(), packet.getRam());
     }
 
 }

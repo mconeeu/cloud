@@ -20,18 +20,29 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ServerPlayerCountUpdatePacketPlugin extends Packet {
 
+    public enum Method {
+        ADD, REMOVE
+    }
+
+    private UUID serverUuid;
     private UUID uuid;
-    private int playerCount;
+    private String name;
+    private Method method;
 
     @Override
     public void onWrite(DataOutputStream out) throws IOException {
+            out.writeUTF(serverUuid.toString());
             out.writeUTF(uuid.toString());
-            out.writeInt(playerCount);
+            out.writeUTF(name);
+            out.writeUTF(method.toString());
     }
 
     @Override
     public void onRead(DataInputStream in) throws IOException {
+            serverUuid = UUID.fromString(in.readUTF());
             uuid = UUID.fromString(in.readUTF());
-            playerCount = in.readInt();
+            name = in.readUTF();
+            method = Method.valueOf(in.readUTF());
     }
+
 }

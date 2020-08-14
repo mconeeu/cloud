@@ -26,32 +26,42 @@ public class ServerInfoPacket extends Packet {
 
     @Override
     public void onWrite(DataOutputStream out) throws IOException {
-            out.writeUTF(serverInfo.getUuid().toString());
-            out.writeUTF(serverInfo.getName());
-            out.writeUTF(serverInfo.getTemplateName());
-            out.writeInt(serverInfo.getTemplateID());
-            out.writeLong(serverInfo.getRam());
-            out.writeInt(serverInfo.getPort());
-            out.writeInt(serverInfo.getMaxPlayers());
-            out.writeBoolean(serverInfo.isStaticServer());
-            out.writeUTF(serverInfo.getVersion().toString());
-            out.writeUTF(serverInfo.getProperties());
+        writeServerInfo(out, serverInfo);
     }
 
     @Override
     public void onRead(DataInputStream in) throws IOException {
-            UUID uuid = UUID.fromString(in.readUTF());
-            String name = in.readUTF();
-            String templateName = in.readUTF();
-            int templateId = in.readInt();
-            long ram = in.readLong();
-            int port = in.readInt();
-            int maxplayers = in.readInt();
-            boolean staticServer = in.readBoolean();
-            ServerVersion version = ServerVersion.valueOf(in.readUTF());
-            String properties = in.readUTF();
-
-            serverInfo = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram, staticServer, version, properties);
-            serverInfo.setPort(port);
+        serverInfo = readServerInfo(in);
     }
+
+    static void writeServerInfo(DataOutputStream out, ServerInfo info) throws IOException {
+        out.writeUTF(info.getUuid().toString());
+        out.writeUTF(info.getName());
+        out.writeUTF(info.getTemplateName());
+        out.writeInt(info.getTemplateID());
+        out.writeLong(info.getRam());
+        out.writeInt(info.getPort());
+        out.writeInt(info.getMaxPlayers());
+        out.writeBoolean(info.isStaticServer());
+        out.writeUTF(info.getVersion().toString());
+        out.writeUTF(info.getProperties());
+    }
+
+    static ServerInfo readServerInfo(DataInputStream in) throws IOException {
+        UUID uuid = UUID.fromString(in.readUTF());
+        String name = in.readUTF();
+        String templateName = in.readUTF();
+        int templateId = in.readInt();
+        long ram = in.readLong();
+        int port = in.readInt();
+        int maxplayers = in.readInt();
+        boolean staticServer = in.readBoolean();
+        ServerVersion version = ServerVersion.valueOf(in.readUTF());
+        String properties = in.readUTF();
+
+        ServerInfo info = new ServerInfo(uuid, name, templateName, maxplayers, templateId, ram, staticServer, version, properties);
+        info.setPort(port);
+        return info;
+    }
+
 }

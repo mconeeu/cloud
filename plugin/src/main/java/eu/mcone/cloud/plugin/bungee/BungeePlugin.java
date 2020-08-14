@@ -10,7 +10,12 @@ import eu.mcone.cloud.plugin.CloudPlugin;
 import eu.mcone.cloud.plugin.bungee.server.ReconnectHandler;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class BungeePlugin extends Plugin implements BungeeCloudPlugin {
 
@@ -39,8 +44,13 @@ public class BungeePlugin extends Plugin implements BungeeCloudPlugin {
     }
 
     @Override
-    public int getPlayerCount() {
-        return ProxyServer.getInstance().getOnlineCount();
+    public Map<UUID, String> getPlayers() {
+        Map<UUID, String> result = new HashMap<>();
+        for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers()) {
+            result.put(p.getUniqueId(), p.getName());
+        }
+
+        return result;
     }
 
     @Override

@@ -5,10 +5,13 @@
 
 package eu.mcone.cloud.master.server;
 
+import eu.mcone.cloud.core.api.template.Template;
 import eu.mcone.cloud.core.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
+import eu.mcone.networkmanager.core.api.database.Database;
+import eu.mcone.networkmanager.host.api.ModuleHost;
 import eu.mcone.cloud.master.template.Template;
 import group.onegaming.networkmanager.core.api.database.Database;
 import group.onegaming.networkmanager.host.api.ModuleHost;
@@ -22,7 +25,7 @@ import java.util.*;
 public class StaticServerManager {
 
     @Getter
-    private final List<Server> servers;
+    private List<CloudServer> servers;
 
     public StaticServerManager() {
         this.servers = new ArrayList<>();
@@ -31,9 +34,9 @@ public class StaticServerManager {
     public void initialize() {
         serverLoop:
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
-            for (Template t : MasterServer.getInstance().getTemplates()) {
+            for (Template t : MasterServer.getServer().getTemplates()) {
                 if (entry.getString("name").startsWith(t.getName())) {
-                    log.severe("Could not create static server " + entry.getString("name") + ": name starts with name of an existing Template" + t.getName());
+                    log.severe("Could not create static server "+entry.getString("name")+": name starts with name of an existing Template"+t.getName());
                     continue serverLoop;
                 }
             }
@@ -50,13 +53,13 @@ public class StaticServerManager {
     }
 
     public void reload() {
-        final Map<String, Server> oldServers = new HashMap<>();
+        final Map<String, CloudServer> oldServers = new HashMap<>();
         servers.forEach(s -> oldServers.put(s.getInfo().getName(), s));
 
         for (Document entry : ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").find()) {
             if (oldServers.containsKey(entry.getString("name"))) {
                 log.info("Reload progress - Recreating static Server " + entry.getString("name") + "...");
-                Server s = oldServers.get(entry.getString("name"));
+                CloudServer s = oldServers.get(entry.getString("name"));
 
                 if (s.getInfo().isStaticServer() && (s.getWrapperUuid().equals(UUID.fromString(entry.getString("wrapper"))) || s.getWrapper() == null)) {
                     s.setWrapperUuid(UUID.fromString(entry.getString("wrapper")));
@@ -91,7 +94,7 @@ public class StaticServerManager {
             oldServers.remove(entry.getString("name"));
         }
 
-        for (Server s : oldServers.values()) {
+        for (CloudServer s : oldServers.values()) {
             log.info("Reload progress - Deleting old static Server " + s.getInfo().getName() + "...");
             servers.remove(s);
             s.delete();
@@ -101,7 +104,7 @@ public class StaticServerManager {
     private void initializeServer(String name, int max, long ram, ServerVersion version, UUID wrapperUuid) {
         UUID uuid = UUID.randomUUID();
         servers.add(
-                new Server(
+                new CloudServer(
                         new ServerInfo(
                                 uuid,
                                 name,
@@ -119,21 +122,7 @@ public class StaticServerManager {
         );
     }
 
-    public void addStaticServer(String name, int max, long ram, ServerVersion version, UUID wrapperUuid) {
-        log.info("Creating new static Server " + name + "...");
-
-        ModuleHost.getInstance().getMongoDatabase(Database.CLOUD).getCollection("cloudmaster_static_servers").insertOne(
-                new Document("name", name)
-                        .append("max", max)
-                        .append("ram", ram)
-                        .append("version", version.toString())
-                        .append("wrapper", wrapperUuid.toString())
-        );
-
-        initializeServer(name, max, ram, version, wrapperUuid);
-    }
-
-    public void deleteServer(Server s) {
+    void deleteServer(CloudServer s) {
         servers.remove(s);
     }
 

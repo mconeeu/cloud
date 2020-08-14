@@ -1,7 +1,8 @@
-package eu.mcone.cloud.master.network;
+package eu.mcone.cloud.master.listener;
 
+import eu.mcone.cloud.core.api.wrapper.Wrapper;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.cloud.master.wrapper.Wrapper;
+import eu.mcone.cloud.master.wrapper.CloudWrapper;
 import group.onegaming.networkmanager.core.api.console.ConsoleColor;
 import group.onegaming.networkmanager.host.api.server.ConnectionListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -11,14 +12,14 @@ import lombok.extern.java.Log;
 public class WrapperConnectionListener implements ConnectionListener {
 
     @Override
-    public void onChannelActive(String s, ChannelHandlerContext channelHandlerContext) {}
+    public void onChannelActive(String resourceBundleName, ChannelHandlerContext channelHandlerContext) {}
 
     @Override
     public void onChannelUnregistered(ChannelHandlerContext ctx) {
-        Wrapper w = MasterServer.getInstance().getWrapper(ctx.channel());
+        Wrapper w = MasterServer.getServer().getWrapper(ctx.channel());
         if (w != null) {
             log.info(ConsoleColor.RED+"Deleting Wrapper "+w.getUuid());
-            w.unregister();
+            ((CloudWrapper) w).unregister();
         }
     }
 

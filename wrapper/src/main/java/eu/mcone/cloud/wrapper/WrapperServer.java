@@ -13,8 +13,10 @@ import eu.mcone.cloud.core.file.FileManager;
 import eu.mcone.cloud.core.packet.*;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.wrapper.console.ConsoleCommandExecutor;
-import eu.mcone.cloud.wrapper.download.GitlabArtifactDownloader;
-import eu.mcone.cloud.wrapper.handler.*;
+import eu.mcone.cloud.wrapper.handler.ServerChangeStateHandler;
+import eu.mcone.cloud.wrapper.handler.ServerCommandExecuteHandler;
+import eu.mcone.cloud.wrapper.handler.ServerInfoHandler;
+import eu.mcone.cloud.wrapper.handler.WrapperShutdownHandler;
 import eu.mcone.cloud.wrapper.server.Server;
 import group.onegaming.networkmanager.api.packet.Packet;
 import group.onegaming.networkmanager.client.ClientBootstrap;
@@ -69,8 +71,6 @@ public class WrapperServer {
     @Getter
     private Gson gson;
     @Getter
-    private GitlabArtifactDownloader gitlabArtifactDownloader;
-    @Getter
     @Setter
     private Channel channel;
     @Getter
@@ -109,12 +109,12 @@ public class WrapperServer {
         log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. Wrapper is starting...");
 
         log.info("Enable progress - Connecting to Database...");
-        mongoConnection = new MongoConnection("db.mcone.eu", "admin", "T6KIq8gjmmF1k7futx0cJiJinQXgfguYXruds1dFx1LF5IsVPQjuDTnlI1zltpD9", "admin", 27017);
+        mongoConnection = new MongoConnection("db.mcone.eu", "admin", "Rze8QWN1HenIdeM0lctzfNXtWGNrMl5QR8ECELMT0iPFBEMPtcgq34F6XX9YVm7V", "admin", 27017);
         mongoConnection.connect();
 
         mongoDB = mongoConnection.getDatabase(Database.CLOUD);
 
-        config = new CloudConfig(new File(fileManager.getHomeDir() + File.separator + "config.yml"), "jenkins", "worlds");
+        config = new CloudConfig(new File(fileManager.getHomeDir() + File.separator + "config.yml"), "plugins", "worlds");
         try {
             wrapperUuid = UUID.fromString(config.getConfig().getString("uuid"));
             log.info("Enable progress - Got wrapper UUID '" + wrapperUuid + "' and Master IP from config...");
@@ -127,8 +127,6 @@ public class WrapperServer {
             log.info("Enable progress - Initialising new Wrapper with UUID '" + wrapperUuid + "'...");
             this.wrapperUuid = wrapperUuid;
         }
-
-        gitlabArtifactDownloader = new GitlabArtifactDownloader();
 
         log.info("Enable progress - Downloading missing executeables for all ServerVersions:");
         for (ServerVersion v : ServerVersion.values()) {

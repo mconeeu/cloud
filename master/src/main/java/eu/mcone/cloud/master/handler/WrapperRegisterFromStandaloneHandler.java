@@ -11,6 +11,10 @@ import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.network.BungeeServerListUpdater;
+import eu.mcone.cloud.master.server.CloudServer;
+import eu.mcone.cloud.master.wrapper.CloudWrapper;
+import eu.mcone.networkmanager.api.packet.interfaces.PacketHandler;
+import eu.mcone.networkmanager.core.api.console.ConsoleColor;
 import eu.mcone.cloud.master.server.Server;
 import eu.mcone.cloud.master.wrapper.Wrapper;
 import group.onegaming.networkmanager.api.packet.interfaces.PacketHandler;
@@ -35,11 +39,11 @@ public class WrapperRegisterFromStandaloneHandler implements PacketHandler<Wrapp
         log.info("WrapperRegister - Wrapper registering with still " + packet.getServers().size() + " servers running!");
 
         List<UUID> unknown = new ArrayList<>();
-        Map<UUID, Server> newServers = new HashMap<>();
+        Map<UUID, CloudServer> newServers = new HashMap<>();
         for (HashMap.Entry<UUID, String> e : packet.getServers().entrySet()) {
             UUID uuid = e.getKey();
             String name = e.getValue();
-            Server s = MasterServer.getInstance().getServer(name);
+            CloudServer s = (CloudServer) MasterServer.getServer().getServer(name);
 
             if (s == null || (s.getInfo().isStaticServer() && !s.getWrapperUuid().equals(packet.getUuid()))) {
                 unknown.add(uuid);
@@ -49,7 +53,7 @@ public class WrapperRegisterFromStandaloneHandler implements PacketHandler<Wrapp
             }
         }
 
-        final Wrapper w = MasterServer.getInstance().createWrapper(packet.getUuid(), chc.channel(), packet.getRam());
+        final CloudWrapper w = MasterServer.getServer().createWrapper(packet.getUuid(), chc.channel(), packet.getRam());
 
         log.info("WrapperRegister - Found " + newServers.size() + " valid servers!");
         log.info("WrapperRegister - Found " + unknown.size() + " invalid servers! Deleting from Wrapper...");
@@ -62,9 +66,9 @@ public class WrapperRegisterFromStandaloneHandler implements PacketHandler<Wrapp
             if (registeringServers.containsKey(w.getUuid())) {
                 final Map<UUID, ServerRegisterData> registeringServers = WrapperRegisterFromStandaloneHandler.registeringServers.get(w.getUuid());
 
-                for (HashMap.Entry<UUID, Server> e : newServers.entrySet()) {
+                for (HashMap.Entry<UUID, CloudServer> e : newServers.entrySet()) {
                     final UUID uuid = e.getKey();
-                    final Server s = e.getValue();
+                    final CloudServer s = e.getValue();
 
                     s.getInfo().setUuid(uuid);
                     if (s.getState().equals(ServerState.OFFLINE)) s.setState(ServerState.BROKEN);
@@ -101,8 +105,8 @@ public class WrapperRegisterFromStandaloneHandler implements PacketHandler<Wrapp
                     s.setPreventStart(false);
                 }
             } else {
-                for (Map.Entry<UUID, Server> e : newServers.entrySet()) {
-                    final Server s = e.getValue();
+                for (Map.Entry<UUID, CloudServer> e : newServers.entrySet()) {
+                    final CloudServer s = e.getValue();
                     s.getInfo().setUuid(e.getKey());
 
                     if (s.getState().equals(ServerState.OFFLINE)) s.setState(ServerState.BROKEN);

@@ -6,20 +6,27 @@
 package eu.mcone.cloud.plugin;
 
 import eu.mcone.cloud.api.plugin.CloudAPI;
+import eu.mcone.cloud.core.messaging.URIs;
+import eu.mcone.cloud.core.packet.CloudInfoResponsePacket;
 import eu.mcone.cloud.core.packet.ServerListUpdatePacketPlugin;
 import eu.mcone.cloud.core.packet.ServerRegisterPacketPlugin;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.plugin.handler.ServerListUpdateHandler;
+import eu.mcone.networkmanager.api.messaging.request.ClientMessageRequestListener;
+import eu.mcone.networkmanager.api.messaging.response.CustomClientMessageResponseListener;
+import eu.mcone.networkmanager.api.packet.ClientMessageRequestPacket;
+import eu.mcone.networkmanager.client.ClientBootstrap;
+import eu.mcone.networkmanager.client.NetworkmanagerClient;
+import eu.mcone.networkmanager.client.api.PacketManager;
 import group.onegaming.networkmanager.api.packet.Packet;
 import group.onegaming.networkmanager.client.ClientBootstrap;
 import group.onegaming.networkmanager.client.NetworkmanagerClient;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.handler.codec.http.HttpMethod;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,23 +40,13 @@ import java.util.UUID;
 
 public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
 
-    private final static GenericFutureListener<Future<? super Void>> FUTURE_LISTENER = future -> {
-        if (!future.isSuccess() || future.isCancelled()) {
-            System.err.println("Netty Flush Operation failed:" +
-                    "\nisDone ? " + future.isDone() + ", " +
-                    "\nisSuccess ? " + future.isSuccess() + ", " +
-                    "\ncause : " + future.cause() + ", " +
-                    "\nisCancelled ? " + future.isCancelled());
-            if (future.cause() != null) future.cause().printStackTrace();
-        }
-    };
+    @Getter
+    private static CloudPlugin cloudPlugin;
 
     @Getter
-    private final eu.mcone.cloud.api.plugin.CloudPlugin plugin;
+    private eu.mcone.cloud.api.plugin.CloudPlugin plugin;
     @Getter
-    private final ClientBootstrap nettyBootstrap;
-    @Getter @Setter
-    private Channel channel;
+    private ClientBootstrap nettyClient;
     @Getter
     private String serverName, hostname;
     @Getter @Setter
@@ -59,7 +56,7 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
     @Getter
     private boolean staticServer;
     @Getter
-    private final List<CloudWorld> loadedWorlds;
+    private List<CloudWorld> loadedWorlds;
     @Getter
     private UUID serverUuid, wrapperUuid;
     @Getter
@@ -67,6 +64,8 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
 
     public CloudPlugin(eu.mcone.cloud.api.plugin.CloudPlugin plugin) {
         setInstance(this);
+        cloudPlugin = this;
+
         this.plugin = plugin;
         this.loadedWorlds = new ArrayList<>();
 
@@ -86,16 +85,14 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
             e.printStackTrace();
         }
 
-        nettyBootstrap = new ClientBootstrap("localhost", "", this);
+        nettyClient = new ClientBootstrap("localhost", "eu.mcone.cloud.plugin", this);
 
         System.out.println("CloudPlugin finnally enabled!");
     }
 
     public void unload() {
-        channel.close();
+        nettyClient.getPacketManager().getChannel().close();
     }
-
-
 
     @Override
     public void runAsync(Runnable runnable) {
@@ -104,8 +101,7 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
 
     @Override
     public void onChannelActive(ChannelHandlerContext chc) {
-        channel = chc.channel();
-        nettyBootstrap.getPacketManager().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
+        nettyClient.getPacketManager().registerPacketHandler(ServerListUpdatePacketPlugin.class, new ServerListUpdateHandler());
         ServerListUpdateHandler.setNewConnection(true);
 
         chc.writeAndFlush(new ServerRegisterPacketPlugin(
@@ -113,10 +109,10 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
                 wrapperUuid,
                 hostname,
                 port,
-                plugin.getPlayerCount(),
                 state,
                 version,
-                staticServer
+                staticServer,
+                plugin.getPlayers()
         ));
     }
 
@@ -124,7 +120,18 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
     public void onChannelUnregistered(ChannelHandlerContext channelHandlerContext) {}
 
     @Override
-    public ChannelFuture send(Packet packet) {
-        return channel.writeAndFlush(packet).addListener(FUTURE_LISTENER);
+    public PacketManager getPacketManager() {
+        return nettyClient.getPacketManager();
     }
+
+    @Override
+    public void registerClientMessageListener(String uri, ClientMessageRequestListener listener) throws IllegalStateException {
+        nettyClient.getMessageManager().registerClientMessageListener(uri, listener);
+    }
+
+    @Override
+    public void getCloudInfo(CustomClientMessageResponseListener<CloudInfoResponsePacket> callback) {
+        nettyClient.getPacketManager().sendClientRequest(new ClientMessageRequestPacket(URIs.CLOUD_INFO, HttpMethod.GET), callback);
+    }
+
 }

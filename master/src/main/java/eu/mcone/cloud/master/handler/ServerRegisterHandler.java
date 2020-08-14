@@ -10,7 +10,7 @@ import eu.mcone.cloud.core.server.ServerRegisterData;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.network.BungeeServerListUpdater;
-import eu.mcone.cloud.master.server.Server;
+import eu.mcone.cloud.master.server.CloudServer;
 import group.onegaming.networkmanager.api.packet.interfaces.PacketHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.java.Log;
@@ -21,7 +21,7 @@ public class ServerRegisterHandler implements PacketHandler<ServerRegisterPacket
     @Override
     public void onPacketReceive(ServerRegisterPacketPlugin packet, ChannelHandlerContext chc) {
         log.fine("new ServerRegisterPacketPlugin (UUID: "+packet.getServerUuid()+", PORT: "+packet.getPort()+")");
-        Server s = MasterServer.getInstance().getServer(packet.getServerUuid());
+        CloudServer s = (CloudServer) MasterServer.getServer().getServer(packet.getServerUuid());
 
         if (s != null) {
             s.registerFromPluginData(new ServerRegisterData(chc.channel(), packet));

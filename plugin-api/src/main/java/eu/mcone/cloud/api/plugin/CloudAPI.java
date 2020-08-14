@@ -5,11 +5,15 @@
 
 package eu.mcone.cloud.api.plugin;
 
+import eu.mcone.cloud.core.packet.CloudInfoResponsePacket;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import group.onegaming.networkmanager.api.packet.Packet;
 import io.netty.channel.ChannelFuture;
+import eu.mcone.networkmanager.api.messaging.request.ClientMessageRequestListener;
+import eu.mcone.networkmanager.api.messaging.response.CustomClientMessageResponseListener;
+import eu.mcone.networkmanager.client.api.PacketManager;
 import lombok.Getter;
 
 import java.util.List;
@@ -50,6 +54,10 @@ public abstract class CloudAPI {
 
     public abstract int getPort();
 
-    public abstract ChannelFuture send(Packet packet);
+    public abstract PacketManager getPacketManager();
+
+    public abstract void registerClientMessageListener(String uri, ClientMessageRequestListener listener) throws IllegalStateException;
+
+    public abstract void getCloudInfo(CustomClientMessageResponseListener<CloudInfoResponsePacket> callback);
 
 }

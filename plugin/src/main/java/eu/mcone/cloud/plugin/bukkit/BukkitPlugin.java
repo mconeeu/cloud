@@ -8,7 +8,12 @@ package eu.mcone.cloud.plugin.bukkit;
 import eu.mcone.cloud.api.plugin.bukkit.BukkitCloudPlugin;
 import eu.mcone.cloud.plugin.CloudPlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class BukkitPlugin extends JavaPlugin implements BukkitCloudPlugin {
 
@@ -35,8 +40,13 @@ public class BukkitPlugin extends JavaPlugin implements BukkitCloudPlugin {
     }
 
     @Override
-    public int getPlayerCount() {
-        return Bukkit.getOnlinePlayers().size();
+    public Map<UUID, String> getPlayers() {
+        Map<UUID, String> result = new HashMap<>();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            result.put(p.getUniqueId(), p.getName());
+        }
+
+        return result;
     }
 
 }

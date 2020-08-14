@@ -1,19 +1,41 @@
-/*
- * Copyright (c) 2017 - 2018 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
- *  You are not allowed to decompile the code.
- */
-
 package eu.mcone.cloud.core.api;
 
-import lombok.AllArgsConstructor;
+import eu.mcone.cloud.core.api.server.Server;
+import eu.mcone.cloud.core.api.template.Template;
+import eu.mcone.cloud.core.api.wrapper.Wrapper;
+import eu.mcone.networkmanager.host.api.module.NetworkModule;
+import lombok.Getter;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.UUID;
 
-@AllArgsConstructor
-public class CloudMaster {
+public abstract class CloudMaster extends NetworkModule {
 
-    List<CloudTemplate> templates;
-    List<CloudWrapper> wrappers;
-    List<CloudServer> servers;
+    @Getter
+    private static CloudMaster instance;
+
+    protected void setInstance(CloudMaster instance) {
+        if (instance == null) {
+            System.err.println("CloudMaster instance cannot be set twice!");
+        } else {
+            CloudMaster.instance = instance;
+        }
+    }
+
+    public abstract Collection<Template> getTemplates();
+
+    public abstract Template getTemplate(String name);
+
+
+    public abstract Collection<Server> getServers();
+
+    public abstract Server getServer(UUID uuid);
+
+    public abstract Server getServer(String name);
+
+
+    public abstract Collection<Wrapper> getWrappers();
+
+    public abstract Wrapper getWrapper(UUID uuid);
 
 }

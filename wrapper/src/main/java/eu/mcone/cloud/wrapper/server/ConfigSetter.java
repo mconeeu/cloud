@@ -6,7 +6,8 @@
 package eu.mcone.cloud.wrapper.server;
 
 import com.google.common.io.Files;
-import eu.mcone.cloud.core.exception.CloudRuntimeException;
+import eu.mcone.cloud.core.server.ServerProperties;
+import eu.mcone.cloud.wrapper.WrapperServer;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
@@ -55,15 +56,9 @@ class ConfigSetter {
 
     private void setJsonValues(Map<String, Object> values) {
         try {
-            if (values.get("json") != null) {
-                FileUtils.writeStringToFile(file, (String) values.get("json"), "UTF-8");
-            } else {
-                throw new CloudRuntimeException("Cannot set json to Config. Config-Value-Map does not contain key json!");
-            }
+            FileUtils.writeStringToFile(file, WrapperServer.getInstance().getGson().toJson(values));
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ClassCastException e) {
-            throw new CloudRuntimeException("Cannot set json to Config. Json value is not a String!", e);
         }
     }
 

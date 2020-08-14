@@ -5,13 +5,19 @@
 
 package eu.mcone.cloud.master;
 
-import com.google.gson.Gson;
+import eu.mcone.cloud.core.api.CloudMaster;
+import eu.mcone.cloud.core.api.server.Server;
+import eu.mcone.cloud.core.api.template.Template;
+import eu.mcone.cloud.core.api.wrapper.Wrapper;
+import eu.mcone.cloud.core.messaging.URIs;
 import eu.mcone.cloud.core.packet.*;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.console.ConsoleCommandExecutor;
 import eu.mcone.cloud.master.handler.*;
-import eu.mcone.cloud.master.network.WrapperConnectionListener;
-import eu.mcone.cloud.master.server.Server;
+import eu.mcone.cloud.master.listener.CloudInfoRequestListener;
+import eu.mcone.cloud.master.listener.CloudServerForwardRequestListener;
+import eu.mcone.cloud.master.listener.WrapperConnectionListener;
+import eu.mcone.cloud.master.server.CloudServer;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
 import eu.mcone.cloud.master.template.Template;
@@ -20,6 +26,11 @@ import group.onegaming.networkmanager.core.api.console.ConsoleColor;
 import group.onegaming.networkmanager.core.api.database.Database;
 import group.onegaming.networkmanager.host.api.ModuleHost;
 import group.onegaming.networkmanager.host.api.module.NetworkModule;
+import eu.mcone.cloud.master.template.CloudTemplate;
+import eu.mcone.cloud.master.wrapper.CloudWrapper;
+import eu.mcone.networkmanager.core.api.console.ConsoleColor;
+import eu.mcone.networkmanager.core.api.database.Database;
+import eu.mcone.networkmanager.host.api.ModuleHost;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -28,24 +39,23 @@ import org.bson.Document;
 import java.util.*;
 
 @Log
-public class MasterServer extends NetworkModule {
+public class MasterServer extends CloudMaster {
 
     @Getter
-    private static MasterServer instance;
+    private static MasterServer server;
 
     @Getter
     private ServerManager serverManager;
     @Getter
     private StaticServerManager staticServerManager;
     @Getter
-    private Gson gson;
-    @Getter
     private List<Template> templates = new ArrayList<>();
     @Getter
     private List<Wrapper> wrappers = new ArrayList<>();
 
     public void onLoad() {
-        instance = this;
+        setInstance(this);
+        server = this;
         staticServerManager = new StaticServerManager();
 
         registerPacket(ServerChangeStatePacketWrapper.class);
@@ -59,11 +69,14 @@ public class MasterServer extends NetworkModule {
         registerPacket(WrapperRegisterPacketWrapper.class, new WrapperRegisterHandler());
         registerPacket(WrapperShutdownPacketWrapper.class);
 
-        ModuleHost.getInstance().getPacketManager().registerConnectionListener(new WrapperConnectionListener());
+        registerClientMessageListener(URIs.FORWARD, new CloudServerForwardRequestListener());
+        registerClientMessageListener(URIs.CLOUD_INFO, new CloudInfoRequestListener());
+
+        registerConnectionListener(new WrapperConnectionListener());
     }
 
     public void onEnable() {
-        ModuleHost.getInstance().getConsoleReader().registerCommand("wrapper", "", new ConsoleCommandExecutor());
+        ModuleHost.getInstance().getConsoleReader().registerCommand(new ConsoleCommandExecutor());
         gson = new Gson();
 
         log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. CloudMaster is starting...");
@@ -96,7 +109,7 @@ public class MasterServer extends NetworkModule {
             if (oldTemplates.containsKey(entry.getString("name"))) {
                 log.info("Reload progress - Refreshing Template " + entry.getString("name") + "...");
 
-                oldTemplates.get(entry.getString("name")).recreate(
+                ((CloudTemplate) oldTemplates.get(entry.getString("name"))).recreate(
                         entry.getLong("ram"),
                         entry.getInteger("max_players"),
                         entry.getInteger("min"),
@@ -116,7 +129,7 @@ public class MasterServer extends NetworkModule {
         for (Template t : templates) {
             if (!newTemplates.contains(t.getName())) {
                 log.info("Reload progress - Deleting old Template " + t.getName() + "...");
-                t.delete();
+                ((CloudTemplate) t).delete();
             }
         }
 
@@ -153,25 +166,25 @@ public class MasterServer extends NetworkModule {
     }
 
     private void createTemplate(String name, long ram, int maxPlayers, int min, int max, int emptyServers, ServerVersion version, String properties) {
-        templates.add(new Template(name, ram, maxPlayers, min, max, emptyServers, version, properties));
+        templates.add(new CloudTemplate(name, ram, maxPlayers, min, max, emptyServers, version, properties));
     }
 
-    public void unregisterTemplate(Template t) {
+    public void unregisterTemplate(CloudTemplate t) {
         templates.remove(t);
     }
 
-    public Wrapper createWrapper(UUID uuid, Channel channel, long ram) {
-        Wrapper w = new Wrapper(uuid, channel, ram);
+    public CloudWrapper createWrapper(UUID uuid, Channel channel, long ram) {
+        CloudWrapper w = new CloudWrapper(uuid, channel, ram);
 
         wrappers.add(w);
         return w;
     }
 
-    public void unregisterWrapper(Wrapper w) {
+    public void unregisterWrapper(CloudWrapper w) {
         wrappers.remove(w);
     }
 
-    public Template getTeamplate(String name) {
+    public Template getTemplate(String name) {
         for (Template t : templates) {
             if (t.getName().equalsIgnoreCase(name)) {
                 return t;
@@ -188,7 +201,7 @@ public class MasterServer extends NetworkModule {
                 }
             }
         }
-        for (Server s : staticServerManager.getServers()) {
+        for (CloudServer s : staticServerManager.getServers()) {
             if (s.getInfo().getUuid().equals(uuid)) {
                 return s;
             }
@@ -204,7 +217,7 @@ public class MasterServer extends NetworkModule {
                 }
             }
         }
-        for (Server s : staticServerManager.getServers()) {
+        for (CloudServer s : staticServerManager.getServers()) {
             if (s.getInfo().getName().equals(name)) {
                 return s;
             }
@@ -214,7 +227,7 @@ public class MasterServer extends NetworkModule {
 
     public Wrapper getWrapper(Channel channel) {
         for (Wrapper w : wrappers) {
-            if (w.getChannel() != null && w.getChannel().equals(channel)) {
+            if (((CloudWrapper) w).getChannel() != null && ((CloudWrapper) w).getChannel().equals(channel)) {
                 return w;
             }
         }

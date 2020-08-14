@@ -3,7 +3,7 @@
  *  You are not allowed to decompile the code.
  */
 
-package eu.mcone.cloud.wrapper.server;
+package eu.mcone.cloud.core.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.util.Map;
 @Getter @Setter
 public class ServerProperties {
 
-    private List<PluginDownload> plugins;
+    private List<String> plugins;
     private List<String> worlds;
     private List<Config> configs;
     private String gamemode, mode;
@@ -26,13 +26,6 @@ public class ServerProperties {
     public static class Config {
         private String name;
         private Map<String, Object> values;
-    }
-
-    @AllArgsConstructor
-    @Getter @Setter
-    public static class PluginDownload {
-        private int project;
-        private String artifactPath;
     }
 
 }

@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -24,10 +26,11 @@ public class ServerRegisterPacketPlugin extends Packet {
 
     private UUID serverUuid, wrapperUuid;
     private String hostname;
-    private int port, playercount;
+    private int port;
     private ServerState state;
     private ServerVersion version;
     private boolean staticServer;
+    private Map<UUID, String> players;
 
     @Override
     public void onWrite(DataOutputStream out) throws IOException {
@@ -35,10 +38,15 @@ public class ServerRegisterPacketPlugin extends Packet {
         out.writeUTF(wrapperUuid.toString());
         out.writeUTF(hostname);
         out.writeInt(port);
-        out.writeInt(playercount);
         out.writeUTF(state.toString());
         out.writeUTF(version.toString());
         out.writeBoolean(staticServer);
+
+        out.writeInt(players.size());
+        for (Map.Entry<UUID, String> e : players.entrySet()) {
+            out.writeUTF(e.getKey().toString());
+            out.writeUTF(e.getValue());
+        }
     }
 
     @Override
@@ -47,10 +55,18 @@ public class ServerRegisterPacketPlugin extends Packet {
         wrapperUuid = UUID.fromString(in.readUTF());
         hostname = in.readUTF();
         port = in.readInt();
-        playercount = in.readInt();
         state = ServerState.valueOf(in.readUTF());
         version = ServerVersion.valueOf(in.readUTF());
         staticServer = in.readBoolean();
+
+        players = new HashMap<>();
+        int size = in.readInt();
+        for (int i = 0; i < size; i++) {
+            players.put(
+                    UUID.fromString(in.readUTF()),
+                    in.readUTF()
+            );
+        }
     }
 
 }

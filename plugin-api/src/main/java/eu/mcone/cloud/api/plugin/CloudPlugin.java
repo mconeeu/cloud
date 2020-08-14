@@ -5,10 +5,13 @@
 
 package eu.mcone.cloud.api.plugin;
 
+import java.util.Map;
+import java.util.UUID;
+
 public interface CloudPlugin {
 
     void runAsync(Runnable runnable);
 
-    int getPlayerCount();
+    Map<UUID, String> getPlayers();
 
 }

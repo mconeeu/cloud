@@ -26,7 +26,7 @@ public class PlayerListener implements Listener {
     }
 
     public void on(PreLoginEvent e) {
-        if (instance.getChannel() == null) {
+        if (instance.getNettyClient().getPacketManager().getChannel() == null) {
             e.setCancelled(true);
             e.setCancelReason(
                     new TextComponent(TextComponent.fromLegacyText("§f§lMC ONE §3Minecraftnetzwerk"
@@ -41,11 +41,18 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void on(PostLoginEvent e) {
-        instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), ProxyServer.getInstance().getOnlineCount()));
+        instance.getNettyClient().getPacketManager().send(
+                new ServerPlayerCountUpdatePacketPlugin(
+                        instance.getServerUuid(),
+                        e.getPlayer().getUniqueId(),
+                        e.getPlayer().getName(),
+                        ServerPlayerCountUpdatePacketPlugin.Method.ADD
+                )
+        );
 
         if (instance.getState().equals(ServerState.WAITING)) {
             if (ProxyServer.getInstance().getOnlineCount() >= ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers()) {
-                instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.FULL));
+                instance.getNettyClient().getPacketManager().send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.FULL));
                 instance.setState(ServerState.FULL);
             }
         }
@@ -54,11 +61,18 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void on(PlayerDisconnectEvent e) {
         int onlinePlayers = ProxyServer.getInstance().getOnlineCount()-1;
-        instance.send(new ServerPlayerCountUpdatePacketPlugin(instance.getServerUuid(), onlinePlayers));
+        instance.getNettyClient().getPacketManager().send(
+                new ServerPlayerCountUpdatePacketPlugin(
+                        instance.getServerUuid(),
+                        e.getPlayer().getUniqueId(),
+                        e.getPlayer().getName(),
+                        ServerPlayerCountUpdatePacketPlugin.Method.REMOVE
+                )
+        );
 
         if (instance.getState().equals(ServerState.FULL)) {
             if (onlinePlayers < ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers()) {
-                instance.send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.WAITING));
+                instance.getNettyClient().getPacketManager().send(new ServerUpdateStatePacket(instance.getServerUuid(), ServerState.WAITING));
                 instance.setState(ServerState.WAITING);
             }
         }

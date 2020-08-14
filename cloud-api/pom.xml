@@ -20,13 +20,6 @@
         <finalName>${project.parent.name}-${project.name}-${project.version}</finalName>
     </build>
 
-    <repositories>
-        <repository>
-            <id>bungeecord-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>group.onegaming.networkmanager</groupId>
