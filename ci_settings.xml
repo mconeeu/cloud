@@ -18,7 +18,7 @@
                 <httpHeaders>
                     <property>
                         <name>Deploy-Token</name>
-                        <value>${env.APPLICATIONS_DEPLOY_TOKEN}</value>
+                        <value>${env.CI_JOB_TOKEN}</value>
                     </property>
                 </httpHeaders>
             </configuration>
