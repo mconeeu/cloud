@@ -55,10 +55,12 @@ verify:merges:jdk8:
 # For `master` branch run `mvn deploy` automatically.
 # Uses mounted settings.xml for authenticating with mcone-repo
 deploy:jdk8:
-  stage: test
+  tags:
+    - maven
   image: maven:3.6.1-jdk-8
+  stage: test
   script:
-    - 'mvn $MAVEN_CLI_OPTS javadoc:jar javadoc:aggregate source:jar $MAVEN_DEPLOY_OPTS'
+    - 'mvn $MAVEN_CLI_OPTS javadoc:jar javadoc:aggregate source:jar deploy $MAVEN_DEPLOY_OPTS'
   only:
     - master
   artifacts:
