@@ -10,9 +10,6 @@ import eu.mcone.cloud.core.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.networkmanager.core.api.database.Database;
-import eu.mcone.networkmanager.host.api.ModuleHost;
-import eu.mcone.cloud.master.template.Template;
 import group.onegaming.networkmanager.core.api.database.Database;
 import group.onegaming.networkmanager.host.api.ModuleHost;
 import lombok.Getter;
@@ -25,7 +22,7 @@ import java.util.*;
 public class StaticServerManager {
 
     @Getter
-    private List<CloudServer> servers;
+    private final List<CloudServer> servers;
 
     public StaticServerManager() {
         this.servers = new ArrayList<>();

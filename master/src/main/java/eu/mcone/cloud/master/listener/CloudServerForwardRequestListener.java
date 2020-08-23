@@ -5,10 +5,10 @@ import eu.mcone.cloud.core.packet.CloudServerForwardedRequestPacket;
 import eu.mcone.cloud.core.packet.CloudServerForwardedResponsePacket;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.CloudServer;
-import eu.mcone.networkmanager.api.messaging.request.ClientMessageRequestListener;
-import eu.mcone.networkmanager.api.packet.ClientMessageRequestPacket;
-import eu.mcone.networkmanager.api.packet.ClientMessageResponsePacket;
-import eu.mcone.networkmanager.host.api.ModuleHost;
+import group.onegaming.networkmanager.api.messaging.request.ClientMessageRequestListener;
+import group.onegaming.networkmanager.api.packet.ClientMessageRequestPacket;
+import group.onegaming.networkmanager.api.packet.ClientMessageResponsePacket;
+import group.onegaming.networkmanager.host.api.ModuleHost;
 import lombok.extern.java.Log;
 
 @Log

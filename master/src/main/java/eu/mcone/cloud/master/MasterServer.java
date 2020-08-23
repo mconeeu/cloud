@@ -20,17 +20,11 @@ import eu.mcone.cloud.master.listener.WrapperConnectionListener;
 import eu.mcone.cloud.master.server.CloudServer;
 import eu.mcone.cloud.master.server.ServerManager;
 import eu.mcone.cloud.master.server.StaticServerManager;
-import eu.mcone.cloud.master.template.Template;
-import eu.mcone.cloud.master.wrapper.Wrapper;
 import group.onegaming.networkmanager.core.api.console.ConsoleColor;
 import group.onegaming.networkmanager.core.api.database.Database;
 import group.onegaming.networkmanager.host.api.ModuleHost;
-import group.onegaming.networkmanager.host.api.module.NetworkModule;
 import eu.mcone.cloud.master.template.CloudTemplate;
 import eu.mcone.cloud.master.wrapper.CloudWrapper;
-import eu.mcone.networkmanager.core.api.console.ConsoleColor;
-import eu.mcone.networkmanager.core.api.database.Database;
-import eu.mcone.networkmanager.host.api.ModuleHost;
 import io.netty.channel.Channel;
 import lombok.Getter;
 import lombok.extern.java.Log;
@@ -49,9 +43,9 @@ public class MasterServer extends CloudMaster {
     @Getter
     private StaticServerManager staticServerManager;
     @Getter
-    private List<Template> templates = new ArrayList<>();
+    private final List<Template> templates = new ArrayList<>();
     @Getter
-    private List<Wrapper> wrappers = new ArrayList<>();
+    private final List<Wrapper> wrappers = new ArrayList<>();
 
     public void onLoad() {
         setInstance(this);
@@ -76,8 +70,7 @@ public class MasterServer extends CloudMaster {
     }
 
     public void onEnable() {
-        ModuleHost.getInstance().getConsoleReader().registerCommand(new ConsoleCommandExecutor());
-        gson = new Gson();
+        registerCommand("cloud", new ConsoleCommandExecutor());
 
         log.info("Enable progress - " + ConsoleColor.AQUA + "Welcome to mc1cloud. CloudMaster is starting...");
 

@@ -8,7 +8,7 @@ import eu.mcone.cloud.core.api.wrapper.Wrapper;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
-import eu.mcone.networkmanager.api.packet.ClientMessageResponsePacket;
+import group.onegaming.networkmanager.api.packet.ClientMessageResponsePacket;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

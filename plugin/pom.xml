@@ -10,7 +10,7 @@
     <parent>
         <artifactId>mcone-cloud</artifactId>
         <groupId>eu.mcone.cloud</groupId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>2.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -50,7 +50,6 @@
     </build>
 
     <repositories>
-        <!-- This adds the Spigot Maven repository to the build -->
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
@@ -73,47 +72,39 @@
         <dependency>
             <groupId>eu.mcone.cloud</groupId>
             <artifactId>plugin-api-bungee</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.1.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>eu.mcone.cloud</groupId>
             <artifactId>plugin-api-bukkit</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.1.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>group.onegaming.networkmanager</groupId>
             <artifactId>network-api</artifactId>
-            <version>1.1.4-SNAPSHOT</version>
+            <version>1.1.5-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>group.onegaming.networkmanager</groupId>
             <artifactId>client</artifactId>
-            <version>1.1.4-SNAPSHOT</version>
+            <version>1.1.5-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-
-        <dependency> <!-- Spigot (this includes Spigot API, Bukkit API, Craftbukkit and NMS) -->
+        <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
             <version>1.8.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
-            <version>1.13-SNAPSHOT</version>
+            <version>1.16-R0.2-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-api</artifactId>
-            <version>1.13-SNAPSHOT</version>
-            <type>javadoc</type>
         </dependency>
     </dependencies>
 

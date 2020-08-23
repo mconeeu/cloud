@@ -1,6 +1,6 @@
 package eu.mcone.cloud.core.packet;
 
-import eu.mcone.networkmanager.api.packet.ClientMessageResponsePacket;
+import group.onegaming.networkmanager.api.packet.ClientMessageResponsePacket;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

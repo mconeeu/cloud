@@ -13,10 +13,6 @@ import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.network.BungeeServerListUpdater;
 import eu.mcone.cloud.master.server.CloudServer;
 import eu.mcone.cloud.master.wrapper.CloudWrapper;
-import eu.mcone.networkmanager.api.packet.interfaces.PacketHandler;
-import eu.mcone.networkmanager.core.api.console.ConsoleColor;
-import eu.mcone.cloud.master.server.Server;
-import eu.mcone.cloud.master.wrapper.Wrapper;
 import group.onegaming.networkmanager.api.packet.interfaces.PacketHandler;
 import group.onegaming.networkmanager.core.api.console.ConsoleColor;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class WrapperRegisterFromStandaloneHandler implements PacketHandler<WrapperRegisterFromStandalonePacketWrapper> {
 
     @Getter
-    static Map<UUID, Map<UUID, ServerRegisterData>> registeringServers = new HashMap<>();
+    static final Map<UUID, Map<UUID, ServerRegisterData>> registeringServers = new HashMap<>();
 
     @Override
     public void onPacketReceive(WrapperRegisterFromStandalonePacketWrapper packet, ChannelHandlerContext chc) {

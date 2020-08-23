@@ -3,7 +3,7 @@ package eu.mcone.cloud.core.api;
 import eu.mcone.cloud.core.api.server.Server;
 import eu.mcone.cloud.core.api.template.Template;
 import eu.mcone.cloud.core.api.wrapper.Wrapper;
-import eu.mcone.networkmanager.host.api.module.NetworkModule;
+import group.onegaming.networkmanager.host.api.module.NetworkModule;
 import lombok.Getter;
 
 import java.util.Collection;

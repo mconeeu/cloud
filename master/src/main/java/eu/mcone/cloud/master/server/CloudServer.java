@@ -15,11 +15,8 @@ import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.network.BungeeServerListUpdater;
 import eu.mcone.cloud.master.template.CloudTemplate;
 import eu.mcone.cloud.master.wrapper.CloudWrapper;
-import eu.mcone.networkmanager.api.packet.Packet;
-import eu.mcone.networkmanager.api.pipeline.FutureListeners;
-import eu.mcone.cloud.master.template.Template;
-import eu.mcone.cloud.master.wrapper.Wrapper;
 import group.onegaming.networkmanager.api.packet.Packet;
+import group.onegaming.networkmanager.api.pipeline.FutureListeners;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import lombok.Getter;
@@ -34,11 +31,11 @@ import java.util.UUID;
 public class CloudServer implements Server {
 
     @Getter
-    private ServerInfo info;
+    private final ServerInfo info;
     @Getter @Setter
     private UUID wrapperUuid;
     @Getter
-    private CloudTemplate template;
+    private final CloudTemplate template;
     @Getter @Setter
     private CloudWrapper wrapper = null;
     @Getter

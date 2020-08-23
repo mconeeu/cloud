@@ -12,11 +12,9 @@ import eu.mcone.cloud.core.packet.ServerInfoPacket;
 import eu.mcone.cloud.core.packet.WrapperShutdownPacketWrapper;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.cloud.master.server.Server;
-import group.onegaming.networkmanager.api.packet.Packet;
 import eu.mcone.cloud.master.server.CloudServer;
-import eu.mcone.networkmanager.api.packet.Packet;
-import eu.mcone.networkmanager.api.pipeline.FutureListeners;
+import group.onegaming.networkmanager.api.packet.Packet;
+import group.onegaming.networkmanager.api.pipeline.FutureListeners;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import lombok.Getter;
@@ -31,7 +29,7 @@ import java.util.UUID;
 public class CloudWrapper implements Wrapper {
 
     @Getter
-    private UUID uuid;
+    private final UUID uuid;
     @Getter
     private long ram;
     @Getter @Setter
@@ -41,7 +39,7 @@ public class CloudWrapper implements Wrapper {
     @Getter @Setter
     private boolean busy = false;
     @Getter
-    private Set<Server> servers;
+    private final Set<Server> servers;
 
     public CloudWrapper(UUID uuid, Channel channel, long ram) {
         this.uuid = uuid;

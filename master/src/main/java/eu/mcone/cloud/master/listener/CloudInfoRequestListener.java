@@ -2,9 +2,9 @@ package eu.mcone.cloud.master.listener;
 
 import eu.mcone.cloud.core.packet.CloudInfoResponsePacket;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.networkmanager.api.messaging.request.ClientMessageRequestListener;
-import eu.mcone.networkmanager.api.packet.ClientMessageRequestPacket;
-import eu.mcone.networkmanager.api.packet.ClientMessageResponsePacket;
+import group.onegaming.networkmanager.api.messaging.request.ClientMessageRequestListener;
+import group.onegaming.networkmanager.api.packet.ClientMessageRequestPacket;
+import group.onegaming.networkmanager.api.packet.ClientMessageResponsePacket;
 
 public class CloudInfoRequestListener implements ClientMessageRequestListener {
 

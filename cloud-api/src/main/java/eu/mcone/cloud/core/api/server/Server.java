@@ -1,7 +1,7 @@
 package eu.mcone.cloud.core.api.server;
 
 import eu.mcone.cloud.core.api.wrapper.Wrapper;
-import eu.mcone.networkmanager.api.packet.Packet;
+import group.onegaming.networkmanager.api.packet.Packet;
 import io.netty.channel.ChannelFuture;
 
 public interface Server extends SimpleServer {

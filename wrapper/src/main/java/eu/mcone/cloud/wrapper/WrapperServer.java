@@ -7,6 +7,7 @@ package eu.mcone.cloud.wrapper;
 
 import com.google.gson.Gson;
 import com.mongodb.client.MongoDatabase;
+import eu.mcone.cloud.core.exception.DownloadException;
 import eu.mcone.cloud.core.file.CloudConfig;
 import eu.mcone.cloud.core.file.Downloader;
 import eu.mcone.cloud.core.file.FileManager;
@@ -33,7 +34,6 @@ import lombok.Setter;
 import lombok.extern.java.Log;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -51,34 +51,34 @@ public class WrapperServer {
     private static WrapperServer instance;
 
     @Getter
-    private MconeLogger mconeLogger;
+    private final MconeLogger mconeLogger;
     @Getter
     private UUID wrapperUuid;
     @Getter
     private long ram;
     @Getter
-    private ConsoleReader consoleReader;
+    private final ConsoleReader consoleReader;
     @Getter
-    private FileManager fileManager;
+    private final FileManager fileManager;
     @Getter
-    private CloudConfig config;
+    private final CloudConfig config;
     @Getter
-    private ClientBootstrap nettyBootstrap;
+    private final ClientBootstrap nettyBootstrap;
     @Getter
-    private MongoConnection mongoConnection;
+    private final MongoConnection mongoConnection;
     @Getter
-    private MongoDatabase mongoDB;
+    private final MongoDatabase mongoDB;
     @Getter
-    private Gson gson;
+    private final Gson gson;
     @Getter
     @Setter
     private Channel channel;
     @Getter
     private boolean shutdown = false;
     @Getter
-    private LinkedHashSet<Server> servers = new LinkedHashSet<>();
+    private final LinkedHashSet<Server> servers = new LinkedHashSet<>();
     @Getter
-    private ExecutorService threadPool;
+    private final ExecutorService threadPool;
 
     public static void main(String[] args) {
         new WrapperServer();
@@ -132,7 +132,7 @@ public class WrapperServer {
         for (ServerVersion v : ServerVersion.values()) {
             try {
                 Downloader.download(v.getDownloadLink(), new File(fileManager.getHomeDir() + File.separator + "jars" + File.separator + v.toString() + ".jar"));
-            } catch (IOException e) {
+            } catch (DownloadException e) {
                 e.printStackTrace();
             }
         }

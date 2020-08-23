@@ -10,7 +10,7 @@
     <parent>
         <artifactId>mcone-cloud</artifactId>
         <groupId>eu.mcone.cloud</groupId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>2.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -46,19 +46,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok-maven-plugin</artifactId>
-                <version>1.16.6.1</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>delombok</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -72,13 +59,13 @@
         <dependency>
             <groupId>eu.mcone.cloud</groupId>
             <artifactId>cloud-api</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.1.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>group.onegaming.networkmanager</groupId>
             <artifactId>host-api</artifactId>
-            <version>1.1.4-SNAPSHOT</version>
+            <version>1.1.5-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

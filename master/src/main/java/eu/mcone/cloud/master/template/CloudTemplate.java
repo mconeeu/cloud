@@ -13,7 +13,7 @@ import eu.mcone.cloud.core.server.ServerProperties;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.master.MasterServer;
 import eu.mcone.cloud.master.server.CloudServer;
-import eu.mcone.networkmanager.host.api.ModuleHost;
+import group.onegaming.networkmanager.host.api.ModuleHost;
 import lombok.Getter;
 import lombok.extern.java.Log;
 

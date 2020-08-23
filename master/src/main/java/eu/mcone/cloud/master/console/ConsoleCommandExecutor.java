@@ -5,11 +5,14 @@
 
 package eu.mcone.cloud.master.console;
 
+import eu.mcone.cloud.core.api.server.Server;
+import eu.mcone.cloud.core.api.template.Template;
+import eu.mcone.cloud.core.api.wrapper.Wrapper;
 import eu.mcone.cloud.core.packet.ServerCommandExecutePacketWrapper;
 import eu.mcone.cloud.master.MasterServer;
-import eu.mcone.cloud.master.server.Server;
-import eu.mcone.cloud.master.template.Template;
-import eu.mcone.cloud.master.wrapper.Wrapper;
+import eu.mcone.cloud.master.server.CloudServer;
+import eu.mcone.cloud.master.template.CloudTemplate;
+import eu.mcone.cloud.master.wrapper.CloudWrapper;
 import group.onegaming.networkmanager.core.api.console.CommandExecutor;
 import group.onegaming.networkmanager.core.api.console.ConsoleColor;
 
@@ -30,7 +33,7 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 log.info(ConsoleColor.RED + "TEMPLATE-NAME " + ConsoleColor.YELLOW + "SERVERS " + ConsoleColor.RESET + "RAM " + ConsoleColor.YELLOW + "MIN/MAX " + ConsoleColor.RESET + "VERSION" + ConsoleColor.DARK_GRAY + "                    |");
                 log.info(ConsoleColor.DARK_GRAY + "--------------------------------------------------------------");
                 for (Template t : MasterServer.getInstance().getTemplates()) {
-                    log.info(ConsoleColor.RED.toString() + (++i) + ". " + t.getName() + " " + ConsoleColor.YELLOW + t.getServers().size() + " " + ConsoleColor.RESET + t.getRam() + " " + ConsoleColor.YELLOW + t.getMin() + "/" + t.getMax() + " " + ConsoleColor.RESET + t.getVersion());
+                    log.info(ConsoleColor.RED.toString() + (++i) + ". " + t.getName() + " " + ConsoleColor.YELLOW + t.getServers().size() + " " + ConsoleColor.RESET + t.getRam() + " " + ConsoleColor.YELLOW + t.getMinServers() + "/" + t.getMaxServers() + " " + ConsoleColor.RESET + t.getVersion());
                 }
 
                 i = 0;
@@ -64,7 +67,7 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                 log.info("\n");
                 log.info("List - end");
             } else if (args[0].equalsIgnoreCase("masterreload")) {
-                MasterServer.getInstance().reload();
+                MasterServer.getServer().reload();
             }
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("startserver")) {
@@ -105,17 +108,17 @@ public class ConsoleCommandExecutor implements CommandExecutor {
                         if (i != args.length - 1) sb.append(" ");
                     }
 
-                    s.getWrapper().getChannel().writeAndFlush(new ServerCommandExecutePacketWrapper(s.getInfo().getUuid(), sb.toString()));
+                    ((CloudWrapper) s.getWrapper()).send(new ServerCommandExecutePacketWrapper(s.getInfo().getUuid(), sb.toString()));
                     log.info("Sent new command '" + sb.toString() + "' to server wrapper...");
                 } else {
                     log.info(ConsoleColor.RED + "No suitable server found for name " + args[0]);
                 }
             } else if (args[0].equalsIgnoreCase("createserver")) {
                 try {
-                    Template template = MasterServer.getInstance().getTeamplate(args[0]);
+                    Template template = MasterServer.getInstance().getTemplate(args[0]);
                     int amount = Integer.parseInt(args[1]);
 
-                    template.createServer(amount);
+                    ((CloudTemplate) template).createServer(amount);
                 } catch (NumberFormatException e) {
                     log.severe("Second arg must be a number");
                 }
