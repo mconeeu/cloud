@@ -6,7 +6,6 @@
 package eu.mcone.cloud.wrapper.server;
 
 import eu.mcone.cloud.core.file.Downloader;
-import eu.mcone.cloud.core.file.UnZip;
 import eu.mcone.cloud.core.packet.ServerUpdateStatePacket;
 import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerInfo;
@@ -16,6 +15,7 @@ import eu.mcone.cloud.wrapper.WrapperServer;
 import eu.mcone.cloud.wrapper.download.WorldDownloader;
 import eu.mcone.cloud.core.exception.DownloadException;
 import eu.mcone.cloud.wrapper.server.console.ConsoleInputReader;
+import group.onegaming.networkmanager.core.api.util.UnZip;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -248,7 +248,7 @@ public abstract class Server {
         for (String w : properties.getWorlds()) {
             CloudWorld world = new WorldDownloader(w).download();
             log.info("[" + info.getName() + "] Implementing World " + w);
-            new UnZip(world.getFilePath(), serverDir.getPath() + File.separator + w);
+//            new UnZip(world.getFilePath(), serverDir.getPath() + File.separator + w);
         }
     }
 

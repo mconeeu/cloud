@@ -20,6 +20,8 @@ import java.io.IOException;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.include;
 
+//TODO: Rework this class, CloudWorldManager!
+
 @Log
 public class WorldDownloader {
 
@@ -52,20 +54,22 @@ public class WorldDownloader {
                 WrapperServer.getInstance().getConfig().getConfig().set("builds.worlds." + name.replace('.', '-'), build);
                 WrapperServer.getInstance().getConfig().save();
 
-                return new CloudWorld(
-                        name,
-                        zipFile.getPath()
-                );
+//                return new CloudWorld(
+//                        name,
+//                        zipFile.getPath()
+//                );
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
             return null;
         } else {
-            return new CloudWorld(
-                    name,
-                    zipFile.getPath()
-            );
+//            return new CloudWorld(
+//                    name,
+//                    zipFile.getPath()
+//            );
         }
+
+        return null;
     }
 }
