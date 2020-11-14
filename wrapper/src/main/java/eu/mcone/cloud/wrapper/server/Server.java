@@ -7,15 +7,12 @@ package eu.mcone.cloud.wrapper.server;
 
 import eu.mcone.cloud.core.file.Downloader;
 import eu.mcone.cloud.core.packet.ServerUpdateStatePacket;
-import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerInfo;
 import eu.mcone.cloud.core.server.ServerProperties;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.wrapper.WrapperServer;
-import eu.mcone.cloud.wrapper.download.WorldDownloader;
 import eu.mcone.cloud.core.exception.DownloadException;
 import eu.mcone.cloud.wrapper.server.console.ConsoleInputReader;
-import group.onegaming.networkmanager.core.api.util.UnZip;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -37,7 +34,8 @@ public abstract class Server {
     private static final File HOME_DIR = WrapperServer.getInstance().getFileManager().getHomeDir();
     private final static File JAR_DIR = new File(WrapperServer.getInstance().getFileManager().getHomeDir().getPath() + File.separator + "jars" + File.separator + "plugins");
 
-    @Getter @Setter
+    @Getter
+    @Setter
     protected ServerInfo info;
     @Getter
     protected Runtime runtime;
@@ -75,13 +73,13 @@ public abstract class Server {
     public void stop() {
         if (process != null) {
             if (process.isAlive()) {
-                log.info("["+info.getName()+"] Stopping server...");
+                log.info("[" + info.getName() + "] Stopping server...");
                 doStop();
             } else {
-                log.warning("["+info.getName()+"] Process is already dead!");
+                log.warning("[" + info.getName() + "] Process is already dead!");
             }
         } else {
-            log.warning("["+info.getName()+"] Process is null!");
+            log.warning("[" + info.getName() + "] Process is null!");
         }
 
         setState(ServerState.OFFLINE);
@@ -90,7 +88,7 @@ public abstract class Server {
     public void restart() {
         if (process != null) {
             if (process.isAlive()) {
-                log.info("["+info.getName()+"] Stopping server...");
+                log.info("[" + info.getName() + "] Stopping server...");
                 state = ServerState.OFFLINE;
                 doStop();
 
@@ -100,10 +98,10 @@ public abstract class Server {
                     e.printStackTrace();
                 }
             } else {
-                log.warning("["+info.getName()+"] Could not stop server because the process is dead!");
+                log.warning("[" + info.getName() + "] Could not stop server because the process is dead!");
             }
         } else {
-            log.severe("["+info.getName()+"] Could not stop server because it has no process!");
+            log.severe("[" + info.getName() + "] Could not stop server because it has no process!");
         }
 
         start();
@@ -139,7 +137,7 @@ public abstract class Server {
 
                 for (String download : properties.getPlugins()) {
                     String[] path = download.split("/");
-                    File plugin = new File(JAR_DIR, path[path.length-1]);
+                    File plugin = new File(JAR_DIR, path[path.length - 1]);
                     Downloader.download(download, plugin);
 
                     if (plugin.exists()) {
@@ -150,7 +148,7 @@ public abstract class Server {
                                 StandardCopyOption.REPLACE_EXISTING
                         );
                     } else {
-                        log.info("[" + info.getName() + "] Artifact " + path[path.length-1] + " from url " + download + " could not be downloaded!");
+                        log.info("[" + info.getName() + "] Artifact " + path[path.length - 1] + " from url " + download + " could not be downloaded!");
                     }
                 }
 
@@ -244,9 +242,10 @@ public abstract class Server {
         }
     }
 
+    // TODO implement new cloud world manager
     private void dowloadWorlds() throws IOException {
         for (String w : properties.getWorlds()) {
-            CloudWorld world = new WorldDownloader(w).download();
+//            CloudWorld world = new WorldDownloader(w).download();
             log.info("[" + info.getName() + "] Implementing World " + w);
 //            new UnZip(world.getFilePath(), serverDir.getPath() + File.separator + w);
         }

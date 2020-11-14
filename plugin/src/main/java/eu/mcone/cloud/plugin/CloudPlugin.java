@@ -10,7 +10,6 @@ import eu.mcone.cloud.core.messaging.URIs;
 import eu.mcone.cloud.core.packet.CloudInfoResponsePacket;
 import eu.mcone.cloud.core.packet.ServerListUpdatePacketPlugin;
 import eu.mcone.cloud.core.packet.ServerRegisterPacketPlugin;
-import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import eu.mcone.cloud.plugin.handler.ServerListUpdateHandler;
@@ -20,11 +19,6 @@ import group.onegaming.networkmanager.api.packet.ClientMessageRequestPacket;
 import group.onegaming.networkmanager.client.ClientBootstrap;
 import group.onegaming.networkmanager.client.NetworkmanagerClient;
 import group.onegaming.networkmanager.client.api.PacketManager;
-import group.onegaming.networkmanager.api.packet.Packet;
-import group.onegaming.networkmanager.client.ClientBootstrap;
-import group.onegaming.networkmanager.client.NetworkmanagerClient;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
 import lombok.Getter;
@@ -33,8 +27,6 @@ import lombok.Setter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -55,8 +47,8 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
     private ServerVersion version;
     @Getter
     private boolean staticServer;
-    @Getter
-    private List<CloudWorld> loadedWorlds;
+//    @Getter
+//    private List<CloudWorld> loadedWorlds;
     @Getter
     private UUID serverUuid, wrapperUuid;
     @Getter
@@ -67,7 +59,7 @@ public class CloudPlugin extends CloudAPI implements NetworkmanagerClient {
         cloudPlugin = this;
 
         this.plugin = plugin;
-        this.loadedWorlds = new ArrayList<>();
+//        this.loadedWorlds = new ArrayList<>();
 
         try {
             Properties ps = new Properties();

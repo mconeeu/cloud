@@ -6,7 +6,6 @@
 package eu.mcone.cloud.api.plugin;
 
 import eu.mcone.cloud.core.packet.CloudInfoResponsePacket;
-import eu.mcone.cloud.core.server.CloudWorld;
 import eu.mcone.cloud.core.server.ServerState;
 import eu.mcone.cloud.core.server.ServerVersion;
 import group.onegaming.networkmanager.api.messaging.request.ClientMessageRequestListener;
@@ -44,7 +43,7 @@ public abstract class CloudAPI {
 
     public abstract boolean isStaticServer();
 
-    public abstract List<CloudWorld> getLoadedWorlds();
+//    public abstract List<CloudWorld> getLoadedWorlds();
 
     public abstract UUID getServerUuid();
 
