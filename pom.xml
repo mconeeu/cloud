@@ -12,7 +12,7 @@
     <groupId>eu.mcone.cloud</groupId>
     <artifactId>mcone-cloud</artifactId>
     <packaging>pom</packaging>
-    <version>2.1.1-SNAPSHOT</version>
+    <version>2.1.2-SNAPSHOT</version>
 
     <modules>
         <module>master</module>

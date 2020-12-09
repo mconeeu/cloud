@@ -1,159 +1,117 @@
 package eu.mcone.cloud.core.api.world;
 
-import com.google.gson.JsonArray;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import group.onegaming.networkmanager.core.api.util.UnZip;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.function.Consumer;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
+@Getter
 public class CloudWorldManager {
 
     public static final String WORLD_URL = "/api/world/";
+    @Getter
+    private static CloudWorldManager instance;
 
     @Getter
-    private URI requestUri;
+    private final URI storageHost;
+    private final JsonParser jsonParser;
+    private final MongoCollection<CloudWorld> worldsCollection;
     @Getter
-    private URI apiUri;
-    @Getter
-    private JsonParser jsonParser;
+    private final Set<CloudWorld> worlds;
 
-    public CloudWorldManager(String requestUri) {
-        try {
-            this.requestUri = new URI(requestUri);
-            this.apiUri = new URI(requestUri + WORLD_URL);
-            this.jsonParser = new JsonParser();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+    public CloudWorldManager(MongoDatabase database) {
+        this(database, "https://storage.mcone.eu");
     }
 
-    public CloudWorldManager(String requestUri, JsonParser jsonParser) {
+    public CloudWorldManager(MongoDatabase database, String storageHost) {
+        this(database, storageHost, new JsonParser());
+    }
+
+    public CloudWorldManager(MongoDatabase database, String storageHost, JsonParser jsonParser) {
+        CloudWorldManager.instance = this;
+
         try {
-            this.requestUri = new URI(requestUri);
-            this.apiUri = new URI(requestUri + WORLD_URL);
+            this.worldsCollection = database.getCollection("worlds", CloudWorld.class);
+            this.storageHost = new URI(storageHost + WORLD_URL);
             this.jsonParser = jsonParser;
+            this.worlds = new HashSet<>();
+
+            reload();
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("Could not initialize CloudWorldManager. Storage Host "+storageHost+" is invalid!");
         }
     }
 
-    /**
-     * downloads the world where the given id
-     *
-     * @param id          world id
-     * @param version     specific version
-     * @param destination where the file gets saved
-     * @param name        name of the file
-     * @param consumer    consumer indicating whether the download was successful
-     */
-    public void download(String id, int[] version, String destination, String name, Consumer<Boolean> consumer) {
-        try {
-            CloseableHttpClient client = HttpClientBuilder.create().build();
-            // Create GET request
-            HttpGet request = new HttpGet(apiUri);
-            // add values to header
-            request.addHeader("id", id);
-            request.addHeader("version", Arrays.toString(version));
+    public void reload() {
+        worlds.clear();
 
-            HttpResponse response = client.execute(request);
-            HttpEntity entity = response.getEntity();
-            int responseCode = response.getStatusLine().getStatusCode();
-
-            if (responseCode == 200) {
-                InputStream inputStream = entity.getContent();
-
-                File output = new File(destination + name + ".zip");
-                FileOutputStream fos = new FileOutputStream(output);
-                int byte_;
-                while ((byte_ = inputStream.read()) != -1) {
-                    fos.write(byte_);
-                }
-
-                inputStream.close();
-                fos.close();
-
-                new UnZip(output.getAbsolutePath(), destination);
-                output.deleteOnExit();
-
-                consumer.accept(true);
-            } else {
-                consumer.accept(false);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (CloudWorld world : worldsCollection.find()) {
+            this.worlds.add(world);
         }
     }
 
-    /**
-     * returns a world where the given id
-     *
-     * @param id world id
-     * @return JsonObject
-     */
-    public JsonObject getWorld(String id) {
-        try {
-            CloseableHttpClient client = HttpClientBuilder.create().build();
-
-            // Create GET request
-            HttpGet request = new HttpGet(apiUri + id);
-            HttpResponse response = client.execute(request);
-            HttpEntity entity = response.getEntity();
-            int responseCode = response.getStatusLine().getStatusCode();
-
-            if (responseCode == 200) {
-                final String json = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-                return jsonParser.parse(json).getAsJsonObject();
-            } else {
-                return null;
+    public CloudWorld getWorld(String id) {
+        for (CloudWorld world : worlds) {
+            if (world.getId().equals(id)) {
+                return world;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         return null;
     }
 
-    /**
-     * returns all in the database stored worlds
-     *
-     * @return JsonArray
-     */
-    public JsonArray getWorlds() {
-        try {
-            CloseableHttpClient client = HttpClientBuilder.create().build();
-            // Create GET request
-            HttpGet request = new HttpGet(apiUri + "/worlds");
+    public Set<CloudWorld> getWorlds(String name) {
+        Set<CloudWorld> result = new HashSet<>();
 
-            HttpResponse response = client.execute(request);
-            HttpEntity entity = response.getEntity();
-            int responseCode = response.getStatusLine().getStatusCode();
-
-            if (responseCode == 200) {
-                final String json = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-                return jsonParser.parse(json).getAsJsonArray();
-            } else {
-                return null;
+        for (CloudWorld world : worlds) {
+            if (world.getName().equalsIgnoreCase(name)) {
+                result.add(world);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
-        return null;
+        return result;
     }
+
+    public CloudWorld createWorld(UUID initiator, String name) throws IOException {
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+
+        JsonObject json = new JsonObject();
+        json.addProperty("initiator", initiator.toString());
+        json.addProperty("name", name);
+
+        StringEntity requestEntity = new StringEntity(json.toString(), ContentType.APPLICATION_JSON);
+
+        HttpPost request = new HttpPost(storageHost.getPath()+"/insert");
+        request.setEntity(requestEntity);
+
+        HttpResponse response = client.execute(request);
+        HttpEntity entity = request.getEntity();
+        int responseCode = response.getStatusLine().getStatusCode();
+
+        if (responseCode == 200) {
+            InputStreamReader ir = new InputStreamReader(entity.getContent());
+            CloudWorld world = new Gson().fromJson(ir, CloudWorld.class);
+            ir.close();
+
+            return world;
+        } else return null;
+    }
+
 }
