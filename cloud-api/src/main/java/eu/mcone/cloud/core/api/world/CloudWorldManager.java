@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 - 2021 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.core.api.world;
 
 import com.google.gson.Gson;
@@ -25,7 +30,8 @@ import java.util.UUID;
 @Getter
 public class CloudWorldManager {
 
-    public static final String WORLD_URL = "/api/world/";
+    public static final String WORLD_REQUEST_URL = "/api/world/";
+
     @Getter
     private static CloudWorldManager instance;
 
@@ -49,13 +55,13 @@ public class CloudWorldManager {
 
         try {
             this.worldsCollection = database.getCollection("worlds", CloudWorld.class);
-            this.storageHost = new URI(storageHost + WORLD_URL);
+            this.storageHost = new URI(storageHost + WORLD_REQUEST_URL);
             this.jsonParser = jsonParser;
             this.worlds = new HashSet<>();
 
             reload();
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Could not initialize CloudWorldManager. Storage Host "+storageHost+" is invalid!");
+            throw new IllegalArgumentException("Could not initialize CloudWorldManager. Storage Host " + storageHost + " is invalid!");
         }
     }
 
@@ -98,7 +104,7 @@ public class CloudWorldManager {
 
         StringEntity requestEntity = new StringEntity(json.toString(), ContentType.APPLICATION_JSON);
 
-        HttpPost request = new HttpPost(storageHost.getPath()+"/insert");
+        HttpPost request = new HttpPost(storageHost.getPath() + "/insert");
         request.setEntity(requestEntity);
 
         HttpResponse response = client.execute(request);

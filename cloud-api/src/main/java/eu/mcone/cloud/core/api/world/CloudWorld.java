@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 - 2021 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.core.api.world;
 
 import com.google.gson.Gson;
@@ -49,8 +54,8 @@ public class CloudWorld {
     /**
      * downloads the world where the given id
      *
-     * @param version     specific version
-     * @param worldFile   target location where the world should be downloaded
+     * @param version   specific version
+     * @param worldFile target location where the world should be downloaded
      */
     public boolean download(File worldFile, int[] version) throws IOException {
         CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -69,7 +74,7 @@ public class CloudWorld {
             if (responseCode == 200) {
                 InputStream inputStream = entity.getContent();
 
-                File output = new File(worldFile.getParentFile(), "."+name+"-temp.zip");
+                File output = new File(worldFile.getParentFile(), "." + name + "-temp.zip");
                 if (output.exists()) {
                     output.delete();
                 }
@@ -88,14 +93,14 @@ public class CloudWorld {
                 return true;
             } else return false;
         } catch (URISyntaxException e) {
-            throw new IllegalStateException("Could not download World "+name+". Error in QueryString Parameter!", e);
+            throw new IllegalStateException("Could not download World " + name + ". Error in QueryString Parameter!", e);
         }
     }
 
     public boolean commit(WorldVersionType type, File worldFile, UUID author, String changelog) throws IOException {
         CloseableHttpClient client = HttpClientBuilder.create().build();
 
-        File zip = new File(worldFile.getParent(), "."+name+"-temp.zip");
+        File zip = new File(worldFile.getParent(), "." + name + "-temp.zip");
         if (zip.exists()) {
             zip.delete();
         }
@@ -107,7 +112,7 @@ public class CloudWorld {
         builder.addTextBody("author", author.toString());
         builder.addTextBody("changelog", changelog);
 
-        HttpPost request = new HttpPost(CloudWorldManager.getInstance().getStorageHost().getPath()+"/"+id);
+        HttpPost request = new HttpPost(CloudWorldManager.getInstance().getStorageHost().getPath() + "/" + id);
         request.setEntity(builder.build());
 
         HttpResponse response = client.execute(request);
@@ -137,7 +142,7 @@ public class CloudWorld {
 
     public WorldVersion getLatestVersion() {
         Collections.sort(this.versions);
-        return this.versions.get(this.versions.size()-1);
+        return this.versions.get(this.versions.size() - 1);
     }
 
     @Override

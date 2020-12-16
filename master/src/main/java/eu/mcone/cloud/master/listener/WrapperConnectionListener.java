@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 - 2021 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
+
 package eu.mcone.cloud.master.listener;
 
 import eu.mcone.cloud.core.api.wrapper.Wrapper;
@@ -12,18 +17,20 @@ import lombok.extern.java.Log;
 public class WrapperConnectionListener implements ConnectionListener {
 
     @Override
-    public void onChannelActive(String resourceBundleName, ChannelHandlerContext channelHandlerContext) {}
+    public void onChannelActive(String resourceBundleName, ChannelHandlerContext channelHandlerContext) {
+    }
 
     @Override
     public void onChannelUnregistered(ChannelHandlerContext ctx) {
         Wrapper w = MasterServer.getServer().getWrapper(ctx.channel());
         if (w != null) {
-            log.info(ConsoleColor.RED+"Deleting Wrapper "+w.getUuid());
+            log.info(ConsoleColor.RED + "Deleting Wrapper " + w.getUuid());
             ((CloudWrapper) w).unregister();
         }
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) {}
+    public void exceptionCaught(ChannelHandlerContext channelHandlerContext, Throwable throwable) {
+    }
 
 }

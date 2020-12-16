@@ -1,6 +1,9 @@
-package eu.mcone.cloud.core.exception;
+/*
+ * Copyright (c) 2017 - 2021 Rufus Maiwald, Dominik Lippl and the MC ONE Minecraftnetwork. All rights reserved.
+ *  You are not allowed to decompile the code.
+ */
 
-import eu.mcone.cloud.core.exception.CloudException;
+package eu.mcone.cloud.core.exception;
 
 public class DownloadException extends CloudException {
 
