@@ -84,13 +84,13 @@
         <dependency>
             <groupId>group.onegaming.networkmanager</groupId>
             <artifactId>network-api</artifactId>
-            <version>1.1.5-SNAPSHOT</version>
+            <version>1.1.6-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>group.onegaming.networkmanager</groupId>
             <artifactId>client</artifactId>
-            <version>1.1.5-SNAPSHOT</version>
+            <version>1.1.6-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

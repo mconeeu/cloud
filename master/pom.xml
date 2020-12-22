@@ -65,7 +65,7 @@
         <dependency>
             <groupId>group.onegaming.networkmanager</groupId>
             <artifactId>host-api</artifactId>
-            <version>1.1.5-SNAPSHOT</version>
+            <version>1.1.6-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
