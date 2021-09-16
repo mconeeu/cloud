@@ -97,7 +97,7 @@ public class CloudWorld {
         }
     }
 
-    public boolean commit(WorldVersionType type, File worldFile, UUID author, String changelog) throws IOException {
+    public WorldVersion commit(WorldVersionType type, File worldFile, UUID author, String changelog) throws IOException {
         CloseableHttpClient client = HttpClientBuilder.create().build();
 
         File zip = new File(worldFile.getParent(), "." + name + "-temp.zip");
@@ -126,8 +126,8 @@ public class CloudWorld {
 
             WorldVersion newVersion = world.getVersions().iterator().next();
             versions.add(newVersion);
-            return true;
-        } else return false;
+            return newVersion;
+        } else throw new IllegalArgumentException("Could not commit world "+name+". Server returned a "+responseCode);
     }
 
     public WorldVersion getVersion(int[] version) {

@@ -13,7 +13,7 @@ import com.mongodb.client.MongoDatabase;
 import lombok.Getter;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -95,16 +95,16 @@ public class CloudWorldManager {
         return result;
     }
 
-    public CloudWorld createWorld(UUID initiator, String name) throws IOException {
+    public CloudWorld trackWorld(String id, String name, UUID initiator) throws IOException {
         CloseableHttpClient client = HttpClientBuilder.create().build();
 
         JsonObject json = new JsonObject();
-        json.addProperty("initiator", initiator.toString());
         json.addProperty("name", name);
+        json.addProperty("initiator", initiator.toString());
 
         StringEntity requestEntity = new StringEntity(json.toString(), ContentType.APPLICATION_JSON);
 
-        HttpPost request = new HttpPost(storageHost.getPath() + "/insert");
+        HttpPut request = new HttpPut(storageHost.getPath() + "/" + id);
         request.setEntity(requestEntity);
 
         HttpResponse response = client.execute(request);
@@ -117,7 +117,7 @@ public class CloudWorldManager {
             ir.close();
 
             return world;
-        } else return null;
+        } else throw new IllegalArgumentException("Could not track world "+name+". Server returned a "+responseCode);
     }
 
 }
