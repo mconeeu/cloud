@@ -60,14 +60,6 @@
         </repository>
     </repositories>
 
-    <distributionManagement>
-        <repository>
-            <id>mcone-systems</id>
-            <name>MC ONE Repo</name>
-            <url>https://repo.onegaming.group/repository/mcone-systems/</url>
-        </repository>
-    </distributionManagement>
-
     <dependencies>
         <dependency>
             <groupId>eu.mcone.cloud</groupId>

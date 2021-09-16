@@ -84,15 +84,15 @@
 
     <repositories>
         <repository>
-            <id>onegaming-gitlab-applications</id>
-            <url>https://gitlab.onegaming.group/api/v4/groups/applications/-/packages/maven</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/mconeeu/networkmanager</url>
         </repository>
     </repositories>
 
     <distributionManagement>
         <repository>
-            <id>onegaming-gitlab</id>
-            <url>https://gitlab.onegaming.group/api/v4/projects/28/packages/maven</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/mconeeu/cloud</url>
         </repository>
     </distributionManagement>
 
